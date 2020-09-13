@@ -20,7 +20,11 @@ struct BranchAndCutCplexOutput: Output
     BranchAndCutCplexOutput& algorithm_end(Info& info);
 };
 
-BranchAndCutCplexOutput branchandcut_cplex(
+BranchAndCutCplexOutput branchandcut_1_cplex(
+        const Instance& instance, BranchAndCutCplexOptionalParameters parameters = {});
+BranchAndCutCplexOutput branchandcut_2_cplex(
+        const Instance& instance, BranchAndCutCplexOptionalParameters parameters = {});
+BranchAndCutCplexOutput branchandcut_3_cplex(
         const Instance& instance, BranchAndCutCplexOptionalParameters parameters = {});
 
 }

@@ -103,3 +103,21 @@ void Instance::read_dimacs2010(std::ifstream& file)
     }
 }
 
+Instance Instance::complementary()
+{
+    Instance instance(vertex_number());
+    optimizationtools::IndexedSet neighbors(vertex_number());
+
+    for (VertexId v = 0; v < vertex_number(); ++v){
+        instance.set_weight(v, vertex(v).weight);
+        neighbors.clear();
+        for (const auto& edge: vertex(v).edges)
+            if (edge.v > v)
+                neighbors.add(edge.v);
+        for (auto it = neighbors.out_begin(); it != neighbors.out_end(); ++it)
+            instance.add_edge(v, *it);
+    }
+
+    return instance;
+}
+

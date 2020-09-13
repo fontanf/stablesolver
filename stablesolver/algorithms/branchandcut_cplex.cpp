@@ -2,6 +2,8 @@
 
 #include "stablesolver/algorithms/branchandcut_cplex.hpp"
 
+#include "cliquesolver/algorithms/greedy.hpp"
+
 #include <ilcplex/ilocplex.h>
 
 using namespace stablesolver;
@@ -16,7 +18,7 @@ BranchAndCutCplexOutput& BranchAndCutCplexOutput::algorithm_end(Info& info)
     return *this;
 }
 
-ILOMIPINFOCALLBACK4(loggingCallback,
+ILOMIPINFOCALLBACK4(loggingCallback1,
                     const Instance&, instance,
                     BranchAndCutCplexOptionalParameters&, parameters,
                     BranchAndCutCplexOutput&, output,
@@ -39,10 +41,12 @@ ILOMIPINFOCALLBACK4(loggingCallback,
     }
 }
 
-BranchAndCutCplexOutput stablesolver::branchandcut_cplex(
+/************************** Model 1, |E| constraints **************************/
+
+BranchAndCutCplexOutput stablesolver::branchandcut_1_cplex(
         const Instance& instance, BranchAndCutCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_cplex ***" << std::endl);
+    VER(parameters.info, "*** branchandcut_1_cplex ***" << std::endl);
 
     BranchAndCutCplexOutput output(instance, parameters.info);
 
@@ -78,7 +82,215 @@ BranchAndCutCplexOutput stablesolver::branchandcut_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
-    cplex.use(loggingCallback(env, instance, parameters, output, x));
+    cplex.use(loggingCallback1(env, instance, parameters, output, x));
+
+    // Optimize
+    cplex.solve();
+
+    // Retrieve solution and bound.
+    if (cplex.getStatus() == IloAlgorithm::Infeasible) {
+    } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
+        if (output.solution.weight() < cplex.getObjValue() + 0.5) {
+            Solution solution(instance);
+            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+                if (cplex.getValue(x[v]) > 0.5)
+                    solution.add(v);
+            output.update_solution(solution, std::stringstream(""), parameters.info);
+        }
+        output.update_upper_bound(output.solution.weight(), std::stringstream(""), parameters.info);
+    } else if (cplex.isPrimalFeasible()) {
+        if (output.solution.weight() < cplex.getObjValue() + 0.5) {
+            Solution solution(instance);
+            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+                if (cplex.getValue(x[v]) > 0.5)
+                    solution.add(v);
+            output.update_solution(solution, std::stringstream(""), parameters.info);
+        }
+        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+    } else {
+        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+    }
+
+    env.end();
+
+    return output.algorithm_end(parameters.info);
+}
+
+/************************** Model 2, |V| constraints **************************/
+
+BranchAndCutCplexOutput stablesolver::branchandcut_2_cplex(
+        const Instance& instance, BranchAndCutCplexOptionalParameters parameters)
+{
+    VER(parameters.info, "*** branchandcut_2_cplex ***" << std::endl);
+
+    BranchAndCutCplexOutput output(instance, parameters.info);
+
+    IloEnv env;
+    IloModel model(env);
+
+    // Variables
+    // x[v] == 1 iff vertex is chosen.
+    IloNumVarArray x(env, instance.vertex_number(), 0, 1, ILOBOOL);
+
+    // Objective
+    IloExpr expr(env);
+    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+        expr += instance.vertex(v).weight * x[v];
+    IloObjective obj = IloMaximize(env, expr);
+    model.add(obj);
+
+    // Constraints
+    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+        IloExpr expr(env);
+        expr += instance.degree(v) * x[v];
+        for (const auto& edge: instance.vertex(v).edges)
+            expr += x[edge.v];
+        model.add(expr <= instance.degree(v));
+    }
+
+    IloCplex cplex(model);
+
+    // Redirect standard output to log file
+    std::ofstream logfile("cplex.log");
+    cplex.setOut(logfile);
+
+    cplex.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.0); // Fix precision issue
+    cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
+
+    // Time limit
+    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+
+    // Callback
+    cplex.use(loggingCallback1(env, instance, parameters, output, x));
+
+    // Optimize
+    cplex.solve();
+
+    // Retrieve solution and bound.
+    if (cplex.getStatus() == IloAlgorithm::Infeasible) {
+    } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
+        if (output.solution.weight() < cplex.getObjValue() + 0.5) {
+            Solution solution(instance);
+            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+                if (cplex.getValue(x[v]) > 0.5)
+                    solution.add(v);
+            output.update_solution(solution, std::stringstream(""), parameters.info);
+        }
+        output.update_upper_bound(output.solution.weight(), std::stringstream(""), parameters.info);
+    } else if (cplex.isPrimalFeasible()) {
+        if (output.solution.weight() < cplex.getObjValue() + 0.5) {
+            Solution solution(instance);
+            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+                if (cplex.getValue(x[v]) > 0.5)
+                    solution.add(v);
+            output.update_solution(solution, std::stringstream(""), parameters.info);
+        }
+        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+    } else {
+        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+    }
+
+    env.end();
+
+    return output.algorithm_end(parameters.info);
+}
+
+/************************** Model 1, |E| constraints **************************/
+
+BranchAndCutCplexOutput stablesolver::branchandcut_3_cplex(
+        const Instance& instance, BranchAndCutCplexOptionalParameters parameters)
+{
+    VER(parameters.info, "*** branchandcut_3_cplex ***" << std::endl);
+
+    BranchAndCutCplexOutput output(instance, parameters.info);
+
+    IloEnv env;
+    IloModel model(env);
+
+    // Variables
+    // x[v] == 1 iff vertex is chosen.
+    IloNumVarArray x(env, instance.vertex_number(), 0, 1, ILOBOOL);
+
+    // Objective
+    IloExpr expr(env);
+    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+        expr += instance.vertex(v).weight * x[v];
+    IloObjective obj = IloMaximize(env, expr);
+    model.add(obj);
+
+    // Constraints
+    optimizationtools::IndexedSet edge_set(instance.edge_number());
+    optimizationtools::IndexedSet vertex_set_1(instance.vertex_number());
+    optimizationtools::IndexedSet vertex_set_2(instance.vertex_number());
+    std::vector<EdgeId> edge_indices(instance.edge_number(), 0);
+    for (EdgeId e = 0; e < instance.edge_number(); ++e) {
+        if (edge_set.contains(e))
+            continue;
+        // Compute vertices
+        VertexId v1 = instance.edge(e).v1;
+        VertexId v2 = instance.edge(e).v2;
+        vertex_set_1.clear();
+        vertex_set_2.clear();
+        for (const auto& edge: instance.vertex(v1).edges)
+            if (edge.v != v2)
+                vertex_set_1.add(edge.v);
+        for (const auto& edge: instance.vertex(v2).edges)
+            if (vertex_set_1.contains(edge.v))
+                vertex_set_2.add(edge.v);
+        //std::cout << "e " << e << " vertices " << vertex_set_2.size() << std::endl;
+        cliquesolver::Instance instance_clique(vertex_set_2.size());
+        // Add edges
+        //std::cout << "add edges..." << std::endl;
+        for (auto it = vertex_set_2.begin(); it != vertex_set_2.end(); ++it) {
+            for (const auto& edge: instance.vertex(*it).edges) {
+                if (edge.v > *it && vertex_set_2.contains(edge.v)) {
+                    edge_indices[instance_clique.edge_number()] = edge.e;
+                    instance_clique.add_edge(vertex_set_2.position(*it), vertex_set_2.position(edge.v));
+                }
+            }
+        }
+        // Solve
+        //std::cout << "solve..." << std::endl;
+        auto output_clique = cliquesolver::greedy_gwmin(instance_clique);
+        //std::cout << "sol " << output_clique.solution.vertex_number() << std::endl;
+        // Build constraint
+        //std::cout << "build constraint..." << std::endl;
+        IloExpr expr(env);
+        expr += x[v1] + x[v2];
+        for (auto it = vertex_set_2.begin(); it != vertex_set_2.end(); ++it) {
+            //std::cout << "v " << *it << " pos " << vertex_set_2.position(*it) << std::endl;
+            if (output_clique.solution.contains(vertex_set_2.position(*it)))
+                expr += x[*it];
+            // Update edge_set
+            for (const auto& edge: instance_clique.vertex(vertex_set_2.position(*it)).edges) {
+                //std::cout << "e_clique " << edge.e << " e_orig " << edge_indices[edge.e] << std::endl;
+                edge_set.add(edge_indices[edge.e]);
+            }
+        }
+        //std::cout << "add constraint..." << std::endl;
+        model.add(expr <= 1);
+    }
+
+    IloCplex cplex(model);
+
+    // Redirect standard output to log file
+    std::ofstream logfile("cplex.log");
+    cplex.setOut(logfile);
+
+    cplex.setParam(IloCplex::Param::MIP::Tolerances::MIPGap, 0.0); // Fix precision issue
+    cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
+
+    // Time limit
+    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+
+    // Callback
+    cplex.use(loggingCallback1(env, instance, parameters, output, x));
 
     // Optimize
     cplex.solve();

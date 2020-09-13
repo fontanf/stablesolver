@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
         ("input,i", po::value<std::string>(&instance_path)->required(), "set input file (required)")
         ("format,f", po::value<std::string>(&format), "set input file format (default: standard)")
         ("unweighted,u", "set unweighted")
+        ("complementary", "set complementary")
         ("output,o", po::value<std::string>(&output_path), "set JSON output file")
         ("initial-solution,", po::value<std::string>(&initial_solution_path), "")
         ("certificate,c", po::value<std::string>(&certificate_path), "set certificate file")
@@ -54,8 +55,10 @@ int main(int argc, char *argv[])
     // Run algorithm
 
     Instance instance(instance_path, format);
-    if (vm.count("unicost"))
+    if (vm.count("unweighted"))
         instance.set_unweighted();
+    if (vm.count("complementary"))
+        instance = instance.complementary();
 
     Info info = Info()
         .set_verbose(vm.count("verbose"))
@@ -67,6 +70,10 @@ int main(int argc, char *argv[])
         .set_log2stderr(vm.count("log2stderr"))
         .set_loglevelmax(loglevelmax)
         ;
+
+    VER(info, "Vertices:    " << instance.vertex_number() << std::endl);
+    VER(info, "Edges:       " << instance.edge_number() << std::endl);
+    VER(info, "Degree max:  " << instance.degree_max() << std::endl);
 
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);

@@ -8,19 +8,23 @@ Solvers for the Maximum(-Weight) Independent Set and for the Maximum(-Weight) Cl
 
 ## Implemented algorithms
 
+To solve a stable (resp. clique) problem, it is possible to use a clique (resp. stable) algorithm on the complementary graph (option `--complementary`). However, gaphs being generally sparse, the complementary graph might be huge. When a more optimized implementation is possible, both are implemented.
+
 StableSolver:
 
 * Greedy algorithms, see "A note on greedy algorithms for the maximum weighted independent set problem" (Sakai et al., 2001) for their descriptions:
   * `-a greedy_gwmin`
   * `-a greedy_gwmax`
   * `-a greedy_gwmin2`
-* Branch-and-cut (CPLEX) `-a branchandcut_cplex`
+* Branch-and-cut (CPLEX)
+  * Model 1  `-a branchandcut_1_cplex`, `|E|` constraints
+  * Model 2  `-a branchandcut_2_cplex`, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994)
+  * Model 3  `-a branchandcut_3_cplex`, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017)
 
 CliqueSolver:
 
 * Greedy algorithms:
   * `-a greedy_gwmin`, adapted from the stable version, same complexity
-* Branch-and-cut (CPLEX) `-a branchandcut_cplex`, the number of constraints is the number of non-edge, which can be very high for sparse graphs
 
 ## Usage (command line)
 

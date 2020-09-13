@@ -3,7 +3,6 @@
 #include "stablesolver/solution.hpp"
 
 #include "stablesolver/algorithms/greedy.hpp"
-#include "stablesolver/algorithms/localsearch.hpp"
 #include "stablesolver/algorithms/branchandcut_cplex.hpp"
 
 namespace stablesolver

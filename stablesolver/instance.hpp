@@ -61,6 +61,8 @@ public:
     void add_edge(VertexId v1, VertexId v2);
     void set_unweighted();
 
+    Instance complementary();
+
     /** Getters. */
     inline VertexId  vertex_number() const { return vertices_.size(); }
     inline EdgeId      edge_number() const { return edges_.size(); }
