@@ -242,10 +242,8 @@ BranchAndCutCplexOutput stablesolver::branchandcut_3_cplex(
         for (const auto& edge: instance.vertex(v2).edges)
             if (vertex_set_1.contains(edge.v))
                 vertex_set_2.add(edge.v);
-        //std::cout << "e " << e << " vertices " << vertex_set_2.size() << std::endl;
         cliquesolver::Instance instance_clique(vertex_set_2.size());
         // Add edges
-        //std::cout << "add edges..." << std::endl;
         for (auto it = vertex_set_2.begin(); it != vertex_set_2.end(); ++it) {
             for (const auto& edge: instance.vertex(*it).edges) {
                 if (edge.v > *it && vertex_set_2.contains(edge.v)) {
@@ -255,24 +253,26 @@ BranchAndCutCplexOutput stablesolver::branchandcut_3_cplex(
             }
         }
         // Solve
-        //std::cout << "solve..." << std::endl;
         auto output_clique = cliquesolver::greedy_gwmin(instance_clique);
-        //std::cout << "sol " << output_clique.solution.vertex_number() << std::endl;
         // Build constraint
-        //std::cout << "build constraint..." << std::endl;
         IloExpr expr(env);
         expr += x[v1] + x[v2];
-        for (auto it = vertex_set_2.begin(); it != vertex_set_2.end(); ++it) {
-            //std::cout << "v " << *it << " pos " << vertex_set_2.position(*it) << std::endl;
-            if (output_clique.solution.contains(vertex_set_2.position(*it)))
-                expr += x[*it];
-            // Update edge_set
-            for (const auto& edge: instance_clique.vertex(vertex_set_2.position(*it)).edges) {
-                //std::cout << "e_clique " << edge.e << " e_orig " << edge_indices[edge.e] << std::endl;
-                edge_set.add(edge_indices[edge.e]);
-            }
+        for (const auto& edge: instance.vertex(v1).edges)
+            if (vertex_set_2.contains(edge.v)
+                    && output_clique.solution.contains(vertex_set_2.position(edge.v)))
+                edge_set.add(edge.e);
+        for (const auto& edge: instance.vertex(v2).edges)
+            if (vertex_set_2.contains(edge.v)
+                    && output_clique.solution.contains(vertex_set_2.position(edge.v)))
+                edge_set.add(edge.e);
+        for (VertexId v_clique: output_clique.solution.vertices()) {
+            VertexId v_orig = *(vertex_set_2.begin() + v_clique);
+            expr += x[v_orig];
+            for (const auto& edge: instance_clique.vertex(v_clique).edges)
+                if (output_clique.solution.contains(edge.v)
+                        && edge.v > v_clique)
+                    edge_set.add(edge_indices[edge.e]);
         }
-        //std::cout << "add constraint..." << std::endl;
         model.add(expr <= 1);
     }
 

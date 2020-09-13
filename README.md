@@ -12,7 +12,7 @@ To solve a stable (resp. clique) problem, it is possible to use a clique (resp. 
 
 StableSolver:
 
-* Greedy algorithms, see "A note on greedy algorithms for the maximum weighted independent set problem" (Sakai et al., 2001) for their descriptions:
+* Greedy algorithms, see "A note on greedy algorithms for the maximum weighted independent set problem" (Sakai et al., 2001):
   * `-a greedy_gwmin`
   * `-a greedy_gwmax`
   * `-a greedy_gwmin2`
