@@ -1,4 +1,4 @@
-# StableSolver and CliqueSolver
+# Stable Solver and Clique Solver
 
 Solvers for the Maximum(-Weight) Independent Set and for the Maximum(-Weight) Clique Problems.
 
@@ -9,6 +9,8 @@ Solvers for the Maximum(-Weight) Independent Set and for the Maximum(-Weight) Cl
 ## Implemented algorithms
 
 To solve a stable (resp. clique) problem, it is possible to use a clique (resp. stable) algorithm on the complementary graph (option `--complementary`). However, gaphs being generally sparse, the complementary graph might be huge. When a more optimized implementation is possible, both are implemented.
+
+The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Problem by just considering the vertices outside of the solution.
 
 StableSolver:
 

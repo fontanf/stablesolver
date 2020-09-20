@@ -51,7 +51,7 @@ Solution& Solution::operator=(const Solution& solution)
     return *this;
 }
 
-void Solution::write_cert(std::string filepath)
+void Solution::write(std::string filepath)
 {
     if (filepath.empty())
         return;
@@ -137,7 +137,7 @@ void Output::update_solution(
         PUT(info, sol_str, "String", s.str());
         if (!info.output->onlywriteattheend) {
             info.write_ini();
-            solution.write_cert(info.output->certfile);
+            solution.write(info.output->certfile);
         }
     }
 
@@ -162,7 +162,7 @@ void Output::update_upper_bound(Weight upper_bound_new, const std::stringstream&
         PUT(info, sol_str, "Time", t);
         PUT(info, sol_str, "String", s.str());
         if (!info.output->onlywriteattheend)
-            solution.write_cert(info.output->certfile);
+            solution.write(info.output->certfile);
     }
 
     info.output->mutex_sol.unlock();
@@ -186,7 +186,7 @@ Output& Output::algorithm_end(Info& info)
             << "Time (s): " << t << std::endl);
 
     info.write_ini();
-    solution.write_cert(info.output->certfile);
+    solution.write(info.output->certfile);
     return *this;
 }
 

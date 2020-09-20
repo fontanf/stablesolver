@@ -6,7 +6,10 @@ using namespace stablesolver;
 namespace po = boost::program_options;
 
 Output stablesolver::run(
-        std::string algorithm, const Instance& instance, std::mt19937_64& generator, Info info)
+        std::string algorithm,
+        const Instance& instance,
+        std::mt19937_64& generator,
+        Info info)
 {
     (void)generator;
 

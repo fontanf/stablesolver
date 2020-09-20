@@ -34,7 +34,7 @@ public:
     inline void add(VertexId v);
     inline void remove(VertexId v);
 
-    void write_cert(std::string filepath);
+    void write(std::string filepath);
 
 private:
 

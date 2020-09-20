@@ -39,7 +39,7 @@ public:
     void increment_penalty(EdgeId e, Weight p = 1);
     void set_penalty(EdgeId e, Weight p);
 
-    void write_cert(std::string filepath);
+    void write(std::string filepath);
 
 private:
 
