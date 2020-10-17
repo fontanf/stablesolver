@@ -6,11 +6,15 @@ cc_library(
         hdrs = [
                 "greedy.hpp",
                 "branchandcut_cplex.hpp",
+                "localsearch.hpp",
+                "decisiondiagram.hpp",
                 "algorithms.hpp",
         ],
         srcs = [
                 "greedy.cpp",
                 "branchandcut_cplex.cpp",
+                "localsearch.cpp",
+                "decisiondiagram.cpp",
                 "algorithms.cpp",
         ],
         deps = [

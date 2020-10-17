@@ -7,17 +7,22 @@ using namespace stablesolver;
 Solution::Solution(const Instance& instance):
     instance_(instance),
     vertices_(instance.vertex_number()),
-    conflicts_(instance.edge_number()),
+    edges_(instance.edge_number(), 3),
     penalties_(instance.edge_number(), 1)
 {
+    for (EdgeId e = 0; e < instance.edge_number(); ++e)
+        edges_.set(e, 0);
 }
 
 Solution::Solution(const Instance& instance, std::string filepath):
     instance_(instance),
     vertices_(instance.vertex_number()),
-    conflicts_(instance.edge_number()),
+    edges_(instance.edge_number(), 3),
     penalties_(instance.edge_number(), 1)
 {
+    for (EdgeId e = 0; e < instance.edge_number(); ++e)
+        edges_.set(e, 0);
+
     if (filepath.empty())
         return;
     std::ifstream file(filepath);
@@ -36,7 +41,7 @@ Solution::Solution(const Instance& instance, std::string filepath):
 Solution::Solution(const Solution& solution):
     instance_(solution.instance_),
     vertices_(solution.vertices_),
-    conflicts_(solution.conflicts_),
+    edges_(solution.edges_),
     penalties_(solution.penalties_),
     weight_(solution.weight_),
     penalty_(solution.penalty_)
@@ -47,7 +52,7 @@ Solution& Solution::operator=(const Solution& solution)
     if (this != &solution) {
         assert(&instance_ == &solution.instance_);
         vertices_  = solution.vertices_;
-        conflicts_ = solution.conflicts_;
+        edges_     = solution.edges_;
         penalties_ = solution.penalties_;
         weight_    = solution.weight_;
         penalty_   = solution.penalty_;

@@ -5,7 +5,9 @@
 namespace stablesolver
 {
 
-struct LocalSearchOptionalParameters
+/******************************* localsearch_1 ********************************/
+
+struct LocalSearch1OptionalParameters
 {
     Counter thread_number = 3;
     Counter iteration_limit = -1;
@@ -13,16 +15,37 @@ struct LocalSearchOptionalParameters
     Info info = Info();
 };
 
-struct LocalSearchOutput: Output
+struct LocalSearch1Output: Output
 {
-    LocalSearchOutput(const Instance& instance, Info& info): Output(instance, info) { }
-    LocalSearchOutput& algorithm_end(Info& info);
+    LocalSearch1Output(const Instance& instance, Info& info): Output(instance, info) { }
+    LocalSearch1Output& algorithm_end(Info& info);
 };
 
-LocalSearchOutput localsearch(
+LocalSearch1Output localsearch_1(
         const Instance& instance,
         std::mt19937_64& generator,
-        LocalSearchOptionalParameters parameters = {});
+        LocalSearch1OptionalParameters parameters = {});
+
+/******************************* localsearch_2 ********************************/
+
+struct LocalSearch2OptionalParameters
+{
+    Counter thread_number = 3;
+    Counter iteration_limit = -1;
+    Counter iteration_without_improvment_limit = -1;
+    Info info = Info();
+};
+
+struct LocalSearch2Output: Output
+{
+    LocalSearch2Output(const Instance& instance, Info& info): Output(instance, info) { }
+    LocalSearch2Output& algorithm_end(Info& info);
+};
+
+LocalSearch2Output localsearch_2(
+        const Instance& instance,
+        std::mt19937_64& generator,
+        LocalSearch2OptionalParameters parameters = {});
 
 }
 

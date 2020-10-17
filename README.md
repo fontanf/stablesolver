@@ -12,7 +12,7 @@ To solve a stable (resp. clique) problem, it is possible to use a clique (resp. 
 
 The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Problem by just considering the vertices outside of the solution.
 
-StableSolver:
+Stable Solver:
 
 * Greedy algorithms, see "A note on greedy algorithms for the maximum weighted independent set problem" (Sakai et al., 2001):
   * `-a greedy_gwmin`
@@ -21,9 +21,17 @@ StableSolver:
 * Branch-and-cut (CPLEX)
   * Model 1  `-a branchandcut_1_cplex`, `|E|` constraints
   * Model 2  `-a branchandcut_2_cplex`, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994)
-  * Model 3  `-a branchandcut_3_cplex`, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017)
+  * Model 3  `-a branchandcut_3_cplex`, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) (seems useless since solvers already detect and merge clique constraints)
+* Decision diagram
+  * Restricted decision diagram (solution) `-a decisiondiagram_restricted --width 100`
+  * Relaxed decision diagram (bound) `-a decisiondiagram_relaxed --width 100`
+  * Decision Diagrams by Separation (bound and solution at the end) `-a decisiondiagram_separation`
+  * Decision diagram based branch-and-bound `-a branchandbound_decisiondiagram`
+* Row weighting local search (unweighted only)
+  * `-a "localsearch_1 --threads 3 --iterations 10000"`
+  * `-a "localsearch_2 --threads 3 --iterations 10000"`
 
-CliqueSolver:
+Clique Solver:
 
 * Greedy algorithms:
   * `-a greedy_gwmin`, adapted from the stable version, same complexity

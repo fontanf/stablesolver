@@ -27,11 +27,12 @@ public:
     inline Weight weight() const { return weight_; }
     inline Weight penalty(EdgeId e) const { return penalties_[e]; }
     inline Weight penalty() const { return penalty_; }
-    inline int8_t contains(VertexId e) const { return vertices_.contains(e); }
-    inline bool feasible() const { return penalty() == 0; }
+    inline int8_t contains(VertexId v) const { return vertices_.contains(v); }
+    inline int8_t covers(EdgeId e) const { return edges_[e]; }
+    inline bool feasible() const { return (edges_.element_number(2) == 0); }
 
     const optimizationtools::IndexedSet& vertices() const { return vertices_; };
-    const optimizationtools::IndexedSet& conflicts() const { return conflicts_; }
+    const optimizationtools::DoublyIndexedMap& edges() const { return edges_; }
 
     inline void add(VertexId v);
     inline void remove(VertexId v);
@@ -46,7 +47,7 @@ private:
     const Instance& instance_;
 
     optimizationtools::IndexedSet vertices_;
-    optimizationtools::IndexedSet conflicts_;
+    optimizationtools::DoublyIndexedMap edges_;
     std::vector<Weight> penalties_;
     Weight weight_ = 0;
     Weight penalty_ = 0;
@@ -59,9 +60,11 @@ void Solution::add(VertexId v)
     assert(v < instance().vertex_number());
     assert(!contains(v));
     vertices_.add(v);
-    for (const auto& edge: instance().vertex(v).edges)
+    for (const auto& edge: instance().vertex(v).edges) {
+        edges_.set(edge.e, edges_[edge.e] + 1);
         if (contains(edge.v))
             penalty_ += penalties_[edge.e];
+    }
     weight_ += instance().vertex(v).weight;
 }
 
@@ -70,9 +73,11 @@ void Solution::remove(VertexId v)
     assert(v >= 0);
     assert(v < instance().vertex_number());
     assert(contains(v));
-    for (const auto& edge: instance().vertex(v).edges)
+    for (const auto& edge: instance().vertex(v).edges) {
+        edges_.set(edge.e, edges_[edge.e] - 1);
         if (contains(edge.v))
             penalty_ -= penalties_[edge.e];
+    }
     vertices_.remove(v);
     weight_ -= instance().vertex(v).weight;
 }
