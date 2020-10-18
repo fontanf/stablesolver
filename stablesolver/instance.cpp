@@ -21,6 +21,8 @@ Instance::Instance(std::string filepath, std::string format)
         std::cerr << "\033[31m" << "ERROR, unknown instance format: \"" << format << "\"" << "\033[0m" << std::endl;
         assert(false);
     }
+
+    compute_components();
 }
 
 Instance::Instance(VertexId vertex_number):
@@ -119,5 +121,39 @@ Instance Instance::complementary()
     }
 
     return instance;
+}
+
+void Instance::compute_components()
+{
+    std::cout << "compute_components" << std::endl;
+    for (ComponentId c = 0;; ++c) {
+        VertexId v = 0;
+        while (v < vertex_number()
+                && (vertex(v).component != -1))
+            v++;
+        if (v == vertex_number())
+            break;
+        components_.push_back(Component());
+        components_.back().id = c;
+        std::vector<VertexId> stack {v};
+        vertices_[v].component = c;
+        while (!stack.empty()) {
+            v = stack.back();
+            stack.pop_back();
+            for (const auto& edge: vertex(v).edges) {
+                edges_[edge.e].component = c;
+                if (vertex(edge.v).component != -1)
+                    continue;
+                vertices_[edge.v].component = c;
+                stack.push_back(edge.v);
+            }
+        }
+    }
+
+    for (VertexId v = 0; v < vertex_number(); ++v)
+        if (vertex(v).component != -1)
+            components_[vertex(v).component].vertices.push_back(v);
+    for (EdgeId e = 0; e < edge_number(); ++e)
+        components_[edge(e).component].edges.push_back(e);
 }
 

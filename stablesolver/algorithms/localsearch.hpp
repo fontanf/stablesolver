@@ -17,12 +17,12 @@ struct LocalSearch1OptionalParameters
 
 struct LocalSearch1Output: Output
 {
-    LocalSearch1Output(const Instance& instance, Info& info): Output(instance, info) { }
+    LocalSearch1Output(Instance& instance, Info& info): Output(instance, info) { }
     LocalSearch1Output& algorithm_end(Info& info);
 };
 
 LocalSearch1Output localsearch_1(
-        const Instance& instance,
+        Instance& instance,
         std::mt19937_64& generator,
         LocalSearch1OptionalParameters parameters = {});
 

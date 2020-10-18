@@ -23,10 +23,10 @@ Stable Solver:
   * Model 2  `-a branchandcut_2_cplex`, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994)
   * Model 3  `-a branchandcut_3_cplex`, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) (seems useless since solvers already detect and merge clique constraints)
 * Decision diagram
-  * Restricted decision diagram (solution) `-a decisiondiagram_restricted --width 100`
-  * Relaxed decision diagram (bound) `-a decisiondiagram_relaxed --width 100`
-  * Decision Diagrams by Separation (bound and solution at the end) `-a decisiondiagram_separation`
-  * Decision diagram based branch-and-bound `-a branchandbound_decisiondiagram`
+  * Restricted decision diagram (solution) `-a "decisiondiagram_restricted --width 100"` :x:
+  * Relaxed decision diagram (bound) `-a "decisiondiagram_relaxed --width 100"` :x:
+  * Decision Diagrams by Separation (bound and solution at the end) `-a "decisiondiagram_separation"` :x:
+  * Decision diagram based branch-and-bound `-a "branchandbound_decisiondiagram"` :x:
 * Row weighting local search (unweighted only)
   * `-a "localsearch_1 --threads 3 --iterations 10000"`
   * `-a "localsearch_2 --threads 3 --iterations 10000"`

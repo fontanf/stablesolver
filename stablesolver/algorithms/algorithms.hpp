@@ -12,7 +12,7 @@ namespace stablesolver
 
 Output run(
         std::string algorithm,
-        const Instance& instance,
+        Instance& instance,
         std::mt19937_64& generator,
         Info info);
 

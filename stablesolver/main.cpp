@@ -74,6 +74,10 @@ int main(int argc, char *argv[])
     VER(info, "Vertices:    " << instance.vertex_number() << std::endl);
     VER(info, "Edges:       " << instance.edge_number() << std::endl);
     VER(info, "Degree max:  " << instance.degree_max() << std::endl);
+    VER(info, "Components: ");
+    for (ComponentId c = 0; c < instance.component_number(); ++c)
+        VER(info, " " << c << "/" << instance.component(c).vertices.size() << "/" << instance.component(c).edges.size());
+    VER(info, std::endl);
 
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);

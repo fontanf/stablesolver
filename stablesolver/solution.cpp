@@ -8,6 +8,8 @@ Solution::Solution(const Instance& instance):
     instance_(instance),
     vertices_(instance.vertex_number()),
     edges_(instance.edge_number(), 3),
+    component_conflict_numbers_(instance.component_number(), 0),
+    component_weights_(instance.component_number(), 0),
     penalties_(instance.edge_number(), 1)
 {
     for (EdgeId e = 0; e < instance.edge_number(); ++e)
@@ -18,6 +20,8 @@ Solution::Solution(const Instance& instance, std::string filepath):
     instance_(instance),
     vertices_(instance.vertex_number()),
     edges_(instance.edge_number(), 3),
+    component_conflict_numbers_(instance.component_number(), 0),
+    component_weights_(instance.component_number(), 0),
     penalties_(instance.edge_number(), 1)
 {
     for (EdgeId e = 0; e < instance.edge_number(); ++e)
@@ -42,6 +46,8 @@ Solution::Solution(const Solution& solution):
     instance_(solution.instance_),
     vertices_(solution.vertices_),
     edges_(solution.edges_),
+    component_conflict_numbers_(solution.component_conflict_numbers_),
+    component_weights_(solution.component_weights_),
     penalties_(solution.penalties_),
     weight_(solution.weight_),
     penalty_(solution.penalty_)
@@ -51,28 +57,30 @@ Solution& Solution::operator=(const Solution& solution)
 {
     if (this != &solution) {
         assert(&instance_ == &solution.instance_);
-        vertices_  = solution.vertices_;
-        edges_     = solution.edges_;
-        penalties_ = solution.penalties_;
-        weight_    = solution.weight_;
-        penalty_   = solution.penalty_;
+        vertices_                   = solution.vertices_;
+        edges_                      = solution.edges_;
+        component_conflict_numbers_ = solution.component_conflict_numbers_;
+        component_weights_          = solution.component_weights_;
+        penalties_                  = solution.penalties_;
+        weight_                     = solution.weight_;
+        penalty_                    = solution.penalty_;
     }
     return *this;
 }
 
 void Solution::set_penalty(EdgeId e, Weight p)
 {
-    if (contains(instance().edge(e).v1) && contains(instance().edge(e).v2))
+    if (covers(e) == 2)
         penalty_ -= penalties_[e];
     penalties_[e] = p;
-    if (contains(instance().edge(e).v1) && contains(instance().edge(e).v2))
+    if (covers(e) == 2)
         penalty_ += penalties_[e];
 }
 
 void Solution::increment_penalty(EdgeId e, Weight p)
 {
     penalties_[e] += p;
-    if (contains(instance().edge(e).v1) && contains(instance().edge(e).v2))
+    if (covers(e) == 2)
         penalty_ += p;
 }
 
@@ -139,17 +147,37 @@ void Output::print(Info& info, const std::stringstream& s) const
 
 void Output::update_solution(
         const Solution& solution_new,
+        ComponentId c,
         const std::stringstream& s,
         Info& info)
 {
     info.output->mutex_sol.lock();
 
-    if (solution_new.feasible() && solution.weight() < solution_new.weight()) {
-        for (VertexId v = 0; v < solution.instance().vertex_number(); ++v) {
-            if (solution.contains(v) && !solution_new.contains(v)) {
-                solution.remove(v);
-            } else if (!solution.contains(v) && solution_new.contains(v)) {
-                solution.add(v);
+    bool ok = false;
+    if (c == -1) {
+        if (solution_new.feasible() && (!solution.feasible() || solution.weight() < solution_new.weight()))
+            ok = true;
+    } else {
+        if (solution_new.feasible(c) && solution.weight(c) < solution_new.weight(c))
+            ok = true;
+    }
+
+    if (ok) {
+        if (c == -1) {
+            for (VertexId v = 0; v < solution.instance().vertex_number(); ++v) {
+                if (solution.contains(v) && !solution_new.contains(v)) {
+                    solution.remove(v);
+                } else if (!solution.contains(v) && solution_new.contains(v)) {
+                    solution.add(v);
+                }
+            }
+        } else {
+            for (VertexId v: solution.instance().component(c).vertices) {
+                if (solution.contains(v) && !solution_new.contains(v)) {
+                    solution.remove(v);
+                } else if (!solution.contains(v) && solution_new.contains(v)) {
+                    solution.add(v);
+                }
             }
         }
         print(info, s);

@@ -5,9 +5,45 @@
 using namespace stablesolver;
 namespace po = boost::program_options;
 
+LocalSearch1OptionalParameters read_localsearch_1_args(const std::vector<char*>& argv)
+{
+    LocalSearch1OptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("threads,t", po::value<Counter>(&parameters.thread_number), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (po::required_option e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
+LocalSearch2OptionalParameters read_localsearch_2_args(const std::vector<char*>& argv)
+{
+    LocalSearch2OptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("threads,t", po::value<Counter>(&parameters.thread_number), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (po::required_option e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
 Output stablesolver::run(
         std::string algorithm,
-        const Instance& instance,
+        Instance& instance,
         std::mt19937_64& generator,
         Info info)
 {
@@ -43,11 +79,11 @@ Output stablesolver::run(
 #endif
 
     } else if (algorithm_args[0] == "localsearch_1") {
-        LocalSearch1OptionalParameters parameters;
+        auto parameters = read_localsearch_1_args(algorithm_argv);
         parameters.info = info;
         return localsearch_1(instance, generator, parameters);
     } else if (algorithm_args[0] == "localsearch_2") {
-        LocalSearch2OptionalParameters parameters;
+        auto parameters = read_localsearch_2_args(algorithm_argv);
         parameters.info = info;
         return localsearch_2(instance, generator, parameters);
 
