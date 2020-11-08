@@ -117,11 +117,11 @@ Output::Output(const Instance& instance, Info& info):
     solution(instance),
     upper_bound(instance.total_weight() + 1)
 {
-    VER(info, std::left << std::setw(12) << "T (s)");
-    VER(info, std::left << std::setw(12) << "LB");
-    VER(info, std::left << std::setw(12) << "UB");
-    VER(info, std::left << std::setw(12) << "GAP");
-    VER(info, std::left << std::setw(12) << "GAP (%)");
+    VER(info, std::left << std::setw(16) << "T (s)");
+    VER(info, std::left << std::setw(16) << "LB");
+    VER(info, std::left << std::setw(16) << "UB");
+    VER(info, std::left << std::setw(16) << "GAP");
+    VER(info, std::left << std::setw(16) << "GAP (%)");
     VER(info, "");
     VER(info, std::endl);
     print(info, std::stringstream(""));
@@ -134,11 +134,11 @@ void Output::print(Info& info, const std::stringstream& s) const
         (double)(upper_bound - lower_bound()) / upper_bound * 100;
     double t = round(info.elapsed_time() * 10000) / 10000;
 
-    VER(info, std::left << std::setw(12) << t);
-    VER(info, std::left << std::setw(12) << lower_bound());
-    VER(info, std::left << std::setw(12) << upper_bound);
-    VER(info, std::left << std::setw(12) << upper_bound - lower_bound());
-    VER(info, std::left << std::setw(12) << gap);
+    VER(info, std::left << std::setw(16) << t);
+    VER(info, std::left << std::setw(16) << lower_bound());
+    VER(info, std::left << std::setw(16) << upper_bound);
+    VER(info, std::left << std::setw(16) << upper_bound - lower_bound());
+    VER(info, std::left << std::setw(16) << gap);
     VER(info, s.str() << std::endl);
 
     if (!info.output->onlywriteattheend)
@@ -233,10 +233,12 @@ Output& Output::algorithm_end(Info& info)
     PUT(info, "Bound", "Time", t);
     VER(info, "---" << std::endl
             << "Value: " << lower_bound() << std::endl
+            << "Vertex cover Value: " << solution.instance().total_weight() - lower_bound() << std::endl
             << "Bound: " << upper_bound << std::endl
             << "Gap: " << upper_bound - lower_bound() << std::endl
             << "Gap (%): " << gap << std::endl
-            << "Time (s): " << t << std::endl);
+            << "Time (s): " << t << std::endl
+            );
 
     info.write_ini();
     solution.write(info.output->certfile);
@@ -250,7 +252,8 @@ Weight stablesolver::algorithm_end(Weight upper_bound, Info& info)
     PUT(info, "Bound", "Time", t);
     VER(info, "---" << std::endl
             << "Bound: " << upper_bound << std::endl
-            << "Time (s): " << t << std::endl);
+            << "Time (s): " << t << std::endl
+            );
 
     info.write_ini();
     return upper_bound;

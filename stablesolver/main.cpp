@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
         instance.set_unweighted();
     if (vm.count("complementary"))
         instance = instance.complementary();
+    instance.compute_components();
 
     Info info = Info()
         .set_verbose(vm.count("verbose"))

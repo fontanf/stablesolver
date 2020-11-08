@@ -15,8 +15,12 @@ Instance::Instance(std::string filepath, std::string format)
         return;
     }
 
-    if (format == "dimacs2010") {
+    if (format == "dimacs1992") {
+        read_dimacs1992(file);
+    } else if (format == "dimacs2010") {
         read_dimacs2010(file);
+    } else if (format == "matrixmarket") {
+        read_matrixmarket(file);
     } else {
         std::cerr << "\033[31m" << "ERROR, unknown instance format: \"" << format << "\"" << "\033[0m" << std::endl;
         assert(false);
@@ -75,6 +79,34 @@ void Instance::set_unweighted()
     weight_total_ = vertex_number();
 }
 
+void Instance::read_dimacs1992(std::ifstream& file)
+{
+    std::string tmp;
+    std::vector<std::string> line;
+
+    while (getline(file, tmp)) {
+        line = optimizationtools::split(tmp, ' ');
+        if (line.size() == 0) {
+        } else if (line[0] == "c") {
+            if (name_ == "")
+                name_ = line.back();
+        } else if (line[0] == "p") {
+            VertexId vertex_number = stol(line[2]);
+            vertices_.resize(vertex_number);
+            for (VertexId v = 0; v < vertex_number; ++v)
+                vertices_[v].id = v;
+        } else if (line[0] == "n") {
+            VertexId v = stol(line[1]) - 1;
+            Weight w = stol(line[2]);
+            set_weight(v, w);
+        } else if (line[0] == "e") {
+            VertexId v1 = stol(line[1]) - 1;
+            VertexId v2 = stol(line[2]) - 1;
+            add_edge(v1, v2);
+        }
+    }
+}
+
 void Instance::read_dimacs2010(std::ifstream& file)
 {
     std::string tmp;
@@ -105,6 +137,26 @@ void Instance::read_dimacs2010(std::ifstream& file)
     }
 }
 
+void Instance::read_matrixmarket(std::ifstream& file)
+{
+    std::string tmp;
+    std::vector<std::string> line;
+    do {
+        getline(file, tmp);
+    } while (tmp[0] == '%');
+    line = optimizationtools::split(tmp, ' ');
+    VertexId n = stol(line[0]);
+    vertices_.resize(n);
+    weight_total_ = n;
+
+    while (getline(file, tmp)) {
+        line = optimizationtools::split(tmp, ' ');
+        VertexId v1 = stol(line[0]) - 1;
+        VertexId v2 = stol(line[1]) - 1;
+        add_edge(v1, v2);
+    }
+}
+
 Instance Instance::complementary()
 {
     Instance instance(vertex_number());
@@ -125,7 +177,6 @@ Instance Instance::complementary()
 
 void Instance::compute_components()
 {
-    std::cout << "compute_components" << std::endl;
     for (ComponentId c = 0;; ++c) {
         VertexId v = 0;
         while (v < vertex_number()

@@ -2,7 +2,7 @@
 
 Solvers for the Maximum(-Weight) Independent Set and for the Maximum(-Weight) Clique Problems.
 
-![knapsack](stable.png?raw=true "stable")
+![stable](stable.png?raw=true "stable")
 
 [image source](https://commons.wikimedia.org/wiki/File:Independent_set_graph.svg)
 
@@ -19,9 +19,9 @@ Stable Solver:
   * `-a greedy_gwmax`
   * `-a greedy_gwmin2`
 * Branch-and-cut (CPLEX)
-  * Model 1  `-a branchandcut_1_cplex`, `|E|` constraints
-  * Model 2  `-a branchandcut_2_cplex`, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994)
-  * Model 3  `-a branchandcut_3_cplex`, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) (seems useless since solvers already detect and merge clique constraints)
+  * Model 1, `|E|` constraints `-a branchandcut_1_cplex`
+  * Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) `-a branchandcut_2_cplex`
+  * Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) (seems useless since solvers already detect and merge clique constraints) `-a branchandcut_3_cplex`
 * Decision diagram
   * Restricted decision diagram (solution) `-a "decisiondiagram_restricted --width 100"` :x:
   * Relaxed decision diagram (bound) `-a "decisiondiagram_relaxed --width 100"` :x:
@@ -30,6 +30,7 @@ Stable Solver:
 * Row weighting local search (unweighted only)
   * `-a "localsearch_1 --threads 3 --iterations 10000"`
   * `-a "localsearch_2 --threads 3 --iterations 10000"`
+* Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) `-a "largeneighborhoodsearch"`
 
 Clique Solver:
 

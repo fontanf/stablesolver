@@ -97,6 +97,7 @@ private:
      * Attributes.
      */
 
+    std::string name_ = "";
     std::vector<Vertex> vertices_;
     std::vector<Edge> edges_;
     std::vector<Component> components_;
@@ -107,7 +108,9 @@ private:
      * Private methods.
      */
 
+    void read_dimacs1992(std::ifstream& file);
     void read_dimacs2010(std::ifstream& file);
+    void read_matrixmarket(std::ifstream& file);
 
 };
 
