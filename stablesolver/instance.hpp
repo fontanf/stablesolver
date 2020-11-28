@@ -111,6 +111,7 @@ private:
     void read_dimacs1992(std::ifstream& file);
     void read_dimacs2010(std::ifstream& file);
     void read_matrixmarket(std::ifstream& file);
+    void read_chaco(std::ifstream& file);
 
 };
 

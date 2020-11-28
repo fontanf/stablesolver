@@ -21,6 +21,8 @@ Instance::Instance(std::string filepath, std::string format)
         read_dimacs2010(file);
     } else if (format == "matrixmarket") {
         read_matrixmarket(file);
+    } else if (format == "chaco") {
+        read_chaco(file);
     } else {
         std::cerr << "\033[31m" << "ERROR, unknown instance format: \"" << format << "\"" << "\033[0m" << std::endl;
         assert(false);
@@ -154,6 +156,27 @@ void Instance::read_matrixmarket(std::ifstream& file)
         VertexId v1 = stol(line[0]) - 1;
         VertexId v2 = stol(line[1]) - 1;
         add_edge(v1, v2);
+    }
+}
+
+void Instance::read_chaco(std::ifstream& file)
+{
+    std::string tmp;
+    std::vector<std::string> line;
+
+    getline(file, tmp);
+    line = optimizationtools::split(tmp, ' ');
+    VertexId vertex_number = stol(line[0]);
+    vertices_.resize(vertex_number);
+
+    for (VertexId v = 0; v < vertex_number; ++v) {
+        getline(file, tmp);
+        line = optimizationtools::split(tmp, ' ');
+        for (std::string str: line) {
+            VertexId v2 = stol(str) - 1;
+            if (v2 > v)
+                add_edge(v, v2);
+        }
     }
 }
 

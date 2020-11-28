@@ -1,5 +1,7 @@
 # Stable Solver and Clique Solver
 
+WORK IN PROGRESS
+
 Solvers for the Maximum(-Weight) Independent Set and for the Maximum(-Weight) Clique Problems.
 
 ![stable](stable.png?raw=true "stable")
@@ -8,7 +10,7 @@ Solvers for the Maximum(-Weight) Independent Set and for the Maximum(-Weight) Cl
 
 ## Implemented algorithms
 
-To solve a stable (resp. clique) problem, it is possible to use a clique (resp. stable) algorithm on the complementary graph (option `--complementary`). However, gaphs being generally sparse, the complementary graph might be huge. When a more optimized implementation is possible, both are implemented.
+To solve a stable (resp. clique) problem, it is possible to use a clique (resp. stable) algorithm on the complementary graph (option `--complementary`). However, graphs being generally sparse, the complementary graph might be huge. When a more optimized implementation is possible, both are implemented.
 
 The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Problem by just considering the vertices outside of the solution.
 
@@ -28,14 +30,15 @@ Stable Solver:
   * Decision Diagrams by Separation (bound and solution at the end) `-a "decisiondiagram_separation"` :x:
   * Decision diagram based branch-and-bound `-a "branchandbound_decisiondiagram"` :x:
 * Row weighting local search (unweighted only)
-  * `-a "localsearch_1 --threads 3 --iterations 10000"`
-  * `-a "localsearch_2 --threads 3 --iterations 10000"`
+  * based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) `-a "localsearch_1 --threads 4 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+  * based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) `-a "localsearch_2 --threads 4 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
 * Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) `-a "largeneighborhoodsearch"`
 
 Clique Solver:
 
 * Greedy algorithms:
   * `-a greedy_gwmin`, adapted from the stable version, same complexity
+* Branch-and-bound :x:
 
 ## Usage (command line)
 
