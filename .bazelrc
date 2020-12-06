@@ -2,5 +2,5 @@ build --compilation_mode=opt
 
 ############################ Optional dependencies #############################
 
-build --define cplex=true
+#build --define cplex=true
 
