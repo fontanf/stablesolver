@@ -13,6 +13,7 @@ cc_library(
         ],
         deps = [
                 "//cliquesolver:cliquesolver",
+                "@boost//:program_options",
         ] + CPLEX_DEP,
         copts = CPLEX_COPTS,
         visibility = ["//visibility:public"],

@@ -8,8 +8,6 @@
 #include <random>
 #include <set>
 
-#define TOL 0.0000001
-
 namespace stablesolver
 {
 

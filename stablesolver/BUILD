@@ -25,7 +25,6 @@ cc_binary(
         srcs = ["main.cpp"],
         deps = [
                 "//stablesolver/algorithms:algorithms",
-                "@boost//:program_options",
         ],
         linkopts = select({
                     "@bazel_tools//src/conditions:windows": [],

@@ -22,6 +22,7 @@ cc_library(
         deps = [
                 "//stablesolver:stablesolver",
                 "//cliquesolver/algorithms:algorithms",
+                "@boost//:program_options",
         ] + CPLEX_DEP,
         copts = CPLEX_COPTS,
         visibility = ["//visibility:public"],
