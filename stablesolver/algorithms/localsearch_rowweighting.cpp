@@ -1,4 +1,4 @@
-#include "stablesolver/algorithms/localsearch.hpp"
+#include "stablesolver/algorithms/localsearch_rowweighting.hpp"
 
 #include "stablesolver/algorithms/greedy.hpp"
 
@@ -6,9 +6,9 @@
 
 using namespace stablesolver;
 
-/******************************* localsearch_1 ********************************/
+/******************************* localsearch_rowweighting_1 ********************************/
 
-LocalSearch1Output& LocalSearch1Output::algorithm_end(Info& info)
+LocalSearchRowWeighting1Output& LocalSearchRowWeighting1Output::algorithm_end(Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
@@ -16,7 +16,7 @@ LocalSearch1Output& LocalSearch1Output::algorithm_end(Info& info)
     return *this;
 }
 
-struct LocalSearch1Component
+struct LocalSearchRowWeighting1Component
 {
     /** Last vertex added to the current solution. */
     VertexId v_last_added = -1;
@@ -30,7 +30,7 @@ struct LocalSearch1Component
     Counter iteration_max;
 };
 
-struct LocalSearch1Vertex
+struct LocalSearchRowWeighting1Vertex
 {
     Counter timestamp = -1;
     Counter last_addition = -1;
@@ -38,11 +38,11 @@ struct LocalSearch1Vertex
     Counter iterations = 0;
 };
 
-void localsearch_1_worker(
+void localsearch_rowweighting_1_worker(
         const Instance& instance,
         Seed seed,
-        LocalSearch1OptionalParameters parameters,
-        LocalSearch1Output& output,
+        LocalSearchRowWeighting1OptionalParameters parameters,
+        LocalSearchRowWeighting1Output& output,
         Counter thread_id)
 {
     std::mt19937_64 generator(seed);
@@ -51,10 +51,10 @@ void localsearch_1_worker(
     parameters.info.output->mutex_sol.unlock();
 
     // Initialize local search structures.
-    std::vector<LocalSearch1Vertex> vertices(instance.vertex_number());
+    std::vector<LocalSearchRowWeighting1Vertex> vertices(instance.vertex_number());
     for (VertexId v: solution.vertices())
         vertices[v].last_addition = 0;
-    std::vector<LocalSearch1Component> components(instance.component_number());
+    std::vector<LocalSearchRowWeighting1Component> components(instance.component_number());
     for (ComponentId c = 0; c < instance.component_number(); ++c)
         components[c].iteration_max = ((c == 0)? 0: components[c - 1].iteration_max)
             + instance.component(c).edges.size();
@@ -71,7 +71,7 @@ void localsearch_1_worker(
                 //<< " s " << instance.component(c).vertices.size()
                 //<< std::endl;
         }
-        LocalSearch1Component& component = components[c];
+        LocalSearchRowWeighting1Component& component = components[c];
 
         while (solution.feasible(c)) {
             // New best solution
@@ -212,15 +212,15 @@ void localsearch_1_worker(
     }
 }
 
-LocalSearch1Output stablesolver::localsearch_1(
+LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         Instance& instance,
         std::mt19937_64& generator,
-        LocalSearch1OptionalParameters parameters)
+        LocalSearchRowWeighting1OptionalParameters parameters)
 {
-    VER(parameters.info, "*** localsearch_1 ***" << std::endl);
+    VER(parameters.info, "*** localsearch_rowweighting_1 ***" << std::endl);
 
     // Compute initial greedy solution.
-    LocalSearch1Output output(instance, parameters.info);
+    LocalSearchRowWeighting1Output output(instance, parameters.info);
     Solution solution = greedy_gwmin(instance).solution;
     std::stringstream ss;
     ss << "initial solution";
@@ -229,7 +229,7 @@ LocalSearch1Output stablesolver::localsearch_1(
     auto seeds = optimizationtools::bob_floyd(parameters.thread_number, std::numeric_limits<Seed>::max(), generator);
     std::vector<std::thread> threads;
     for (Counter thread_id = 0; thread_id < parameters.thread_number; ++thread_id)
-        threads.push_back(std::thread(localsearch_1_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
+        threads.push_back(std::thread(localsearch_rowweighting_1_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
 
     for (Counter thread_id = 0; thread_id < parameters.thread_number; ++thread_id)
         threads[thread_id].join();
@@ -237,9 +237,9 @@ LocalSearch1Output stablesolver::localsearch_1(
     return output.algorithm_end(parameters.info);
 }
 
-/******************************* localsearch_2 ********************************/
+/******************************* localsearch_rowweighting_2 ********************************/
 
-LocalSearch2Output& LocalSearch2Output::algorithm_end(Info& info)
+LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
@@ -247,7 +247,7 @@ LocalSearch2Output& LocalSearch2Output::algorithm_end(Info& info)
     return *this;
 }
 
-struct LocalSearch2Vertex
+struct LocalSearchRowWeighting2Vertex
 {
     Counter timestamp = -1;
     Counter last_addition = -1;
@@ -256,11 +256,11 @@ struct LocalSearch2Vertex
     Weight  score = 0;
 };
 
-void localsearch_2_worker(
+void localsearch_rowweighting_2_worker(
         const Instance& instance,
         Seed seed,
-        LocalSearch2OptionalParameters parameters,
-        LocalSearch2Output& output,
+        LocalSearchRowWeighting2OptionalParameters parameters,
+        LocalSearchRowWeighting2Output& output,
         Counter thread_id)
 {
     std::mt19937_64 generator(seed);
@@ -269,7 +269,7 @@ void localsearch_2_worker(
     parameters.info.output->mutex_sol.unlock();
 
     // Initialize local search structures.
-    std::vector<LocalSearch2Vertex> vertices(instance.vertex_number());
+    std::vector<LocalSearchRowWeighting2Vertex> vertices(instance.vertex_number());
     for (EdgeId e = 0; e < instance.edge_number(); ++e) {
         if (solution.covers(e) == 1) {
             if (!solution.contains(instance.edge(e).v1))
@@ -428,15 +428,15 @@ void localsearch_2_worker(
     }
 }
 
-LocalSearch2Output stablesolver::localsearch_2(
+LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
         const Instance& instance,
         std::mt19937_64& generator,
-        LocalSearch2OptionalParameters parameters)
+        LocalSearchRowWeighting2OptionalParameters parameters)
 {
-    VER(parameters.info, "*** localsearch_2 ***" << std::endl);
+    VER(parameters.info, "*** localsearch_rowweighting_2 ***" << std::endl);
 
     // Compute initial greedy solution.
-    LocalSearch2Output output(instance, parameters.info);
+    LocalSearchRowWeighting2Output output(instance, parameters.info);
     Solution solution = greedy_gwmin(instance).solution;
     std::stringstream ss;
     ss << "initial solution";
@@ -445,7 +445,7 @@ LocalSearch2Output stablesolver::localsearch_2(
     auto seeds = optimizationtools::bob_floyd(parameters.thread_number, std::numeric_limits<Seed>::max(), generator);
     std::vector<std::thread> threads;
     for (Counter thread_id = 0; thread_id < parameters.thread_number; ++thread_id)
-        threads.push_back(std::thread(localsearch_2_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
+        threads.push_back(std::thread(localsearch_rowweighting_2_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
 
     for (Counter thread_id = 0; thread_id < parameters.thread_number; ++thread_id)
         threads[thread_id].join();

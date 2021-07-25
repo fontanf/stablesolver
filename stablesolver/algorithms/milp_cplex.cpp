@@ -1,6 +1,6 @@
 #if CPLEX_FOUND
 
-#include "stablesolver/algorithms/branchandcut_cplex.hpp"
+#include "stablesolver/algorithms/milp_cplex.hpp"
 
 #include "cliquesolver/algorithms/greedy.hpp"
 
@@ -10,7 +10,7 @@ using namespace stablesolver;
 
 ILOSTLBEGIN
 
-BranchAndCutCplexOutput& BranchAndCutCplexOutput::algorithm_end(Info& info)
+MilpCplexOutput& MilpCplexOutput::algorithm_end(Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);
@@ -20,8 +20,8 @@ BranchAndCutCplexOutput& BranchAndCutCplexOutput::algorithm_end(Info& info)
 
 ILOMIPINFOCALLBACK4(loggingCallback1,
                     const Instance&, instance,
-                    BranchAndCutCplexOptionalParameters&, parameters,
-                    BranchAndCutCplexOutput&, output,
+                    MilpCplexOptionalParameters&, parameters,
+                    MilpCplexOutput&, output,
                     IloNumVarArray&, x)
 {
     VertexId ub = std::floor(getBestObjValue() + TOL);
@@ -43,12 +43,12 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
 
 /************************** Model 1, |E| constraints **************************/
 
-BranchAndCutCplexOutput stablesolver::branchandcut_1_cplex(
-        const Instance& instance, BranchAndCutCplexOptionalParameters parameters)
+MilpCplexOutput stablesolver::milp_1_cplex(
+        const Instance& instance, MilpCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_1_cplex ***" << std::endl);
+    VER(parameters.info, "*** milp_1_cplex ***" << std::endl);
 
-    BranchAndCutCplexOutput output(instance, parameters.info);
+    MilpCplexOutput output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
@@ -120,12 +120,12 @@ BranchAndCutCplexOutput stablesolver::branchandcut_1_cplex(
 
 /************************** Model 2, |V| constraints **************************/
 
-BranchAndCutCplexOutput stablesolver::branchandcut_2_cplex(
-        const Instance& instance, BranchAndCutCplexOptionalParameters parameters)
+MilpCplexOutput stablesolver::milp_2_cplex(
+        const Instance& instance, MilpCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_2_cplex ***" << std::endl);
+    VER(parameters.info, "*** milp_2_cplex ***" << std::endl);
 
-    BranchAndCutCplexOutput output(instance, parameters.info);
+    MilpCplexOutput output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);
@@ -202,12 +202,12 @@ BranchAndCutCplexOutput stablesolver::branchandcut_2_cplex(
 
 /************************** Model 1, |E| constraints **************************/
 
-BranchAndCutCplexOutput stablesolver::branchandcut_3_cplex(
-        const Instance& instance, BranchAndCutCplexOptionalParameters parameters)
+MilpCplexOutput stablesolver::milp_3_cplex(
+        const Instance& instance, MilpCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** branchandcut_3_cplex ***" << std::endl);
+    VER(parameters.info, "*** milp_3_cplex ***" << std::endl);
 
-    BranchAndCutCplexOutput output(instance, parameters.info);
+    MilpCplexOutput output(instance, parameters.info);
 
     IloEnv env;
     IloModel model(env);

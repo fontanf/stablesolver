@@ -14,31 +14,30 @@ To solve a stable (resp. clique) problem, it is possible to use a clique (resp. 
 
 The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Problem by just considering the vertices outside of the solution.
 
-Stable Solver:
+### Stable Solver
 
-* Greedy algorithms, see "A note on greedy algorithms for the maximum weighted independent set problem" (Sakai et al., 2001):
-  * `-a greedy_gwmin`
-  * `-a greedy_gwmax`
-  * `-a greedy_gwmin2`
-* Branch-and-cut (CPLEX)
-  * Model 1, `|E|` constraints `-a branchandcut_1_cplex`
-  * Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) `-a branchandcut_2_cplex`
-  * Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) (seems useless since solvers already detect and merge clique constraints) `-a branchandcut_3_cplex`
-* Decision diagram
-  * Restricted decision diagram (solution) `-a "decisiondiagram_restricted --width 100"` :x:
-  * Relaxed decision diagram (bound) `-a "decisiondiagram_relaxed --width 100"` :x:
-  * Decision Diagrams by Separation (bound and solution at the end) `-a "decisiondiagram_separation"` :x:
-  * Decision diagram based branch-and-bound `-a "branchandbound_decisiondiagram"` :x:
-* Row weighting local search (unweighted only)
-  * based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) `-a "localsearch_1 --threads 4 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
-  * based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) `-a "localsearch_2 --threads 4 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
-* Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) `-a "largeneighborhoodsearch"`
+Greedy algorithms, see "A note on greedy algorithms for the maximum weighted independent set problem" (Sakai et al., 2001) [DOI](https://doi.org/10.1016/S0166-218X(02)00205-6)
+* `-a greedy_gwmin`
+* `-a greedy_gwmax`
+* `-a greedy_gwmin2`
 
-Clique Solver:
+Mixed-Integer Linear Programs (implemented with CPLEX)
+* Model 1, `|E|` constraints `-a milp_1_cplex`
+* Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) [DOI](https://doi.org/10.1016/0377-2217(94)90252-6) `-a milp_2_cplex`
+* Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) [DOI](https://doi.org/10.1287/ijoc.2016.0742) (seems useless since solvers already detect and merge clique constraints) `-a milp_3_cplex`
 
-* Greedy algorithms:
-  * `-a greedy_gwmin`, adapted from the stable version, same complexity
-* Branch-and-bound :x:
+Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch --threads 3"` :heavy_check_mark:
+
+Row weighting local search (unweighted only)
+* based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) `-a "localsearch_rowweighting_1 --threads 4 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+* based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) `-a "localsearch_rowweighting_2 --threads 4 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+
+Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) `-a "largeneighborhoodsearch"`
+
+### Clique Solver
+
+Greedy algorithms:
+* `-a greedy_gwmin`, adapted from the stable version, same complexity
 
 ## Usage (command line)
 
@@ -54,6 +53,6 @@ Run:
 ```shell
 ./bazel-bin/stablesolver/main -v -i "data/graphstable/1-FullIns_3.col" -a greedy_dsatur -c solution.txt
 ./bazel-bin/stablesolver/main -v -i "data/graphstable/r1000.5.col" -a "localsearch --threads 3"
-./bazel-bin/stablesolver/main -v -i "data/graphstable/1-FullIns_3.col" -a branchandcut_assignment_cplex -t 60 -c solution.txt
+./bazel-bin/stablesolver/main -v -i "data/graphstable/1-FullIns_3.col" -a milp_assignment_cplex -t 60 -c solution.txt
 ```
 

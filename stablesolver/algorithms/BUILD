@@ -5,18 +5,16 @@ cc_library(
         name = "algorithms",
         hdrs = [
                 "greedy.hpp",
-                "branchandcut_cplex.hpp",
-                "localsearch.hpp",
+                "milp_cplex.hpp",
+                "localsearch_rowweighting.hpp",
                 "largeneighborhoodsearch.hpp",
-                "decisiondiagram.hpp",
                 "algorithms.hpp",
         ],
         srcs = [
                 "greedy.cpp",
-                "branchandcut_cplex.cpp",
-                "localsearch.cpp",
+                "milp_cplex.cpp",
+                "localsearch_rowweighting.cpp",
                 "largeneighborhoodsearch.cpp",
-                "decisiondiagram.cpp",
                 "algorithms.cpp",
         ],
         deps = [
