@@ -100,7 +100,7 @@ private:
     std::vector<Edge> edges_;
     std::vector<Component> components_;
     VertexId degree_max_ = 0;
-    Weight weight_total_;
+    Weight weight_total_ = 0;
 
     /**
      * Private methods.

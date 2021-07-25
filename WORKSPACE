@@ -34,13 +34,20 @@ cc_library(
 git_repository(
     name = "optimizationtools",
     remote = "https://github.com/fontanf/optimizationtools.git",
-    commit = "b51d64c7428acfde1ad8798404b1be9b413a1248",
-    shallow_since = "1609062649 +0100",
+    commit = "3cd4a85aeaedc3e23c7fb884ad0c2808fc1aa99d",
+    shallow_since = "1627113356 +0200",
 )
 
 local_repository(
     name = "optimizationtools_",
     path = "/home/florian/Dev/optimizationtools/",
+)
+
+git_repository(
+    name = "localsearchsolver",
+    remote = "https://github.com/fontanf/localsearchsolver.git",
+    commit = "bc86ae710628dde4d7485f0efa19feebe5154ab3",
+    shallow_since = "1627152552 +0200",
 )
 
 new_local_repository(

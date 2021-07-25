@@ -5,6 +5,24 @@
 using namespace stablesolver;
 namespace po = boost::program_options;
 
+LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
+{
+    LocalSearchOptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("threads,t", po::value<Counter>(&parameters.thread_number), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (const po::required_option& e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
 LocalSearchRowWeighting1OptionalParameters read_localsearch_rowweighting_1_args(const std::vector<char*>& argv)
 {
     LocalSearchRowWeighting1OptionalParameters parameters;
@@ -97,6 +115,10 @@ Output stablesolver::run(
         return milp_3_cplex(instance, parameters);
 #endif
 
+    } else if (algorithm_args[0] == "localsearch") {
+        auto parameters = read_localsearch_args(algorithm_argv);
+        parameters.info = info;
+        return localsearch(instance, generator, parameters);
     } else if (algorithm_args[0] == "localsearch_rowweighting_1") {
         auto parameters = read_localsearch_rowweighting_1_args(algorithm_argv);
         parameters.info = info;

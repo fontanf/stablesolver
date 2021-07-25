@@ -4,6 +4,7 @@
 
 #include "stablesolver/algorithms/greedy.hpp"
 #include "stablesolver/algorithms/milp_cplex.hpp"
+#include "stablesolver/algorithms/localsearch.hpp"
 #include "stablesolver/algorithms/localsearch_rowweighting.hpp"
 #include "stablesolver/algorithms/largeneighborhoodsearch.hpp"
 
