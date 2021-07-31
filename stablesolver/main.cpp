@@ -63,20 +63,20 @@ int main(int argc, char *argv[])
 
     Info info = Info()
         .set_verbose(vm.count("verbose"))
-        .set_timelimit(time_limit)
-        .set_certfile(certificate_path)
-        .set_outputfile(output_path)
-        .set_onlywriteattheend(false)
-        .set_logfile(log_path)
+        .set_time_limit(time_limit)
+        .set_certificate_path(certificate_path)
+        .set_json_output_path(output_path)
+        .set_only_write_at_the_end(false)
+        .set_log_path(log_path)
         .set_log2stderr(vm.count("log2stderr"))
-        .set_loglevelmax(loglevelmax)
+        .set_maximum_log_level(loglevelmax)
         ;
 
-    VER(info, "Vertices:    " << instance.vertex_number() << std::endl);
-    VER(info, "Edges:       " << instance.edge_number() << std::endl);
+    VER(info, "Vertices:    " << instance.number_of_vertices() << std::endl);
+    VER(info, "Edges:       " << instance.number_of_edges() << std::endl);
     VER(info, "Degree max:  " << instance.degree_max() << std::endl);
     VER(info, "Components: ");
-    for (ComponentId c = 0; c < instance.component_number(); ++c)
+    for (ComponentId c = 0; c < instance.number_of_components(); ++c)
         VER(info, " " << c << "/" << instance.component(c).vertices.size() << "/" << instance.component(c).edges.size());
     VER(info, std::endl);
 

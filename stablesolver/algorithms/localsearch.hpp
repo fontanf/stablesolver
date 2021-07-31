@@ -28,7 +28,7 @@ struct LocalSearchOptionalParameters
 {
     Info info = Info();
 
-    Counter thread_number = 1;
+    Counter number_of_threads = 1;
 };
 
 struct LocalSearchOutput: Output

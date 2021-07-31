@@ -23,15 +23,15 @@ public:
     bool operator==(const Solution& solution);
 
     inline const Instance& instance() const { return instance_; }
-    inline VertexId vertex_number() const { return vertices_.size(); }
+    inline VertexId number_of_vertices() const { return vertices_.size(); }
     inline Weight weight() const { return weight_; }
     inline Weight weight(ComponentId c) const { return component_weights_[c]; }
     inline Weight penalty(EdgeId e) const { return penalties_[e]; }
     inline Weight penalty() const { return penalty_; }
     inline int8_t contains(VertexId v) const { return vertices_.contains(v); }
     inline int8_t covers(EdgeId e) const { return edges_[e]; }
-    inline bool feasible() const { return (edges_.element_number(2) == 0); }
-    inline bool feasible(ComponentId c) const { return component_conflict_numbers_[c] == 0; }
+    inline bool feasible() const { return (edges_.number_of_elements(2) == 0); }
+    inline bool feasible(ComponentId c) const { return component_number_of_conflictss_[c] == 0; }
 
     const optimizationtools::IndexedSet& vertices() const { return vertices_; };
     const optimizationtools::DoublyIndexedMap& edges() const { return edges_; }
@@ -50,7 +50,7 @@ private:
 
     optimizationtools::IndexedSet vertices_;
     optimizationtools::DoublyIndexedMap edges_;
-    std::vector<EdgeId> component_conflict_numbers_;
+    std::vector<EdgeId> component_number_of_conflictss_;
     std::vector<Weight> component_weights_;
     std::vector<Weight> penalties_;
     Weight weight_ = 0;
@@ -61,7 +61,7 @@ private:
 void Solution::add(VertexId v)
 {
     assert(v >= 0);
-    assert(v < instance().vertex_number());
+    assert(v < instance().number_of_vertices());
     assert(!contains(v));
     ComponentId c = instance().vertex(v).component;
     vertices_.add(v);
@@ -69,7 +69,7 @@ void Solution::add(VertexId v)
         edges_.set(edge.e, edges_[edge.e] + 1);
         if (covers(edge.e) == 2) {
             penalty_ += penalties_[edge.e];
-            component_conflict_numbers_[c]++;
+            component_number_of_conflictss_[c]++;
         }
         assert(covers(edge.e) < 2 || (contains(instance().edge(edge.e).v1) && contains(instance().edge(edge.e).v2)));
     }
@@ -80,13 +80,13 @@ void Solution::add(VertexId v)
 void Solution::remove(VertexId v)
 {
     assert(v >= 0);
-    assert(v < instance().vertex_number());
+    assert(v < instance().number_of_vertices());
     assert(contains(v));
     ComponentId c = instance().vertex(v).component;
     for (const auto& edge: instance().vertex(v).edges) {
         if (covers(edge.e) == 2) {
             penalty_ -= penalties_[edge.e];
-            component_conflict_numbers_[c]--;
+            component_number_of_conflictss_[c]--;
         }
         edges_.set(edge.e, edges_[edge.e] - 1);
         assert(covers(edge.e) < 2 || (contains(instance().edge(edge.e).v1) && contains(instance().edge(edge.e).v2)));

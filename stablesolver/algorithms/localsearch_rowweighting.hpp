@@ -9,9 +9,9 @@ namespace stablesolver
 
 struct LocalSearchRowWeighting1OptionalParameters
 {
-    Counter thread_number = 3;
-    Counter iteration_limit = -1;
-    Counter iteration_without_improvment_limit = -1;
+    Counter number_of_threads = 3;
+    Counter maximum_number_of_iterations = -1;
+    Counter maximum_number_of_iterations_without_improvement = -1;
     Info info = Info();
 };
 
@@ -30,9 +30,9 @@ LocalSearchRowWeighting1Output localsearch_rowweighting_1(
 
 struct LocalSearchRowWeighting2OptionalParameters
 {
-    Counter thread_number = 3;
-    Counter iteration_limit = -1;
-    Counter iteration_without_improvment_limit = -1;
+    Counter number_of_threads = 3;
+    Counter maximum_number_of_iterations = -1;
+    Counter maximum_number_of_iterations_without_improvement = -1;
     Info info = Info();
 };
 

@@ -1,6 +1,6 @@
 #include "stablesolver/algorithms/localsearch.hpp"
 
-#include "localsearchsolver/a_star.hpp"
+#include "localsearchsolver/a_star_local_search.hpp"
 
 using namespace stablesolver;
 using namespace localsearchsolver;
@@ -79,8 +79,8 @@ public:
 
     CompactSolution solution2compact(const Solution& solution)
     {
-        std::vector<bool> vertices(instance_.vertex_number(), false);
-        for (VertexId v = 0; v < instance_.vertex_number(); ++v)
+        std::vector<bool> vertices(instance_.number_of_vertices(), false);
+        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
             if (solution.vertices[v].in)
                 vertices[v] = true;
         return vertices;
@@ -89,7 +89,7 @@ public:
     Solution compact2solution(const CompactSolution& compact_solution)
     {
         auto solution = empty_solution();
-        for (VertexId v = 0; v < instance_.vertex_number(); ++v)
+        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
             if (compact_solution[v])
                 add(solution, v);
         return solution;
@@ -111,10 +111,10 @@ public:
             Parameters parameters):
         instance_(instance),
         parameters_(parameters),
-        vertices_(instance.vertex_number()),
-        neighbors_(instance_.vertex_number()),
-        free_vertices_(instance_.vertex_number()),
-        free_vertices_2_(instance_.vertex_number())
+        vertices_(instance.number_of_vertices()),
+        neighbors_(instance_.number_of_vertices()),
+        free_vertices_(instance_.number_of_vertices()),
+        free_vertices_2_(instance_.number_of_vertices())
     {
         // Initialize vertices_.
         std::iota(vertices_.begin(), vertices_.end(), 0);
@@ -132,7 +132,7 @@ public:
     inline Solution empty_solution() const
     {
         Solution solution;
-        solution.vertices.resize(instance_.vertex_number());
+        solution.vertices.resize(instance_.number_of_vertices());
         return solution;
     }
 
@@ -361,7 +361,7 @@ public:
             const Solution& solution)
     {
         os << "vertices:";
-        for (VertexId v = 0; v < instance_.vertex_number(); ++v)
+        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
             if (contains(solution, v))
                 os << " " << v;
         os << std::endl;
@@ -453,25 +453,25 @@ LocalSearchOutput stablesolver::localsearch(
     LocalScheme local_scheme(instance, parameters_local_scheme);
 
     // Run A*.
-    AStarOptionalParameters<LocalScheme> parameters_a_star;
+    AStarLocalSearchOptionalParameters<LocalScheme> parameters_a_star;
     parameters_a_star.info.set_verbose(false);
-    parameters_a_star.info.set_timelimit(parameters.info.remaining_time());
-    parameters_a_star.thread_number_1 = 1;
-    parameters_a_star.thread_number_2 = parameters.thread_number;
+    parameters_a_star.info.set_time_limit(parameters.info.remaining_time());
+    parameters_a_star.number_of_threads_1 = 1;
+    parameters_a_star.number_of_threads_2 = parameters.number_of_threads;
     parameters_a_star.initial_solution_ids = std::vector<Counter>(
-            parameters_a_star.thread_number_2, 0);
+            parameters_a_star.number_of_threads_2, 0);
     parameters_a_star.new_solution_callback
         = [&instance, &parameters, &output](
                 const LocalScheme::Solution& solution)
         {
             Solution sol(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (solution.vertices[v].in)
                     sol.add(v);
             std::stringstream ss;
             output.update_solution(sol, ss, parameters.info);
         };
-    a_star(local_scheme, parameters_a_star);
+    a_star_local_search(local_scheme, parameters_a_star);
 
     return output.algorithm_end(parameters.info);
 }

@@ -34,7 +34,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
         Solution solution(instance);
         IloNumArray val(x.getEnv());
         getIncumbentValues(val, x);
-        for (VertexId v = 0; v < instance.vertex_number(); ++v)
+        for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
             if (val[v] > 0.5)
                 solution.add(v);
         output.update_solution(solution, std::stringstream(""), parameters.info);
@@ -55,17 +55,17 @@ MilpCplexOutput stablesolver::milp_1_cplex(
 
     // Variables
     // x[v] == 1 iff vertex is chosen.
-    IloNumVarArray x(env, instance.vertex_number(), 0, 1, ILOBOOL);
+    IloNumVarArray x(env, instance.number_of_vertices(), 0, 1, ILOBOOL);
 
     // Objective
     IloExpr expr(env);
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         expr += instance.vertex(v).weight * x[v];
     IloObjective obj = IloMaximize(env, expr);
     model.add(obj);
 
     // Constraints
-    for (EdgeId e = 0; e < instance.edge_number(); ++e)
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
         model.add(x[instance.edge(e).v1] + x[instance.edge(e).v2] <= 1);
 
     IloCplex cplex(model);
@@ -78,7 +78,7 @@ MilpCplexOutput stablesolver::milp_1_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
@@ -92,7 +92,7 @@ MilpCplexOutput stablesolver::milp_1_cplex(
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (cplex.getValue(x[v]) > 0.5)
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
@@ -101,7 +101,7 @@ MilpCplexOutput stablesolver::milp_1_cplex(
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (cplex.getValue(x[v]) > 0.5)
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
@@ -132,17 +132,17 @@ MilpCplexOutput stablesolver::milp_2_cplex(
 
     // Variables
     // x[v] == 1 iff vertex is chosen.
-    IloNumVarArray x(env, instance.vertex_number(), 0, 1, ILOBOOL);
+    IloNumVarArray x(env, instance.number_of_vertices(), 0, 1, ILOBOOL);
 
     // Objective
     IloExpr expr(env);
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         expr += instance.vertex(v).weight * x[v];
     IloObjective obj = IloMaximize(env, expr);
     model.add(obj);
 
     // Constraints
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         IloExpr expr(env);
         expr += instance.degree(v) * x[v];
         for (const auto& edge: instance.vertex(v).edges)
@@ -160,7 +160,7 @@ MilpCplexOutput stablesolver::milp_2_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
@@ -174,7 +174,7 @@ MilpCplexOutput stablesolver::milp_2_cplex(
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (cplex.getValue(x[v]) > 0.5)
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
@@ -183,7 +183,7 @@ MilpCplexOutput stablesolver::milp_2_cplex(
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (cplex.getValue(x[v]) > 0.5)
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
@@ -214,21 +214,21 @@ MilpCplexOutput stablesolver::milp_3_cplex(
 
     // Variables
     // x[v] == 1 iff vertex is chosen.
-    IloNumVarArray x(env, instance.vertex_number(), 0, 1, ILOBOOL);
+    IloNumVarArray x(env, instance.number_of_vertices(), 0, 1, ILOBOOL);
 
     // Objective
     IloExpr expr(env);
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         expr += instance.vertex(v).weight * x[v];
     IloObjective obj = IloMaximize(env, expr);
     model.add(obj);
 
     // Constraints
-    optimizationtools::IndexedSet edge_set(instance.edge_number());
-    optimizationtools::IndexedSet vertex_set_1(instance.vertex_number());
-    optimizationtools::IndexedSet vertex_set_2(instance.vertex_number());
-    std::vector<EdgeId> edge_indices(instance.edge_number(), 0);
-    for (EdgeId e = 0; e < instance.edge_number(); ++e) {
+    optimizationtools::IndexedSet edge_set(instance.number_of_edges());
+    optimizationtools::IndexedSet vertex_set_1(instance.number_of_vertices());
+    optimizationtools::IndexedSet vertex_set_2(instance.number_of_vertices());
+    std::vector<EdgeId> edge_indices(instance.number_of_edges(), 0);
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
         if (edge_set.contains(e))
             continue;
         // Compute vertices
@@ -247,7 +247,7 @@ MilpCplexOutput stablesolver::milp_3_cplex(
         for (auto it = vertex_set_2.begin(); it != vertex_set_2.end(); ++it) {
             for (const auto& edge: instance.vertex(*it).edges) {
                 if (edge.v > *it && vertex_set_2.contains(edge.v)) {
-                    edge_indices[instance_clique.edge_number()] = edge.e;
+                    edge_indices[instance_clique.number_of_edges()] = edge.e;
                     instance_clique.add_edge(vertex_set_2.position(*it), vertex_set_2.position(edge.v));
                 }
             }
@@ -286,7 +286,7 @@ MilpCplexOutput stablesolver::milp_3_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.timelimit != std::numeric_limits<double>::infinity())
+    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
         cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
 
     // Callback
@@ -300,7 +300,7 @@ MilpCplexOutput stablesolver::milp_3_cplex(
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (cplex.getValue(x[v]) > 0.5)
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
@@ -309,7 +309,7 @@ MilpCplexOutput stablesolver::milp_3_cplex(
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.vertex_number(); ++v)
+            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
                 if (cplex.getValue(x[v]) > 0.5)
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);

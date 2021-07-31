@@ -10,7 +10,7 @@ LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& ar
     LocalSearchOptionalParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
-        ("threads,t", po::value<Counter>(&parameters.thread_number), "")
+        ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
@@ -28,7 +28,7 @@ LocalSearchRowWeighting1OptionalParameters read_localsearch_rowweighting_1_args(
     LocalSearchRowWeighting1OptionalParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
-        ("threads,t", po::value<Counter>(&parameters.thread_number), "")
+        ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
@@ -46,7 +46,7 @@ LocalSearchRowWeighting2OptionalParameters read_localsearch_rowweighting_2_args(
     LocalSearchRowWeighting2OptionalParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
-        ("threads,t", po::value<Counter>(&parameters.thread_number), "")
+        ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
@@ -64,8 +64,8 @@ LargeNeighborhoodSearchOptionalParameters read_largeneighborhoodsearch_args(cons
     LargeNeighborhoodSearchOptionalParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
-        ("iteration-limit,i", po::value<Counter>(&parameters.iteration_limit), "")
-        ("iteration-without-improvment-limit,w", po::value<Counter>(&parameters.iteration_without_improvment_limit), "")
+        ("iteration-limit,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
+        ("iteration-without-improvment-limit,w", po::value<Counter>(&parameters.maximum_number_of_iterations_without_improvement), "")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);

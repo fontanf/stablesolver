@@ -31,11 +31,11 @@ Instance::Instance(std::string filepath, std::string format)
     compute_components();
 }
 
-Instance::Instance(VertexId vertex_number):
-    vertices_(vertex_number),
-    weight_total_(vertex_number)
+Instance::Instance(VertexId number_of_vertices):
+    vertices_(number_of_vertices),
+    weight_total_(number_of_vertices)
 {
-    for (VertexId v = 0; v < vertex_number; ++v)
+    for (VertexId v = 0; v < number_of_vertices; ++v)
         vertices_[v].id = v;
 }
 
@@ -76,9 +76,9 @@ void Instance::set_weight(VertexId v, Weight w)
 
 void Instance::set_unweighted()
 {
-    for (VertexId v = 0; v < vertex_number(); ++v)
+    for (VertexId v = 0; v < number_of_vertices(); ++v)
         vertices_[v].weight = 1;
-    weight_total_ = vertex_number();
+    weight_total_ = number_of_vertices();
 }
 
 void Instance::read_dimacs1992(std::ifstream& file)
@@ -93,9 +93,9 @@ void Instance::read_dimacs1992(std::ifstream& file)
             if (name_ == "")
                 name_ = line.back();
         } else if (line[0] == "p") {
-            VertexId vertex_number = stol(line[2]);
-            vertices_.resize(vertex_number);
-            for (VertexId v = 0; v < vertex_number; ++v)
+            VertexId number_of_vertices = stol(line[2]);
+            vertices_.resize(number_of_vertices);
+            for (VertexId v = 0; v < number_of_vertices; ++v)
                 vertices_[v].id = v;
         } else if (line[0] == "n") {
             VertexId v = stol(line[1]) - 1;
@@ -115,17 +115,17 @@ void Instance::read_dimacs2010(std::ifstream& file)
     std::vector<std::string> line;
     bool first = true;
     VertexId v = -1;
-    while (v != vertex_number()) {
+    while (v != number_of_vertices()) {
         getline(file, tmp);
         line = optimizationtools::split(tmp, ' ');
         if (line.size() == 0 || tmp[0] == '%')
             continue;
         if (first) {
-            VertexId vertex_number = stol(line[0]);
-            vertices_.resize(vertex_number);
-            for (VertexId v = 0; v < vertex_number; ++v)
+            VertexId number_of_vertices = stol(line[0]);
+            vertices_.resize(number_of_vertices);
+            for (VertexId v = 0; v < number_of_vertices; ++v)
                 vertices_[v].id = v;
-            weight_total_ = vertex_number;
+            weight_total_ = number_of_vertices;
             first = false;
             v = 0;
         } else {
@@ -166,10 +166,10 @@ void Instance::read_chaco(std::ifstream& file)
 
     getline(file, tmp);
     line = optimizationtools::split(tmp, ' ');
-    VertexId vertex_number = stol(line[0]);
-    vertices_.resize(vertex_number);
+    VertexId number_of_vertices = stol(line[0]);
+    vertices_.resize(number_of_vertices);
 
-    for (VertexId v = 0; v < vertex_number; ++v) {
+    for (VertexId v = 0; v < number_of_vertices; ++v) {
         getline(file, tmp);
         line = optimizationtools::split(tmp, ' ');
         for (std::string str: line) {
@@ -182,10 +182,10 @@ void Instance::read_chaco(std::ifstream& file)
 
 Instance Instance::complementary()
 {
-    Instance instance(vertex_number());
-    optimizationtools::IndexedSet neighbors(vertex_number());
+    Instance instance(number_of_vertices());
+    optimizationtools::IndexedSet neighbors(number_of_vertices());
 
-    for (VertexId v = 0; v < vertex_number(); ++v){
+    for (VertexId v = 0; v < number_of_vertices(); ++v){
         instance.set_weight(v, vertex(v).weight);
         neighbors.clear();
         for (const auto& edge: vertex(v).edges)
@@ -202,10 +202,10 @@ void Instance::compute_components()
 {
     for (ComponentId c = 0;; ++c) {
         VertexId v = 0;
-        while (v < vertex_number()
+        while (v < number_of_vertices()
                 && (vertex(v).component != -1))
             v++;
-        if (v == vertex_number())
+        if (v == number_of_vertices())
             break;
         components_.push_back(Component());
         components_.back().id = c;
@@ -224,10 +224,10 @@ void Instance::compute_components()
         }
     }
 
-    for (VertexId v = 0; v < vertex_number(); ++v)
+    for (VertexId v = 0; v < number_of_vertices(); ++v)
         if (vertex(v).component != -1)
             components_[vertex(v).component].vertices.push_back(v);
-    for (EdgeId e = 0; e < edge_number(); ++e)
+    for (EdgeId e = 0; e < number_of_edges(); ++e)
         components_[edge(e).component].edges.push_back(e);
 }
 

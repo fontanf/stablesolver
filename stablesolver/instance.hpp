@@ -64,7 +64,7 @@ public:
     Instance(std::string filepath, std::string format);
 
     /** Manual constructor. */
-    Instance(VertexId vertex_number);
+    Instance(VertexId number_of_vertices);
     void set_weight(VertexId v, Weight w);
     void add_edge(VertexId v1, VertexId v2);
     void set_unweighted();
@@ -74,9 +74,9 @@ public:
 
     /** Getters. */
 
-    inline VertexId        vertex_number() const { return vertices_.size(); }
-    inline EdgeId            edge_number() const { return edges_.size(); }
-    inline ComponentId  component_number() const { return components_.size(); }
+    inline VertexId       number_of_vertices() const { return vertices_.size(); }
+    inline EdgeId            number_of_edges() const { return edges_.size(); }
+    inline ComponentId  number_of_components() const { return components_.size(); }
 
     inline const Vertex& vertex(VertexId v) const { return vertices_[v]; }
     inline const Edge& edge(EdgeId e) const { return edges_[e]; }

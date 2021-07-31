@@ -10,11 +10,11 @@ Output stablesolver::greedy_gwmin(const Instance& instance, Info info)
     Output output(instance, info);
     Solution solution(instance);
 
-    std::vector<double> vertices_values(instance.vertex_number(), 0);
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    std::vector<double> vertices_values(instance.number_of_vertices(), 0);
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         vertices_values[v] = (double)instance.vertex(v).weight / (instance.degree(v) + 1);
 
-    std::vector<VertexId> sorted_vertices(instance.vertex_number(), 0);
+    std::vector<VertexId> sorted_vertices(instance.number_of_vertices(), 0);
     std::iota(sorted_vertices.begin(), sorted_vertices.end(), 0);
     std::sort(sorted_vertices.begin(), sorted_vertices.end(),
             [&vertices_values](VertexId v1, VertexId v2) -> bool
@@ -22,7 +22,7 @@ Output stablesolver::greedy_gwmin(const Instance& instance, Info info)
             return vertices_values[v1] > vertices_values[v2];
         });
 
-    std::vector<int8_t> available_vertices(instance.vertex_number(), 1);
+    std::vector<int8_t> available_vertices(instance.number_of_vertices(), 1);
     for (VertexId v: sorted_vertices) {
         if (!available_vertices[v])
             continue;
@@ -48,9 +48,9 @@ Output stablesolver::greedy_gwmax(const Instance& instance, Info info)
             std::numeric_limits<double>::infinity();
         return std::pair<double, VertexId>{val, v};
     };
-    optimizationtools::IndexedBinaryHeap<std::pair<double, VertexId>> heap(instance.vertex_number(), f);
+    optimizationtools::IndexedBinaryHeap<std::pair<double, VertexId>> heap(instance.number_of_vertices(), f);
 
-    std::vector<uint8_t> removed_vertices(instance.vertex_number(), 0);
+    std::vector<uint8_t> removed_vertices(instance.number_of_vertices(), 0);
     for (;;) {
         auto p = heap.top();
         if (p.second.first == std::numeric_limits<double>::infinity())
@@ -71,7 +71,7 @@ Output stablesolver::greedy_gwmax(const Instance& instance, Info info)
     }
 
     Solution solution(instance);
-    for (VertexId v = 0; v < instance.vertex_number(); ++v)
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
         if (!removed_vertices[v])
             solution.add(v);
 
@@ -85,8 +85,8 @@ Output stablesolver::greedy_gwmin2(const Instance& instance, Info info)
     Output output(instance, info);
     Solution solution(instance);
 
-    std::vector<double> vertices_values(instance.vertex_number(), 0);
-    for (VertexId v = 0; v < instance.vertex_number(); ++v) {
+    std::vector<double> vertices_values(instance.number_of_vertices(), 0);
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         Weight w = 0;
         for (const auto& edge: instance.vertex(v).edges)
             w += instance.vertex(edge.v).weight;
@@ -95,7 +95,7 @@ Output stablesolver::greedy_gwmin2(const Instance& instance, Info info)
             std::numeric_limits<double>::infinity();
     }
 
-    std::vector<VertexId> sorted_vertices(instance.vertex_number(), 0);
+    std::vector<VertexId> sorted_vertices(instance.number_of_vertices(), 0);
     std::iota(sorted_vertices.begin(), sorted_vertices.end(), 0);
     std::sort(sorted_vertices.begin(), sorted_vertices.end(),
             [&vertices_values](VertexId v1, VertexId v2) -> bool
@@ -103,7 +103,7 @@ Output stablesolver::greedy_gwmin2(const Instance& instance, Info info)
             return vertices_values[v1] > vertices_values[v2];
         });
 
-    std::vector<int8_t> available_vertices(instance.vertex_number(), 1);
+    std::vector<int8_t> available_vertices(instance.number_of_vertices(), 1);
     for (VertexId v: sorted_vertices) {
         if (!available_vertices[v])
             continue;

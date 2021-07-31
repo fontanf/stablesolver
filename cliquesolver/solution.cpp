@@ -6,15 +6,15 @@ using namespace cliquesolver;
 
 Solution::Solution(const Instance& instance):
     instance_(instance),
-    vertices_(instance.vertex_number()),
-    neighbors_tmp_(instance.vertex_number())
+    vertices_(instance.number_of_vertices()),
+    neighbors_tmp_(instance.number_of_vertices())
 {
 }
 
 Solution::Solution(const Instance& instance, std::string filepath):
     instance_(instance),
-    vertices_(instance.vertex_number()),
-    neighbors_tmp_(instance.vertex_number())
+    vertices_(instance.number_of_vertices()),
+    neighbors_tmp_(instance.number_of_vertices())
 {
     if (filepath.empty())
         return;
@@ -62,7 +62,7 @@ void Solution::write(std::string filepath)
         return;
     }
 
-    //cert << vertex_number() << std::endl;
+    //cert << number_of_vertices() << std::endl;
     for (VertexId v: vertices())
         cert << v << " ";
     cert.close();
@@ -70,7 +70,7 @@ void Solution::write(std::string filepath)
 
 std::ostream& cliquesolver::operator<<(std::ostream& os, const Solution& solution)
 {
-    os << "n " << solution.vertex_number()
+    os << "n " << solution.number_of_vertices()
         << " w " << solution.weight()
         << std::endl;
     for (VertexId v: solution.vertices())
@@ -108,8 +108,8 @@ void Output::print(Info& info, const std::stringstream& s) const
     VER(info, std::left << std::setw(12) << gap);
     VER(info, s.str() << std::endl);
 
-    if (!info.output->onlywriteattheend)
-        info.write_ini();
+    if (!info.output->only_write_at_the_end)
+        info.write_json_output();
 }
 
 void Output::update_solution(
@@ -117,10 +117,10 @@ void Output::update_solution(
         const std::stringstream& s,
         Info& info)
 {
-    info.output->mutex_sol.lock();
+    info.output->mutex_solutions.lock();
 
     if (solution_new.feasible() && solution.weight() < solution_new.weight()) {
-        for (VertexId v = 0; v < solution.instance().vertex_number(); ++v) {
+        for (VertexId v = 0; v < solution.instance().number_of_vertices(); ++v) {
             if (solution.contains(v) && !solution_new.contains(v)) {
                 solution.remove(v);
             } else if (!solution.contains(v) && solution_new.contains(v)) {
@@ -129,19 +129,19 @@ void Output::update_solution(
         }
         print(info, s);
 
-        info.output->sol_number++;
+        info.output->number_of_solutions++;
         double t = round(info.elapsed_time() * 10000) / 10000;
-        std::string sol_str = "Solution" + std::to_string(info.output->sol_number);
+        std::string sol_str = "Solution" + std::to_string(info.output->number_of_solutions);
         PUT(info, sol_str, "Value", solution.weight());
         PUT(info, sol_str, "Time", t);
         PUT(info, sol_str, "String", s.str());
-        if (!info.output->onlywriteattheend) {
-            info.write_ini();
-            solution.write(info.output->certfile);
+        if (!info.output->only_write_at_the_end) {
+            info.write_json_output();
+            solution.write(info.output->certificate_path);
         }
     }
 
-    info.output->mutex_sol.unlock();
+    info.output->mutex_solutions.unlock();
 }
 
 void Output::update_upper_bound(Weight upper_bound_new, const std::stringstream& s, Info& info)
@@ -149,23 +149,23 @@ void Output::update_upper_bound(Weight upper_bound_new, const std::stringstream&
     if (upper_bound <= upper_bound_new)
         return;
 
-    info.output->mutex_sol.lock();
+    info.output->mutex_solutions.lock();
 
     if (upper_bound > upper_bound_new) {
         upper_bound = upper_bound_new;
         print(info, s);
 
-        info.output->bnd_number++;
+        info.output->number_of_bounds++;
         double t = round(info.elapsed_time() * 10000) / 10000;
-        std::string sol_str = "Bound" + std::to_string(info.output->bnd_number);
+        std::string sol_str = "Bound" + std::to_string(info.output->number_of_bounds);
         PUT(info, sol_str, "Bound", upper_bound);
         PUT(info, sol_str, "Time", t);
         PUT(info, sol_str, "String", s.str());
-        if (!info.output->onlywriteattheend)
-            solution.write(info.output->certfile);
+        if (!info.output->only_write_at_the_end)
+            solution.write(info.output->certificate_path);
     }
 
-    info.output->mutex_sol.unlock();
+    info.output->mutex_solutions.unlock();
 }
 
 Output& Output::algorithm_end(Info& info)
@@ -185,8 +185,8 @@ Output& Output::algorithm_end(Info& info)
             << "Gap (%): " << gap << std::endl
             << "Time (s): " << t << std::endl);
 
-    info.write_ini();
-    solution.write(info.output->certfile);
+    info.write_json_output();
+    solution.write(info.output->certificate_path);
     return *this;
 }
 
@@ -199,7 +199,7 @@ Weight cliquesolver::algorithm_end(Weight upper_bound, Info& info)
             << "Bound: " << upper_bound << std::endl
             << "Time (s): " << t << std::endl);
 
-    info.write_ini();
+    info.write_json_output();
     return upper_bound;
 }
 

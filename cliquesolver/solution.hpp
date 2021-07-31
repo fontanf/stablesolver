@@ -23,7 +23,7 @@ public:
     bool operator==(const Solution& solution);
 
     inline const Instance& instance() const { return instance_; }
-    inline VertexId vertex_number() const { return vertices_.size(); }
+    inline VertexId number_of_vertices() const { return vertices_.size(); }
     inline Weight weight() const { return weight_; }
     inline Weight penalty() const { return penalty_; }
     inline int8_t contains(VertexId e) const { return vertices_.contains(e); }
@@ -50,7 +50,7 @@ private:
 void Solution::add(VertexId v)
 {
     assert(v >= 0);
-    assert(v < instance().vertex_number());
+    assert(v < instance().number_of_vertices());
     assert(!contains(v));
     neighbors_tmp_.clear();
     for (const auto& edge: instance().vertex(v).edges)
@@ -65,7 +65,7 @@ void Solution::add(VertexId v)
 void Solution::remove(VertexId v)
 {
     assert(v >= 0);
-    assert(v < instance().vertex_number());
+    assert(v < instance().number_of_vertices());
     assert(contains(v));
     vertices_.remove(v);
     weight_ -= instance().vertex(v).weight;

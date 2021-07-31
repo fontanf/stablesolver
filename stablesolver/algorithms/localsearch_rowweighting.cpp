@@ -46,16 +46,16 @@ void localsearch_rowweighting_1_worker(
         Counter thread_id)
 {
     std::mt19937_64 generator(seed);
-    parameters.info.output->mutex_sol.lock();
+    parameters.info.output->mutex_solutions.lock();
     Solution solution = output.solution;
-    parameters.info.output->mutex_sol.unlock();
+    parameters.info.output->mutex_solutions.unlock();
 
     // Initialize local search structures.
-    std::vector<LocalSearchRowWeighting1Vertex> vertices(instance.vertex_number());
+    std::vector<LocalSearchRowWeighting1Vertex> vertices(instance.number_of_vertices());
     for (VertexId v: solution.vertices())
         vertices[v].last_addition = 0;
-    std::vector<LocalSearchRowWeighting1Component> components(instance.component_number());
-    for (ComponentId c = 0; c < instance.component_number(); ++c)
+    std::vector<LocalSearchRowWeighting1Component> components(instance.number_of_components());
+    for (ComponentId c = 0; c < instance.number_of_components(); ++c)
         components[c].iteration_max = ((c == 0)? 0: components[c - 1].iteration_max)
             + instance.component(c).edges.size();
 
@@ -65,7 +65,7 @@ void localsearch_rowweighting_1_worker(
 
         // Compute component
         if (iterations % (components.back().iteration_max + 1) >= components[c].iteration_max) {
-            c = (c + 1) % instance.component_number();
+            c = (c + 1) % instance.number_of_components();
             //std::cout << "c " << c << " " << components[c].iteration_max
                 //<< " e " << instance.component(c).edges.size()
                 //<< " s " << instance.component(c).vertices.size()
@@ -120,13 +120,13 @@ void localsearch_rowweighting_1_worker(
             //std::cout << "it " << iterations
                 //<< " v_best " << v_best
                 //<< " p " << solution.penalty()
-                //<< " v " << solution.vertex_number()
+                //<< " v " << solution.number_of_vertices()
                 //<< std::endl;
         }
 
         // Draw randomly an uncovered edge e.
         std::uniform_int_distribution<EdgeId> d_e(
-                0, solution.edges().element_number(2) - 1);
+                0, solution.edges().number_of_elements(2) - 1);
         EdgeId e = *(solution.edges().begin(2) + d_e(generator));
         //std::cout << "it " << iterations
             //<< " e " << e
@@ -188,7 +188,7 @@ void localsearch_rowweighting_1_worker(
             //<< " v1_best " << v1_best
             //<< " v2_best " << v2_best
             //<< " p " << solution.penalty()
-            //<< " v " << solution.vertex_number()
+            //<< " v " << solution.number_of_vertices()
             //<< std::endl;
 
         // Update penalties: we increment the penalty of each uncovered edge.
@@ -197,12 +197,12 @@ void localsearch_rowweighting_1_worker(
         bool reduce = false;
         for (auto it = solution.edges().begin(2); it != solution.edges().end(2); ++it) {
             solution.increment_penalty(*it);
-            if (solution.penalty(*it) > std::numeric_limits<Weight>::max() / instance.edge_number())
+            if (solution.penalty(*it) > std::numeric_limits<Weight>::max() / instance.number_of_edges())
                 reduce = true;
         }
         if (reduce) {
             //std::cout << "reduce" << std::endl;
-            for (EdgeId e = 0; e < instance.edge_number(); ++e)
+            for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
                 solution.set_penalty(e, (solution.penalty(e) - 1) / 2 + 1);
         }
 
@@ -226,12 +226,12 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
 
-    auto seeds = optimizationtools::bob_floyd(parameters.thread_number, std::numeric_limits<Seed>::max(), generator);
+    auto seeds = optimizationtools::bob_floyd(parameters.number_of_threads, std::numeric_limits<Seed>::max(), generator);
     std::vector<std::thread> threads;
-    for (Counter thread_id = 0; thread_id < parameters.thread_number; ++thread_id)
+    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
         threads.push_back(std::thread(localsearch_rowweighting_1_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
 
-    for (Counter thread_id = 0; thread_id < parameters.thread_number; ++thread_id)
+    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
         threads[thread_id].join();
 
     return output.algorithm_end(parameters.info);
@@ -264,13 +264,13 @@ void localsearch_rowweighting_2_worker(
         Counter thread_id)
 {
     std::mt19937_64 generator(seed);
-    parameters.info.output->mutex_sol.lock();
+    parameters.info.output->mutex_solutions.lock();
     Solution solution = output.solution;
-    parameters.info.output->mutex_sol.unlock();
+    parameters.info.output->mutex_solutions.unlock();
 
     // Initialize local search structures.
-    std::vector<LocalSearchRowWeighting2Vertex> vertices(instance.vertex_number());
-    for (EdgeId e = 0; e < instance.edge_number(); ++e) {
+    std::vector<LocalSearchRowWeighting2Vertex> vertices(instance.number_of_vertices());
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
         if (solution.covers(e) == 1) {
             if (!solution.contains(instance.edge(e).v1))
                 vertices[instance.edge(e).v1].score += solution.penalty(e);
@@ -318,8 +318,8 @@ void localsearch_rowweighting_2_worker(
                 //<< " v_best " << v_best
                 //<< " score " << score_best
                 //<< " p " << solution.penalty()
-                //<< " v " << solution.vertex_number()
-                //<< " c " << solution.edges().edge_number(2)
+                //<< " v " << solution.number_of_vertices()
+                //<< " c " << solution.edges().number_of_edges(2)
                 //<< std::endl;
             assert(solution.penalty() == tmp + score_best);
             // Update scores.
@@ -357,8 +357,8 @@ void localsearch_rowweighting_2_worker(
             //<< " score " << score1_best
             //<< " p_prec " << tmp1
             //<< " p " << solution.penalty()
-            //<< " v " << solution.vertex_number()
-            //<< " c " << solution.edges().edge_number(2)
+            //<< " v " << solution.number_of_vertices()
+            //<< " c " << solution.edges().number_of_edges(2)
             //<< std::endl;
         assert(solution.penalty() == tmp1 + score1_best);
         // Update scores.
@@ -373,7 +373,7 @@ void localsearch_rowweighting_2_worker(
 
         // Draw randomly an uncovered edge e.
         std::uniform_int_distribution<EdgeId> d_e(
-                0, solution.edges().element_number(2) - 1);
+                0, solution.edges().number_of_elements(2) - 1);
         EdgeId e = *(solution.edges().begin(2) + d_e(generator));
         //std::cout << "it " << iterations
             //<< " e " << e
@@ -403,8 +403,8 @@ void localsearch_rowweighting_2_worker(
             //<< " v2_best " << v2_best
             //<< " score " << score2_best
             //<< " p " << solution.penalty()
-            //<< " v " << solution.vertex_number()
-            //<< " c " << solution.edges().edge_number(2)
+            //<< " v " << solution.number_of_vertices()
+            //<< " c " << solution.edges().number_of_edges(2)
             //<< std::endl;
         assert(solution.penalty() == tmp2 - score2_best);
         // Update scores.
@@ -442,12 +442,12 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
 
-    auto seeds = optimizationtools::bob_floyd(parameters.thread_number, std::numeric_limits<Seed>::max(), generator);
+    auto seeds = optimizationtools::bob_floyd(parameters.number_of_threads, std::numeric_limits<Seed>::max(), generator);
     std::vector<std::thread> threads;
-    for (Counter thread_id = 0; thread_id < parameters.thread_number; ++thread_id)
+    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
         threads.push_back(std::thread(localsearch_rowweighting_2_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
 
-    for (Counter thread_id = 0; thread_id < parameters.thread_number; ++thread_id)
+    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
         threads[thread_id].join();
 
     return output.algorithm_end(parameters.info);

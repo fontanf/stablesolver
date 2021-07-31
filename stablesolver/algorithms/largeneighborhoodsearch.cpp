@@ -40,42 +40,42 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
     output.update_solution(solution, ss, parameters.info);
 
     // Initialize local search structures.
-    std::vector<LargeNeighborhoodSearchVertex> vertices(instance.vertex_number());
+    std::vector<LargeNeighborhoodSearchVertex> vertices(instance.number_of_vertices());
     for (auto it_v = solution.vertices().out_begin(); it_v != solution.vertices().out_end(); ++it_v) {
         VertexId v = *it_v;
         for (const auto& edge: instance.vertex(v).edges)
             if (solution.contains(edge.v))
                 vertices[v].score += solution.penalty(edge.e);
     }
-    optimizationtools::IndexedBinaryHeap<std::pair<double, Counter>> scores_out(instance.vertex_number());
-    optimizationtools::IndexedBinaryHeap<std::pair<double, Counter>> scores_in(instance.vertex_number());
+    optimizationtools::IndexedBinaryHeap<std::pair<double, Counter>> scores_out(instance.number_of_vertices());
+    optimizationtools::IndexedBinaryHeap<std::pair<double, Counter>> scores_in(instance.number_of_vertices());
     for (auto it_v = solution.vertices().out_begin(); it_v != solution.vertices().out_end(); ++it_v) {
         VertexId v = *it_v;
         scores_out.update_key(v, {(double)vertices[v].score / instance.vertex(v).weight, 0});
     }
 
-    optimizationtools::IndexedSet sets_in_to_update(instance.vertex_number());
-    optimizationtools::IndexedSet sets_out_to_update(instance.vertex_number());
+    optimizationtools::IndexedSet sets_in_to_update(instance.number_of_vertices());
+    optimizationtools::IndexedSet sets_out_to_update(instance.number_of_vertices());
     Counter iterations_without_improvment = 0;
     for (output.iterations = 1; parameters.info.check_time(); ++output.iterations, ++iterations_without_improvment) {
         // Check stop criteria.
-        if (parameters.iteration_limit != -1
-                && output.iterations > parameters.iteration_limit)
+        if (parameters.maximum_number_of_iterations != -1
+                && output.iterations > parameters.maximum_number_of_iterations)
             break;
-        if (parameters.iteration_without_improvment_limit != -1
-                && iterations_without_improvment > parameters.iteration_without_improvment_limit)
+        if (parameters.maximum_number_of_iterations_without_improvement != -1
+                && iterations_without_improvment > parameters.maximum_number_of_iterations_without_improvement)
             break;
         //std::cout
             //<< "weight " << solution.weight()
-            //<< " v " << solution.vertex_number()
+            //<< " v " << solution.number_of_vertices()
             //<< " f " << solution.feasible()
             //<< std::endl;
 
         // Add vertices.
-        VertexPos removed_vertex_number = sqrt(instance.vertex_number() - solution.vertex_number());
-        //std::cout << "removed_vertex_number " << removed_vertex_number << std::endl;
+        VertexPos number_of_removed_vertices = sqrt(instance.number_of_vertices() - solution.number_of_vertices());
+        //std::cout << "number_of_removed_vertices " << removed_number_of_vertices << std::endl;
         sets_in_to_update.clear();
-        for (VertexPos s_tmp = 0; s_tmp < removed_vertex_number && !scores_out.empty(); ++s_tmp) {
+        for (VertexPos s_tmp = 0; s_tmp < number_of_removed_vertices && !scores_out.empty(); ++s_tmp) {
             auto p = scores_out.top();
             scores_out.pop();
             VertexId v = p.first;
