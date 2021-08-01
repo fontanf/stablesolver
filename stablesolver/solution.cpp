@@ -16,7 +16,7 @@ Solution::Solution(const Instance& instance):
         edges_.set(e, 0);
 }
 
-Solution::Solution(const Instance& instance, std::string filepath):
+Solution::Solution(const Instance& instance, std::string certificate_path):
     instance_(instance),
     vertices_(instance.number_of_vertices()),
     edges_(instance.number_of_edges(), 3),
@@ -27,13 +27,12 @@ Solution::Solution(const Instance& instance, std::string filepath):
     for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
         edges_.set(e, 0);
 
-    if (filepath.empty())
+    if (certificate_path.empty())
         return;
-    std::ifstream file(filepath);
-    if (!file.good()) {
-        std::cerr << "\033[31m" << "ERROR, unable to open file \"" << filepath << "\"" << "\033[0m" << std::endl;
-        return;
-    }
+    std::ifstream file(certificate_path);
+    if (!file.good())
+        throw std::runtime_error(
+                "Unable to open file \"" + certificate_path + "\".");
 
     VertexId v;
     while (file.good()) {
@@ -84,21 +83,19 @@ void Solution::increment_penalty(EdgeId e, Weight p)
         penalty_ += p;
 }
 
-void Solution::write(std::string filepath)
+void Solution::write(std::string certificate_path)
 {
-    if (filepath.empty())
+    if (certificate_path.empty())
         return;
-    std::ofstream cert(filepath);
-    if (!cert.good()) {
-        std::cerr << "\033[31m" << "ERROR, unable to open file \"" << filepath << "\"" << "\033[0m" << std::endl;
-        assert(false);
-        return;
-    }
+    std::ofstream file(certificate_path);
+    if (!file.good())
+        throw std::runtime_error(
+                "Unable to open file \"" + certificate_path + "\".");
 
     //cert << number_of_vertices() << std::endl;
     for (VertexId v: vertices())
-        cert << v << " ";
-    cert.close();
+        file << v << " ";
+    file.close();
 }
 
 std::ostream& stablesolver::operator<<(std::ostream& os, const Solution& solution)

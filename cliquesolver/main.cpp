@@ -71,9 +71,9 @@ int main(int argc, char *argv[])
         .set_maximum_log_level(loglevelmax)
         ;
 
-    VER(info, "Vertices:    " << instance.number_of_vertices() << std::endl);
-    VER(info, "Edges:       " << instance.number_of_edges() << std::endl);
-    VER(info, "Degree max:  " << instance.degree_max() << std::endl);
+    VER(info, "Number of vertices:              " << instance.number_of_vertices() << std::endl);
+    VER(info, "Number of edges:                 " << instance.number_of_edges() << std::endl);
+    VER(info, "Maximum degree:                  " << instance.maximum_degree() << std::endl);
 
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);

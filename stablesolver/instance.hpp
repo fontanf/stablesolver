@@ -60,55 +60,81 @@ class Instance
 
 public:
 
-    /** Constructor from file. */
-    Instance(std::string filepath, std::string format);
+    /** Create an instance from a file. */
+    Instance(std::string instance_path, std::string format);
 
-    /** Manual constructor. */
+    /** Create an instance manually. */
     Instance(VertexId number_of_vertices);
-    void set_weight(VertexId v, Weight w);
+    /** Set the weight of vertex 'v' to 'weight'. */
+    void set_weight(VertexId v, Weight weight);
+    /** Add an edge between vertex 'v1' and vertex 'v2'. */
     void add_edge(VertexId v1, VertexId v2);
+    /** Set the weight of all vertices to 1. */
     void set_unweighted();
+    /** Compute the connected components of the instance. */
     void compute_components();
 
+    /** Create the complementary instance. */
     Instance complementary();
 
-    /** Getters. */
+    /*
+     * Getters.
+     */
 
-    inline VertexId       number_of_vertices() const { return vertices_.size(); }
-    inline EdgeId            number_of_edges() const { return edges_.size(); }
-    inline ComponentId  number_of_components() const { return components_.size(); }
+    /** Get the number of vertices. */
+    inline VertexId number_of_vertices() const { return vertices_.size(); }
+    /** Get the number of edges. */
+    inline EdgeId number_of_edges() const { return edges_.size(); }
+    /** Get the number of connected components. */
+    inline ComponentId number_of_components() const { return components_.size(); }
 
+    /** Get vertex 'v'. */
     inline const Vertex& vertex(VertexId v) const { return vertices_[v]; }
+    /** Get edge 'e'. */
     inline const Edge& edge(EdgeId e) const { return edges_[e]; }
+    /** Get connected component 'c'. */
     inline const Component& component(ComponentId c) const { return components_[c]; }
 
+    /** Get the degree of vertex 'v'. */
     inline VertexId degree(VertexId v) const { return vertices_[v].edges.size(); }
-    inline VertexId degree_max() const { return degree_max_; }
-    inline Weight total_weight() const { return weight_total_; }
+    /** Get the maximum vertex degree of the instance. */
+    inline VertexId maximum_degree() const { return maximum_degree_; }
+    /** Get the total weight of the instance. */
+    inline Weight total_weight() const { return total_weight_; }
 
-    /** Export. */
-    void write(std::string filepath, std::string format);
+    /** Write the instance to a file. */
+    void write(std::string instance_path, std::string format);
 
 private:
 
-    /**
+    /*
      * Attributes.
      */
 
+    /** Name of the instance. */
     std::string name_ = "";
+    /** Vertices. */
     std::vector<Vertex> vertices_;
+    /** Edges. */
     std::vector<Edge> edges_;
+    /** Connected components. */
     std::vector<Component> components_;
-    VertexId degree_max_ = 0;
-    Weight weight_total_ = 0;
+    /** Maximum vertex degree of the instance. */
+    VertexId maximum_degree_ = 0;
+    /** Total weight of the instance. */
+    Weight total_weight_ = 0;
 
-    /**
+    /*
      * Private methods.
      */
 
+    /** Read an instance file in 'dimacs1992' format. */
     void read_dimacs1992(std::ifstream& file);
+    /** Read an instance file in 'dimacs2010' format. */
     void read_dimacs2010(std::ifstream& file);
+    /** Read an instance file in 'matrixmarket' format. */
     void read_matrixmarket(std::ifstream& file);
+    /** Read an instance file in 'chaco' format. */
     void read_chaco(std::ifstream& file);
 
 };

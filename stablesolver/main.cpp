@@ -72,10 +72,11 @@ int main(int argc, char *argv[])
         .set_maximum_log_level(loglevelmax)
         ;
 
-    VER(info, "Vertices:    " << instance.number_of_vertices() << std::endl);
-    VER(info, "Edges:       " << instance.number_of_edges() << std::endl);
-    VER(info, "Degree max:  " << instance.degree_max() << std::endl);
-    VER(info, "Components: ");
+    VER(info, "Number of vertices:              " << instance.number_of_vertices() << std::endl);
+    VER(info, "Number of edges:                 " << instance.number_of_edges() << std::endl);
+    VER(info, "Maximum degree:                  " << instance.maximum_degree() << std::endl);
+    VER(info, "Number of connected components:  " << instance.number_of_components() << std::endl);
+    VER(info, "Connected components: ");
     for (ComponentId c = 0; c < instance.number_of_components(); ++c)
         VER(info, " " << c << "/" << instance.component(c).vertices.size() << "/" << instance.component(c).edges.size());
     VER(info, std::endl);

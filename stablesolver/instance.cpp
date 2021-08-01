@@ -6,14 +6,12 @@
 
 using namespace stablesolver;
 
-Instance::Instance(std::string filepath, std::string format)
+Instance::Instance(std::string instance_path, std::string format)
 {
-    std::ifstream file(filepath);
-    if (!file.good()) {
-        std::cerr << "\033[31m" << "ERROR, unable to open file \"" << filepath << "\"" << "\033[0m" << std::endl;
-        assert(false);
-        return;
-    }
+    std::ifstream file(instance_path);
+    if (!file.good())
+        throw std::runtime_error(
+                "Unable to open file \"" + instance_path + "\".");
 
     if (format == "dimacs1992") {
         read_dimacs1992(file);
@@ -24,8 +22,8 @@ Instance::Instance(std::string filepath, std::string format)
     } else if (format == "chaco") {
         read_chaco(file);
     } else {
-        std::cerr << "\033[31m" << "ERROR, unknown instance format: \"" << format << "\"" << "\033[0m" << std::endl;
-        assert(false);
+        throw std::invalid_argument(
+                "Unknown instance format \"" + format + "\".");
     }
 
     compute_components();
@@ -33,7 +31,7 @@ Instance::Instance(std::string filepath, std::string format)
 
 Instance::Instance(VertexId number_of_vertices):
     vertices_(number_of_vertices),
-    weight_total_(number_of_vertices)
+    total_weight_(number_of_vertices)
 {
     for (VertexId v = 0; v < number_of_vertices; ++v)
         vertices_[v].id = v;
@@ -56,29 +54,29 @@ void Instance::add_edge(VertexId v1, VertexId v2)
     ve1.e = e.id;
     ve1.v = v2;
     vertices_[v1].edges.push_back(ve1);
-    if (degree_max_ < (VertexId)vertices_[v1].edges.size())
-        degree_max_ = vertices_[v1].edges.size();
+    if (maximum_degree_ < (VertexId)vertices_[v1].edges.size())
+        maximum_degree_ = vertices_[v1].edges.size();
 
     VertexEdge ve2;
     ve2.e = e.id;
     ve2.v = v1;
     vertices_[v2].edges.push_back(ve2);
-    if (degree_max_ < (VertexId)vertices_[v2].edges.size())
-        degree_max_ = vertices_[v2].edges.size();
+    if (maximum_degree_ < (VertexId)vertices_[v2].edges.size())
+        maximum_degree_ = vertices_[v2].edges.size();
 }
 
 void Instance::set_weight(VertexId v, Weight w)
 {
-    weight_total_ -= vertex(v).weight;
+    total_weight_ -= vertex(v).weight;
     vertices_[v].weight = w;
-    weight_total_ += vertex(v).weight;
+    total_weight_ += vertex(v).weight;
 }
 
 void Instance::set_unweighted()
 {
     for (VertexId v = 0; v < number_of_vertices(); ++v)
         vertices_[v].weight = 1;
-    weight_total_ = number_of_vertices();
+    total_weight_ = number_of_vertices();
 }
 
 void Instance::read_dimacs1992(std::ifstream& file)
@@ -125,7 +123,7 @@ void Instance::read_dimacs2010(std::ifstream& file)
             vertices_.resize(number_of_vertices);
             for (VertexId v = 0; v < number_of_vertices; ++v)
                 vertices_[v].id = v;
-            weight_total_ = number_of_vertices;
+            total_weight_ = number_of_vertices;
             first = false;
             v = 0;
         } else {
@@ -149,7 +147,7 @@ void Instance::read_matrixmarket(std::ifstream& file)
     line = optimizationtools::split(tmp, ' ');
     VertexId n = stol(line[0]);
     vertices_.resize(n);
-    weight_total_ = n;
+    total_weight_ = n;
 
     while (getline(file, tmp)) {
         line = optimizationtools::split(tmp, ' ');
