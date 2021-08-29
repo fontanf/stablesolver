@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     if (vm.count("complementary"))
         instance = instance.complementary();
 
-    Info info = Info()
+    optimizationtools::Info info = optimizationtools::Info()
         .set_verbose(vm.count("verbose"))
         .set_time_limit(time_limit)
         .set_certificate_path(certificate_path)

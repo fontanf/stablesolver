@@ -102,7 +102,10 @@ std::ostream& operator<<(std::ostream& os, const Solution& solution);
 
 struct Output
 {
-    Output(const Instance& instance, Info& info);
+    Output(
+            const Instance& instance,
+            optimizationtools::Info& info);
+
     Solution solution;
     Weight upper_bound = 0;
     double time = -1;
@@ -110,16 +113,31 @@ struct Output
     bool optimal() const { return solution.feasible() && solution.weight() == upper_bound; }
     Weight lower_bound() const { return solution.weight(); }
     double gap() const;
-    void print(Info& info, const std::stringstream& s) const;
+    void print(optimizationtools::Info& info, const std::stringstream& s) const;
 
-    void update_solution(const Solution& solution_new, const std::stringstream& s, Info& info) { update_solution(solution_new, -1, s, info); }
-    void update_solution(const Solution& solution_new, ComponentId c, const std::stringstream& s, Info& info);
-    void update_upper_bound(Weight upper_bound_new, const std::stringstream& s, Info& info);
+    void update_solution(
+            const Solution& solution_new,
+            const std::stringstream& s,
+            optimizationtools::Info& info) { update_solution(solution_new, -1, s, info); }
 
-    Output& algorithm_end(Info& info);
+    void update_solution(
+            const Solution& solution_new,
+            ComponentId c,
+            const std::stringstream& s,
+            optimizationtools::Info& info);
+
+    void update_upper_bound(
+            Weight upper_bound_new,
+            const std::stringstream& s,
+            optimizationtools::Info& info);
+
+    Output& algorithm_end(
+            optimizationtools::Info& info);
 };
 
-Weight algorithm_end(Weight upper_bound, Info& info);
+Weight algorithm_end(
+        Weight upper_bound,
+        optimizationtools::Info& info);
 
 }
 

@@ -8,7 +8,8 @@ using namespace stablesolver;
 
 /******************************* localsearch_rowweighting_1 ********************************/
 
-LocalSearchRowWeighting1Output& LocalSearchRowWeighting1Output::algorithm_end(Info& info)
+LocalSearchRowWeighting1Output& LocalSearchRowWeighting1Output::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
@@ -239,7 +240,8 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 
 /******************************* localsearch_rowweighting_2 ********************************/
 
-LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(Info& info)
+LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);

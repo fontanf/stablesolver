@@ -5,7 +5,6 @@
 namespace cliquesolver
 {
 
-using optimizationtools::Info;
 typedef stablesolver::VertexId VertexId; // v
 typedef stablesolver::VertexPos VertexPos; // v_pos
 typedef stablesolver::EdgeId EdgeId; // e

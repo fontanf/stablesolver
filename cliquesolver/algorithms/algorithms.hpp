@@ -7,7 +7,11 @@
 namespace cliquesolver
 {
 
-Output run(std::string algorithm, const Instance& instance, std::mt19937_64& generator, Info info);
+Output run(
+        std::string algorithm,
+        const Instance& instance,
+        std::mt19937_64& generator,
+        optimizationtools::Info info);
 
 }
 

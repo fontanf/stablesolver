@@ -7,7 +7,8 @@
 
 using namespace stablesolver;
 
-LargeNeighborhoodSearchOutput& LargeNeighborhoodSearchOutput::algorithm_end(Info& info)
+LargeNeighborhoodSearchOutput& LargeNeighborhoodSearchOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);

@@ -82,7 +82,7 @@ Output stablesolver::run(
         std::string algorithm,
         Instance& instance,
         std::mt19937_64& generator,
-        Info info)
+        optimizationtools::Info info)
 {
     std::vector<std::string> algorithm_args = po::split_unix(algorithm);
     std::vector<char*> algorithm_argv;

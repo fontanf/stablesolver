@@ -5,7 +5,8 @@
 using namespace stablesolver;
 using namespace localsearchsolver;
 
-LocalSearchOutput& LocalSearchOutput::algorithm_end(Info& info)
+LocalSearchOutput& LocalSearchOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
@@ -456,6 +457,7 @@ LocalSearchOutput stablesolver::localsearch(
     AStarLocalSearchOptionalParameters<LocalScheme> parameters_a_star;
     parameters_a_star.info.set_verbose(false);
     parameters_a_star.info.set_time_limit(parameters.info.remaining_time());
+    parameters_a_star.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
     parameters_a_star.number_of_threads_1 = 1;
     parameters_a_star.number_of_threads_2 = parameters.number_of_threads;
     parameters_a_star.initial_solution_ids = std::vector<Counter>(

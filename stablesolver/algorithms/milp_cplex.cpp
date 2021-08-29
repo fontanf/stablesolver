@@ -10,7 +10,8 @@ using namespace stablesolver;
 
 ILOSTLBEGIN
 
-MilpCplexOutput& MilpCplexOutput::algorithm_end(Info& info)
+MilpCplexOutput& MilpCplexOutput::algorithm_end(
+        optimizationtools::Info& info)
 {
     //PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);

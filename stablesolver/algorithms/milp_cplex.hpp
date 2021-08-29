@@ -9,15 +9,20 @@ namespace stablesolver
 
 struct MilpCplexOptionalParameters
 {
-    Info info = Info();
+    optimizationtools::Info info = optimizationtools::Info();
 
     const Solution* initial_solution = NULL;
 };
 
 struct MilpCplexOutput: Output
 {
-    MilpCplexOutput(const Instance& instance, Info& info): Output(instance, info) { }
-    MilpCplexOutput& algorithm_end(Info& info);
+    MilpCplexOutput(
+            const Instance& instance,
+            optimizationtools::Info& info):
+        Output(instance, info) { }
+
+    MilpCplexOutput& algorithm_end(
+            optimizationtools::Info& info);
 };
 
 MilpCplexOutput milp_1_cplex(

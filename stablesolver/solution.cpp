@@ -110,7 +110,7 @@ std::ostream& stablesolver::operator<<(std::ostream& os, const Solution& solutio
 
 /*********************************** Output ***********************************/
 
-Output::Output(const Instance& instance, Info& info):
+Output::Output(const Instance& instance, optimizationtools::Info& info):
     solution(instance),
     upper_bound(instance.total_weight() + 1)
 {
@@ -124,7 +124,9 @@ Output::Output(const Instance& instance, Info& info):
     print(info, std::stringstream(""));
 }
 
-void Output::print(Info& info, const std::stringstream& s) const
+void Output::print(
+        optimizationtools::Info& info,
+        const std::stringstream& s) const
 {
     double gap = (upper_bound == 0)?
         std::numeric_limits<double>::infinity():
@@ -146,7 +148,7 @@ void Output::update_solution(
         const Solution& solution_new,
         ComponentId c,
         const std::stringstream& s,
-        Info& info)
+        optimizationtools::Info& info)
 {
     info.output->mutex_solutions.lock();
 
@@ -194,7 +196,10 @@ void Output::update_solution(
     info.output->mutex_solutions.unlock();
 }
 
-void Output::update_upper_bound(Weight upper_bound_new, const std::stringstream& s, Info& info)
+void Output::update_upper_bound(
+        Weight upper_bound_new,
+        const std::stringstream& s,
+        optimizationtools::Info& info)
 {
     if (upper_bound <= upper_bound_new)
         return;
@@ -218,7 +223,8 @@ void Output::update_upper_bound(Weight upper_bound_new, const std::stringstream&
     info.output->mutex_solutions.unlock();
 }
 
-Output& Output::algorithm_end(Info& info)
+Output& Output::algorithm_end(
+        optimizationtools::Info& info)
 {
     double t = round(info.elapsed_time() * 10000) / 10000;
     double gap = (upper_bound == 0)?
@@ -242,7 +248,9 @@ Output& Output::algorithm_end(Info& info)
     return *this;
 }
 
-Weight stablesolver::algorithm_end(Weight upper_bound, Info& info)
+Weight stablesolver::algorithm_end(
+        Weight upper_bound,
+        optimizationtools::Info& info)
 {
     double t = round(info.elapsed_time() * 10000) / 10000;
     PUT(info, "Bound", "Value", upper_bound);

@@ -11,8 +11,6 @@
 namespace stablesolver
 {
 
-using optimizationtools::Info;
-
 typedef int64_t VertexId; // v
 typedef int64_t VertexPos; // v_pos
 typedef int64_t EdgeId; // e

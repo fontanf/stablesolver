@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         instance = instance.complementary();
     instance.compute_components();
 
-    Info info = Info()
+    optimizationtools::Info info = optimizationtools::Info()
         .set_verbose(vm.count("verbose"))
         .set_time_limit(time_limit)
         .set_certificate_path(certificate_path)
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     VER(info, "Number of edges:                 " << instance.number_of_edges() << std::endl);
     VER(info, "Maximum degree:                  " << instance.maximum_degree() << std::endl);
     VER(info, "Number of connected components:  " << instance.number_of_components() << std::endl);
-    VER(info, "Connected components: ");
+    VER(info, "Connected components:           ");
     for (ComponentId c = 0; c < instance.number_of_components(); ++c)
         VER(info, " " << c << "/" << instance.component(c).vertices.size() << "/" << instance.component(c).edges.size());
     VER(info, std::endl);

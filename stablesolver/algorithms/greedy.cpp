@@ -4,7 +4,9 @@
 
 using namespace stablesolver;
 
-Output stablesolver::greedy_gwmin(const Instance& instance, Info info)
+Output stablesolver::greedy_gwmin(
+        const Instance& instance,
+        optimizationtools::Info info)
 {
     VER(info, "*** greedy_gwmin ***" << std::endl);
     Output output(instance, info);
@@ -35,7 +37,9 @@ Output stablesolver::greedy_gwmin(const Instance& instance, Info info)
     return output.algorithm_end(info);
 }
 
-Output stablesolver::greedy_gwmax(const Instance& instance, Info info)
+Output stablesolver::greedy_gwmax(
+        const Instance& instance,
+        optimizationtools::Info info)
 {
     VER(info, "*** greedy_gwmax ***" << std::endl);
     Output output(instance, info);
@@ -79,7 +83,9 @@ Output stablesolver::greedy_gwmax(const Instance& instance, Info info)
     return output.algorithm_end(info);
 }
 
-Output stablesolver::greedy_gwmin2(const Instance& instance, Info info)
+Output stablesolver::greedy_gwmin2(
+        const Instance& instance,
+        optimizationtools::Info info)
 {
     VER(info, "*** greedy_gwmin2 ***" << std::endl);
     Output output(instance, info);
