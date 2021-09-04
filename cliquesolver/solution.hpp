@@ -16,7 +16,7 @@ class Solution
 public:
 
     Solution(const Instance& instance);
-    Solution(const Instance& instance, std::string filepath);
+    Solution(const Instance& instance, std::string certificate_path);
     Solution(const Solution& solution);
     Solution& operator=(const Solution& solution);
     ~Solution() { }
@@ -34,7 +34,7 @@ public:
     inline void add(VertexId v);
     inline void remove(VertexId v);
 
-    void write(std::string filepath);
+    void write(std::string certificate_path);
 
 private:
 

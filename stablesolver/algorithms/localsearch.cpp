@@ -5,14 +5,8 @@
 using namespace stablesolver;
 using namespace localsearchsolver;
 
-LocalSearchOutput& LocalSearchOutput::algorithm_end(
-        optimizationtools::Info& info)
+namespace stablesolver
 {
-    //PUT(info, "Algorithm", "Iterations", iterations);
-    Output::algorithm_end(info);
-    //VER(info, "Iterations: " << iterations << std::endl);
-    return *this;
-}
 
 class LocalScheme
 {
@@ -441,6 +435,17 @@ private:
     optimizationtools::IndexedSet free_vertices_2_;
 
 };
+
+}
+
+LocalSearchOutput& LocalSearchOutput::algorithm_end(
+        optimizationtools::Info& info)
+{
+    //PUT(info, "Algorithm", "Iterations", iterations);
+    Output::algorithm_end(info);
+    //VER(info, "Iterations: " << iterations << std::endl);
+    return *this;
+}
 
 LocalSearchOutput stablesolver::localsearch(
         const Instance& instance,

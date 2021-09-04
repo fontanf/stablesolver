@@ -30,9 +30,10 @@ Solution::Solution(const Instance& instance, std::string certificate_path):
     if (certificate_path.empty())
         return;
     std::ifstream file(certificate_path);
-    if (!file.good())
+    if (!file.good()) {
         throw std::runtime_error(
                 "Unable to open file \"" + certificate_path + "\".");
+    }
 
     VertexId v;
     while (file.good()) {
@@ -88,9 +89,10 @@ void Solution::write(std::string certificate_path)
     if (certificate_path.empty())
         return;
     std::ofstream file(certificate_path);
-    if (!file.good())
+    if (!file.good()) {
         throw std::runtime_error(
                 "Unable to open file \"" + certificate_path + "\".");
+    }
 
     //cert << number_of_vertices() << std::endl;
     for (VertexId v: vertices())

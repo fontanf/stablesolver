@@ -11,17 +11,17 @@ Solution::Solution(const Instance& instance):
 {
 }
 
-Solution::Solution(const Instance& instance, std::string filepath):
+Solution::Solution(const Instance& instance, std::string certificate_path):
     instance_(instance),
     vertices_(instance.number_of_vertices()),
     neighbors_tmp_(instance.number_of_vertices())
 {
-    if (filepath.empty())
+    if (certificate_path.empty())
         return;
-    std::ifstream file(filepath);
+    std::ifstream file(certificate_path);
     if (!file.good()) {
-        std::cerr << "\033[31m" << "ERROR, unable to open file \"" << filepath << "\"" << "\033[0m" << std::endl;
-        return;
+        throw std::runtime_error(
+                "Unable to open file \"" + certificate_path + "\".");
     }
 
     VertexId v;
@@ -51,21 +51,20 @@ Solution& Solution::operator=(const Solution& solution)
     return *this;
 }
 
-void Solution::write(std::string filepath)
+void Solution::write(std::string certificate_path)
 {
-    if (filepath.empty())
+    if (certificate_path.empty())
         return;
-    std::ofstream cert(filepath);
-    if (!cert.good()) {
-        std::cerr << "\033[31m" << "ERROR, unable to open file \"" << filepath << "\"" << "\033[0m" << std::endl;
-        assert(false);
-        return;
+    std::ofstream file(certificate_path);
+    if (!file.good()) {
+        throw std::runtime_error(
+                "Unable to open file \"" + certificate_path + "\".");
     }
 
     //cert << number_of_vertices() << std::endl;
     for (VertexId v: vertices())
-        cert << v << " ";
-    cert.close();
+        file << v << " ";
+    file.close();
 }
 
 std::ostream& cliquesolver::operator<<(
