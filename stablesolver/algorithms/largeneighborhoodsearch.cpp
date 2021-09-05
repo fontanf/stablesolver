@@ -58,7 +58,7 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
     optimizationtools::IndexedSet sets_in_to_update(instance.number_of_vertices());
     optimizationtools::IndexedSet sets_out_to_update(instance.number_of_vertices());
     Counter iterations_without_improvment = 0;
-    for (output.iterations = 1; parameters.info.check_time(); ++output.iterations, ++iterations_without_improvment) {
+    for (output.iterations = 1; !parameters.info.needs_to_end(); ++output.iterations, ++iterations_without_improvment) {
         // Check stop criteria.
         if (parameters.maximum_number_of_iterations != -1
                 && output.iterations > parameters.maximum_number_of_iterations)

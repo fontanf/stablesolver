@@ -61,7 +61,7 @@ void localsearch_rowweighting_1_worker(
             + instance.component(c).edges.size();
 
     ComponentId c = 0;
-    for (Counter iterations = 1; parameters.info.check_time(); ++iterations) {
+    for (Counter iterations = 1; !parameters.info.needs_to_end(); ++iterations) {
         //std::cout << "it " << iterations << std::endl;
 
         // Compute component
@@ -284,7 +284,7 @@ void localsearch_rowweighting_2_worker(
     VertexId v_last_added = -1;
 
     Counter iterations_without_improvment = 0;
-    for (Counter iterations = 1; parameters.info.check_time(); ++iterations, iterations_without_improvment++) {
+    for (Counter iterations = 1; !parameters.info.needs_to_end(); ++iterations, iterations_without_improvment++) {
         //std::cout << "it " << iterations << std::endl;
 
         while (solution.feasible()) {
