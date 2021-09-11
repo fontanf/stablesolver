@@ -67,6 +67,13 @@ void Instance::add_edge(VertexId v1, VertexId v2)
 
 void Instance::set_weight(VertexId v, Weight w)
 {
+    if (w < 0) {
+        throw std::invalid_argument("Set negative weight '"
+                + std::to_string(w)
+                + "' to vertex '"
+                + std::to_string(v)
+                + "'.");
+    }
     total_weight_ -= vertex(v).weight;
     vertices_[v].weight = w;
     total_weight_ += vertex(v).weight;

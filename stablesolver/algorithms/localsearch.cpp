@@ -460,7 +460,7 @@ LocalSearchOutput stablesolver::localsearch(
 
     // Run A*.
     AStarLocalSearchOptionalParameters<LocalScheme> parameters_a_star;
-    parameters_a_star.info.set_verbose(false);
+    //parameters_a_star.info.set_verbose(true);
     parameters_a_star.info.set_time_limit(parameters.info.remaining_time());
     parameters_a_star.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
     parameters_a_star.number_of_threads_1 = 1;
