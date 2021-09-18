@@ -1,6 +1,7 @@
 #include "cliquesolver/algorithms/greedy.hpp"
 
 #include "optimizationtools/indexed_binary_heap.hpp"
+#include "optimizationtools/doubly_indexed_map.hpp"
 
 using namespace cliquesolver;
 
@@ -37,85 +38,36 @@ Output cliquesolver::greedy_gwmin(
     return output.algorithm_end(info);
 }
 
-Output cliquesolver::greedy_gwmax(
+Output cliquesolver::greedy_strong(
         const Instance& instance,
         optimizationtools::Info info)
 {
-    VER(info, "*** greedy_gwmax ***" << std::endl);
+    VER(info, "*** greedy_strong ***" << std::endl);
     Output output(instance, info);
-
-    auto f = [&instance](VertexId v)
-    {
-        VertexId d = instance.degree(v);
-        double val = (d != 0)?
-            (double)instance.vertex(v).weight / d / (d + 1):
-            std::numeric_limits<double>::infinity();
-        return std::pair<double, VertexId>{val, v};
-    };
-    optimizationtools::IndexedBinaryHeap<std::pair<double, VertexId>> heap(instance.number_of_vertices(), f);
-
-    std::vector<uint8_t> removed_vertices(instance.number_of_vertices(), 0);
-    for (;;) {
-        auto p = heap.top();
-        if (p.second.first == std::numeric_limits<double>::infinity())
-            break;
-        VertexId d = 0;
-        for (const auto& vn: instance.vertex(p.first).edges)
-            if (!removed_vertices[vn.v])
-                d++;
-        double val = (d != 0)?
-            (double)instance.vertex(p.first).weight / d / (d + 1):
-            std::numeric_limits<double>::infinity();
-        if (val <= p.second.first + TOL) {
-            removed_vertices[p.first] = 1;
-            heap.pop();
-        } else {
-            heap.update_key(p.first, {val, p.first});
-        }
-    }
-
     Solution solution(instance);
+
+    optimizationtools::DoublyIndexedMap candidates(
+            instance.number_of_vertices(), instance.number_of_vertices());
     for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-        if (!removed_vertices[v])
-            solution.add(v);
-
-    output.update_solution(solution, std::stringstream(), info);
-    return output.algorithm_end(info);
-}
-
-Output cliquesolver::greedy_gwmin2(
-        const Instance& instance,
-        optimizationtools::Info info)
-{
-    VER(info, "*** greedy_gwmin2 ***" << std::endl);
-    Output output(instance, info);
-    Solution solution(instance);
-
-    std::vector<double> vertices_values(instance.number_of_vertices(), 0);
-    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
-        Weight w = 0;
-        for (const auto& edge: instance.vertex(v).edges)
-            w += instance.vertex(edge.v).weight;
-        vertices_values[v] = (w != 0)?
-            (double)instance.vertex(v).weight / w:
-            std::numeric_limits<double>::infinity();
-    }
-
-    std::vector<VertexId> sorted_vertices(instance.number_of_vertices(), 0);
-    std::iota(sorted_vertices.begin(), sorted_vertices.end(), 0);
-    std::sort(sorted_vertices.begin(), sorted_vertices.end(),
-            [&vertices_values](VertexId v1, VertexId v2) -> bool
-        {
-            return vertices_values[v1] > vertices_values[v2];
-        });
-
-    std::vector<int8_t> available_vertices(instance.number_of_vertices(), 1);
-    for (VertexId v: sorted_vertices) {
-        if (!available_vertices[v])
-            continue;
-        solution.add(v);
-        for (const auto& edge: instance.vertex(v).edges)
-            available_vertices[edge.v] = 0;
+        candidates.set(v, 0);
+    while (candidates.number_of_elements(solution.number_of_vertices()) > 0) {
+        VertexId v_best = -1;
+        VertexPos score_best = -1;
+        for (auto it_v = candidates.begin(solution.number_of_vertices());
+                it_v != candidates.end(solution.number_of_vertices()); ++it_v) {
+            VertexId v = *it_v;
+            VertexPos score = 0;
+            for (auto edge: instance.vertex(v).edges)
+                if (candidates.contains(edge.v))
+                    score += instance.vertex(edge.v).weight;
+            if (v_best == -1 || score_best < score) {
+                v_best = v;
+                score_best = score;
+            }
+        }
+        solution.add(v_best);
+        for (auto edge: instance.vertex(v_best).edges)
+            candidates.set(edge.v, candidates[edge.v] + 1);
     }
 
     output.update_solution(solution, std::stringstream(), info);

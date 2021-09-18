@@ -99,6 +99,8 @@ Output stablesolver::run(
         return greedy_gwmax(instance, info);
     } else if (algorithm_args[0] == "greedy_gwmin2") {
         return greedy_gwmin2(instance, info);
+    } else if (algorithm_args[0] == "greedy_strong") {
+        return greedy_strong(instance, info);
 
 #if CPLEX_FOUND
     } else if (algorithm_args[0] == "milp_1_cplex") {

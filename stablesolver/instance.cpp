@@ -35,6 +35,7 @@ Instance::Instance(VertexId number_of_vertices):
 {
     for (VertexId v = 0; v < number_of_vertices; ++v)
         vertices_[v].id = v;
+    total_weight_ = number_of_vertices;
 }
 
 void Instance::add_edge(VertexId v1, VertexId v2)
@@ -102,6 +103,7 @@ void Instance::read_dimacs1992(std::ifstream& file)
             vertices_.resize(number_of_vertices);
             for (VertexId v = 0; v < number_of_vertices; ++v)
                 vertices_[v].id = v;
+            total_weight_ = number_of_vertices;
         } else if (line[0] == "n") {
             VertexId v = stol(line[1]) - 1;
             Weight w = stol(line[2]);

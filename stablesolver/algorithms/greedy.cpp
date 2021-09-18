@@ -122,3 +122,36 @@ Output stablesolver::greedy_gwmin2(
     return output.algorithm_end(info);
 }
 
+Output stablesolver::greedy_strong(
+        const Instance& instance,
+        optimizationtools::Info info)
+{
+    VER(info, "*** greedy_strong ***" << std::endl);
+    Output output(instance, info);
+    Solution solution(instance);
+
+    optimizationtools::IndexedSet candidates(instance.number_of_vertices());
+    candidates.fill();
+    while (candidates.size() > 0) {
+        VertexId v_best = -1;
+        VertexPos score_best = -1;
+        for (VertexId v: candidates) {
+            VertexPos score = 0;
+            for (auto edge: instance.vertex(v).edges)
+                if (candidates.contains(edge.v))
+                    score -= instance.vertex(edge.v).weight;
+            if (v_best == -1 || score_best < score) {
+                v_best = v;
+                score_best = score;
+            }
+        }
+        solution.add(v_best);
+        candidates.remove(v_best);
+        for (auto edge: instance.vertex(v_best).edges)
+            candidates.remove(edge.v);
+    }
+
+    output.update_solution(solution, std::stringstream(), info);
+    return output.algorithm_end(info);
+}
+

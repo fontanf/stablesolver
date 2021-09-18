@@ -24,10 +24,8 @@ Output cliquesolver::run(
 
     } else if (algorithm_args[0] == "greedy_gwmin") {
         return greedy_gwmin(instance, info);
-    } else if (algorithm_args[0] == "greedy_gwmax") {
-        return greedy_gwmax(instance, info);
-    } else if (algorithm_args[0] == "greedy_gwmin2") {
-        return greedy_gwmin2(instance, info);
+    } else if (algorithm_args[0] == "greedy_strong") {
+        return greedy_strong(instance, info);
 
     } else {
         std::cerr << "\033[31m" << "ERROR, unknown algorithm: " << algorithm_argv[0] << "\033[0m" << std::endl;

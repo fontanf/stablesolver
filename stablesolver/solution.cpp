@@ -238,6 +238,7 @@ Output& Output::algorithm_end(
     PUT(info, "Bound", "Time", t);
     VER(info, "---" << std::endl
             << "Value: " << lower_bound() << std::endl
+            << "Number of vertices: " << solution.number_of_vertices() << std::endl
             << "Vertex cover Value: " << solution.instance().total_weight() - lower_bound() << std::endl
             << "Bound: " << upper_bound << std::endl
             << "Gap: " << upper_bound - lower_bound() << std::endl

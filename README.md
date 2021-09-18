@@ -20,6 +20,7 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
   - `-a greedy_gwmin`
   - `-a greedy_gwmax`
   - `-a greedy_gwmin2`
+  - `-a greedy_strong`
 
 - Mixed-Integer Linear Programs (implemented with CPLEX)
   - Model 1, `|E|` constraints `-a milp_1_cplex`
@@ -38,6 +39,7 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
 
 - Greedy algorithms:
   - `-a greedy_gwmin`, adapted from the stable version, same complexity
+  - `-a greedy_strong`
 
 ## Usage (command line)
 
