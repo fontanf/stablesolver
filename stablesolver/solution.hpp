@@ -60,9 +60,13 @@ private:
 
 void Solution::add(VertexId v)
 {
-    assert(v >= 0);
-    assert(v < instance().number_of_vertices());
-    assert(!contains(v));
+    // Checks.
+    instance().check_vertex_index(v);
+    if (contains(v))
+        throw std::invalid_argument(
+                "Cannot add vertex " + std::to_string(v)
+                + " which is already in the solution");
+
     ComponentId c = instance().vertex(v).component;
     vertices_.add(v);
     for (const auto& edge: instance().vertex(v).edges) {
@@ -79,9 +83,13 @@ void Solution::add(VertexId v)
 
 void Solution::remove(VertexId v)
 {
-    assert(v >= 0);
-    assert(v < instance().number_of_vertices());
-    assert(contains(v));
+    // Checks.
+    instance().check_vertex_index(v);
+    if (!contains(v))
+        throw std::invalid_argument(
+                "Cannot remove vertex " + std::to_string(v)
+                + " which is not in the solution");
+
     ComponentId c = instance().vertex(v).component;
     for (const auto& edge: instance().vertex(v).edges) {
         if (covers(edge.e) == 2) {

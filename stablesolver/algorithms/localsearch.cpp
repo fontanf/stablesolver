@@ -452,6 +452,7 @@ LocalSearchOutput stablesolver::localsearch(
         std::mt19937_64&,
         LocalSearchOptionalParameters parameters)
 {
+    VER(parameters.info, "*** localsearch ***" << std::endl);
     LocalSearchOutput output(instance, parameters.info);
 
     // Create LocalScheme.

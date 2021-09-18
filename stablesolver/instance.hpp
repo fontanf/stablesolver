@@ -58,6 +58,10 @@ class Instance
 
 public:
 
+    /*
+     * Constructors and destructor.
+     */
+
     /** Create an instance from a file. */
     Instance(std::string instance_path, std::string format);
 
@@ -100,8 +104,26 @@ public:
     /** Get the total weight of the instance. */
     inline Weight total_weight() const { return total_weight_; }
 
+    /*
+     * Export.
+     */
+
     /** Write the instance to a file. */
     void write(std::string instance_path, std::string format);
+
+    /*
+     * Checkers.
+     */
+
+    /** Check if vertex index 'v' is within the correct range. */
+    inline void check_vertex_index(VertexId v) const
+    {
+        if (v < 0 || v >= number_of_vertices())
+            throw std::out_of_range(
+                    "Invalid vertex index: \"" + std::to_string(v) + "\"."
+                    + " Vertex indices should belong to [0, "
+                    + std::to_string(number_of_vertices() - 1) + "].");
+    }
 
 private:
 
