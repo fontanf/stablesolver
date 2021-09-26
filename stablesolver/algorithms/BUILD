@@ -65,7 +65,8 @@ cc_library(
                 ":localsearch_rowweighting",
                 ":largeneighborhoodsearch",
                 "@boost//:program_options",
-        ],
+        ] + CPLEX_DEP,
+        copts = CPLEX_COPTS,
         visibility = ["//visibility:public"],
 )
 

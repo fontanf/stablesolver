@@ -42,11 +42,12 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
 
     // Initialize local search structures.
     std::vector<LargeNeighborhoodSearchVertex> vertices(instance.number_of_vertices());
+    std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
     for (auto it_v = solution.vertices().out_begin(); it_v != solution.vertices().out_end(); ++it_v) {
         VertexId v = *it_v;
         for (const auto& edge: instance.vertex(v).edges)
             if (solution.contains(edge.v))
-                vertices[v].score += solution.penalty(edge.e);
+                vertices[v].score += solution_penalties[edge.e];
     }
     optimizationtools::IndexedBinaryHeap<std::pair<double, Counter>> scores_out(instance.number_of_vertices());
     optimizationtools::IndexedBinaryHeap<std::pair<double, Counter>> scores_in(instance.number_of_vertices());
@@ -80,7 +81,6 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
             auto p = scores_out.top();
             scores_out.pop();
             VertexId v = p.first;
-            Weight p_tmp = solution.penalty();
             solution.add(v);
             //std::cout << "add " << v
                 //<< " p.second " << p.second.first
@@ -89,17 +89,16 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
                 //<< " p " << solution.penalty()
                 //<< " p_tmp " << p_tmp
                 //<< std::endl;
-            assert(solution.penalty() == p_tmp + vertices[v].score);
             vertices[v].last_addition = output.iterations;
             sets_in_to_update.add(v);
             // Update scores.
             sets_out_to_update.clear();
             for (const auto& edge: instance.vertex(v).edges) {
                 if (solution.contains(edge.v)) {
-                    vertices[edge.v].score += solution.penalty(edge.e);
+                    vertices[edge.v].score += solution_penalties[edge.e];
                     sets_in_to_update.add(edge.v);
                 } else {
-                    vertices[edge.v].score += solution.penalty(edge.e);
+                    vertices[edge.v].score += solution_penalties[edge.e];
                     sets_out_to_update.add(edge.v);
                 }
             }
@@ -114,7 +113,7 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
         for (auto it = solution.edges().begin(2); it != solution.edges().end(2); ++it) {
             VertexId v1 = instance.edge(*it).v1;
             VertexId v2 = instance.edge(*it).v2;
-            solution.increment_penalty(*it);
+            solution_penalties[*it]++;
             vertices[v1].score++;
             vertices[v2].score++;
             sets_in_to_update.add(v1);
@@ -129,7 +128,6 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
             auto p = scores_in.top();
             scores_in.pop();
             VertexId v = p.first;
-            Weight p_tmp = solution.penalty();
             solution.remove(v);
             //std::cout << "remove " << v
                 //<< " p.second " << p.second.first
@@ -139,17 +137,16 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
                 //<< " p_tmp " << p_tmp
                 //<< std::endl;
             assert(p.second.first < 0);
-            assert(solution.penalty() == p_tmp - vertices[v].score);
             vertices[v].last_removal = output.iterations;
             sets_out_to_update.add(v);
             // Update scores.
             sets_in_to_update.clear();
             for (const auto& edge: instance.vertex(v).edges) {
                 if (solution.contains(edge.v)) {
-                    vertices[edge.v].score -= solution.penalty(edge.e);
+                    vertices[edge.v].score -= solution_penalties[edge.e];
                     sets_in_to_update.add(edge.v);
                 } else {
-                    vertices[edge.v].score -= solution.penalty(edge.e);
+                    vertices[edge.v].score -= solution_penalties[edge.e];
                     sets_out_to_update.add(edge.v);
                 }
             }
@@ -157,19 +154,17 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
             // Remove redundant sets.
             for (const auto& edge: instance.vertex(v).edges) {
                 if (!solution.contains(edge.v) && vertices[edge.v].score == 0) {
-                    Weight p_tmp = solution.penalty();
                     solution.add(edge.v);
                     //std::cout << "> add " << edge.v
                         //<< " score " << vertices[edge.v].score
                         //<< " weight " << instance.vertex(edge.v).weight
                         //<< " p " << solution.penalty()
                         //<< std::endl;
-                    assert(solution.penalty() == p_tmp);
                     vertices[edge.v].last_addition = output.iterations;
                     sets_in_to_update.add(edge.v);
                     for (const auto& edge_2: instance.vertex(edge.v).edges) {
                         assert(!solution.contains(edge_2.v));
-                        vertices[edge_2.v].score += solution.penalty(edge_2.e);
+                        vertices[edge_2.v].score += solution_penalties[edge_2.e];
                         sets_out_to_update.add(edge_2.v);
                     }
                 }

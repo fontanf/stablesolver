@@ -15,46 +15,72 @@ class Solution
 
 public:
 
+    /*
+     * Constructors and destructor.
+     */
+
+    /** Create an empty solution. */
     Solution(const Instance& instance);
+    /** Create a solution from a certificate file. */
     Solution(const Instance& instance, std::string certificate_path);
+    /** Copy constructor. */
     Solution(const Solution& solution);
+    /** Copy assignment operator. */
     Solution& operator=(const Solution& solution);
+    /** Destructor. */
     ~Solution() { }
-    bool operator==(const Solution& solution);
 
+    /** Get the instance. */
     inline const Instance& instance() const { return instance_; }
+    /** Get the number of vertices of the solution. */
     inline VertexId number_of_vertices() const { return vertices_.size(); }
+    /** Get the weight of the solution. */
     inline Weight weight() const { return weight_; }
+    /** Get the weight of connected component c. */
     inline Weight weight(ComponentId c) const { return component_weights_[c]; }
-    inline Weight penalty(EdgeId e) const { return penalties_[e]; }
-    inline Weight penalty() const { return penalty_; }
+    /** Return 'true' iff vertex v is in the solution. */
     inline int8_t contains(VertexId v) const { return vertices_.contains(v); }
+    /** Return the number of ends of edge e in the solution. */
     inline int8_t covers(EdgeId e) const { return edges_[e]; }
+    /** Return 'true' iff the solution is feasible. */
     inline bool feasible() const { return (edges_.number_of_elements(2) == 0); }
+    /** Return 'true' iff component c is feasible. */
     inline bool feasible(ComponentId c) const { return component_number_of_conflictss_[c] == 0; }
-
+    /** Get the set of vertices of the solution. */
     const optimizationtools::IndexedSet& vertices() const { return vertices_; };
+    /** Get the set of edges of the solution. */
     const optimizationtools::DoublyIndexedMap& edges() const { return edges_; }
 
+    /*
+     * Setters.
+     */
+
+    /** Add vertex v to the solution. */
     inline void add(VertexId v);
+    /** Remove vertex v from the solution. */
     inline void remove(VertexId v);
 
-    void increment_penalty(EdgeId e, Weight p = 1);
-    void set_penalty(EdgeId e, Weight p);
+    /*
+     * Export.
+     */
 
+    /** Write the solution to a file. */
     void write(std::string certificate_path);
 
 private:
 
+    /** Instance. */
     const Instance& instance_;
-
+    /** Set of vertices of the solution. */
     optimizationtools::IndexedSet vertices_;
+    /** Map storing for each edge, the number of ends in the solution. */
     optimizationtools::DoublyIndexedMap edges_;
+    /** Number of conflicts in each component. */
     std::vector<EdgeId> component_number_of_conflictss_;
+    /** Weights of each component. */
     std::vector<Weight> component_weights_;
-    std::vector<Weight> penalties_;
+    /** Weight of the solution. */
     Weight weight_ = 0;
-    Weight penalty_ = 0;
 
 };
 
@@ -62,19 +88,18 @@ void Solution::add(VertexId v)
 {
     // Checks.
     instance().check_vertex_index(v);
-    if (contains(v))
+    if (contains(v)) {
         throw std::invalid_argument(
                 "Cannot add vertex " + std::to_string(v)
                 + " which is already in the solution");
+    }
 
     ComponentId c = instance().vertex(v).component;
     vertices_.add(v);
     for (const auto& edge: instance().vertex(v).edges) {
         edges_.set(edge.e, edges_[edge.e] + 1);
-        if (covers(edge.e) == 2) {
-            penalty_ += penalties_[edge.e];
+        if (covers(edge.e) == 2)
             component_number_of_conflictss_[c]++;
-        }
         assert(covers(edge.e) < 2 || (contains(instance().edge(edge.e).v1) && contains(instance().edge(edge.e).v2)));
     }
     weight_               += instance().vertex(v).weight;
@@ -85,17 +110,16 @@ void Solution::remove(VertexId v)
 {
     // Checks.
     instance().check_vertex_index(v);
-    if (!contains(v))
+    if (!contains(v)) {
         throw std::invalid_argument(
                 "Cannot remove vertex " + std::to_string(v)
                 + " which is not in the solution");
+    }
 
     ComponentId c = instance().vertex(v).component;
     for (const auto& edge: instance().vertex(v).edges) {
-        if (covers(edge.e) == 2) {
-            penalty_ -= penalties_[edge.e];
+        if (covers(edge.e) == 2)
             component_number_of_conflictss_[c]--;
-        }
         edges_.set(edge.e, edges_[edge.e] - 1);
         assert(covers(edge.e) < 2 || (contains(instance().edge(edge.e).v1) && contains(instance().edge(edge.e).v2)));
     }

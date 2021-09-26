@@ -9,8 +9,7 @@ Solution::Solution(const Instance& instance):
     vertices_(instance.number_of_vertices()),
     edges_(instance.number_of_edges(), 3),
     component_number_of_conflictss_(instance.number_of_components(), 0),
-    component_weights_(instance.number_of_components(), 0),
-    penalties_(instance.number_of_edges(), 1)
+    component_weights_(instance.number_of_components(), 0)
 {
     for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
         edges_.set(e, 0);
@@ -21,8 +20,7 @@ Solution::Solution(const Instance& instance, std::string certificate_path):
     vertices_(instance.number_of_vertices()),
     edges_(instance.number_of_edges(), 3),
     component_number_of_conflictss_(instance.number_of_components(), 0),
-    component_weights_(instance.number_of_components(), 0),
-    penalties_(instance.number_of_edges(), 1)
+    component_weights_(instance.number_of_components(), 0)
 {
     for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
         edges_.set(e, 0);
@@ -48,9 +46,7 @@ Solution::Solution(const Solution& solution):
     edges_(solution.edges_),
     component_number_of_conflictss_(solution.component_number_of_conflictss_),
     component_weights_(solution.component_weights_),
-    penalties_(solution.penalties_),
-    weight_(solution.weight_),
-    penalty_(solution.penalty_)
+    weight_(solution.weight_)
 { }
 
 Solution& Solution::operator=(const Solution& solution)
@@ -61,27 +57,9 @@ Solution& Solution::operator=(const Solution& solution)
         edges_                      = solution.edges_;
         component_number_of_conflictss_ = solution.component_number_of_conflictss_;
         component_weights_          = solution.component_weights_;
-        penalties_                  = solution.penalties_;
         weight_                     = solution.weight_;
-        penalty_                    = solution.penalty_;
     }
     return *this;
-}
-
-void Solution::set_penalty(EdgeId e, Weight p)
-{
-    if (covers(e) == 2)
-        penalty_ -= penalties_[e];
-    penalties_[e] = p;
-    if (covers(e) == 2)
-        penalty_ += penalties_[e];
-}
-
-void Solution::increment_penalty(EdgeId e, Weight p)
-{
-    penalties_[e] += p;
-    if (covers(e) == 2)
-        penalty_ += p;
 }
 
 void Solution::write(std::string certificate_path)

@@ -59,6 +59,7 @@ void localsearch_rowweighting_1_worker(
     for (ComponentId c = 0; c < instance.number_of_components(); ++c)
         components[c].iteration_max = ((c == 0)? 0: components[c - 1].iteration_max)
             + instance.component(c).edges.size();
+    std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
 
     ComponentId c = 0;
     for (Counter iterations = 1; !parameters.info.needs_to_end(); ++iterations) {
@@ -98,18 +99,20 @@ void localsearch_rowweighting_1_worker(
                 VertexId v = *it_v;
                 if (instance.vertex(v).component != c)
                     continue;
-                solution.add(v);
+                Penalty p = 0;
+                for (const auto& edge: instance.vertex(v).edges)
+                    if (solution.covers(edge.e) == 1)
+                        p += solution_penalties[edge.e];
                 // Update best move.
                 if (v_best == -1 // First move considered.
-                        || p_best > solution.penalty() // Strictly better.
+                        || p_best > p // Strictly better.
                         // Equivalent, but s has not been considered for a
                         // longer time.
-                        || (p_best == solution.penalty()
+                        || (p_best == p
                             && vertices[v_best].timestamp > vertices[v].timestamp)) {
                     v_best = v;
-                    p_best = solution.penalty();
+                    p_best = p;
                 }
-                solution.remove(v);
             }
             // Apply best move
             solution.add(v_best);
@@ -145,28 +148,34 @@ void localsearch_rowweighting_1_worker(
         for (VertexId v1: {instance.edge(e).v1, instance.edge(e).v2}) {
             if (v1 == component.v_last_added)
                 continue;
+            Penalty p0 = 0;
+            for (const auto& edge: instance.vertex(v1).edges)
+                if (solution.covers(edge.e) == 2)
+                    p0 -= solution_penalties[edge.e];
             solution.remove(v1);
-            if (p_best == -1 || solution.penalty() <= p_best) {
+            if (p_best == -1 || p0 <= p_best) {
                 // For each neighbor s2 of s1 which is neither part of the
                 // solution, nor the last set added, nor mandatory.
                 for (const auto& edge: instance.vertex(v1).edges) {
                     if (edge.v == component.v_last_removed
                             || solution.contains(edge.v))
                         continue;
-                    solution.add(edge.v);
+                    Penalty p = p0;
+                    for (const auto& edge_2: instance.vertex(edge.v).edges)
+                        if (solution.covers(edge_2.e) == 1)
+                            p += solution_penalties[edge_2.e];
                     // If the new solution is better, we update the best move.
                     if (v1_best == -1 // First move considered.
-                            || p_best > solution.penalty() // Strictly better.
+                            || p_best > p // Strictly better.
                             // Equivalent, but s1 and s2 have not been
                             // considered for a longer time.
-                            || (p_best == solution.penalty()
+                            || (p_best == p
                                 && vertices[v1_best].timestamp + vertices[v2_best].timestamp
                                 > vertices[v1].timestamp + vertices[edge.v].timestamp)) {
                         v1_best = v1;
                         v2_best = edge.v;
-                        p_best = solution.penalty();
+                        p_best = p;
                     }
-                    solution.remove(edge.v);
                 }
             }
             solution.add(v1);
@@ -197,14 +206,14 @@ void localsearch_rowweighting_1_worker(
         // integer overflow (this very rarely occur in practice).
         bool reduce = false;
         for (auto it = solution.edges().begin(2); it != solution.edges().end(2); ++it) {
-            solution.increment_penalty(*it);
-            if (solution.penalty(*it) > std::numeric_limits<Weight>::max() / instance.number_of_edges())
+            solution_penalties[*it]++;
+            if (solution_penalties[*it] > std::numeric_limits<Weight>::max() / 2)
                 reduce = true;
         }
         if (reduce) {
             //std::cout << "reduce" << std::endl;
             for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
-                solution.set_penalty(e, (solution.penalty(e) - 1) / 2 + 1);
+                solution_penalties[e] = (solution_penalties[e] - 1) / 2 + 1;
         }
 
         // Update component.iterations and component.iterations_without_improvment.
@@ -272,12 +281,13 @@ void localsearch_rowweighting_2_worker(
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeighting2Vertex> vertices(instance.number_of_vertices());
+    std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
     for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
         if (solution.covers(e) == 1) {
             if (!solution.contains(instance.edge(e).v1))
-                vertices[instance.edge(e).v1].score += solution.penalty(e);
+                vertices[instance.edge(e).v1].score += solution_penalties[e];
             if (!solution.contains(instance.edge(e).v2))
-                vertices[instance.edge(e).v2].score += solution.penalty(e);
+                vertices[instance.edge(e).v2].score += solution_penalties[e];
         }
     }
     VertexId v_last_removed = -1;
@@ -314,7 +324,6 @@ void localsearch_rowweighting_2_worker(
                 }
             }
             // Apply best move
-            Weight tmp = solution.penalty();
             solution.add(v_best);
             //std::cout << "it " << iterations
                 //<< " v_best " << v_best
@@ -323,11 +332,10 @@ void localsearch_rowweighting_2_worker(
                 //<< " v " << solution.number_of_vertices()
                 //<< " c " << solution.edges().number_of_edges(2)
                 //<< std::endl;
-            assert(solution.penalty() == tmp + score_best);
             // Update scores.
             for (const auto& edge: instance.vertex(v_best).edges)
                 if (solution.covers(edge.e) >= 1)
-                    vertices[edge.v].score += solution.penalty(edge.e);
+                    vertices[edge.v].score += solution_penalties[edge.e];
             // Update vertices
             vertices[v_best].timestamp = iterations;
             vertices[v_best].last_addition = iterations;
@@ -352,7 +360,6 @@ void localsearch_rowweighting_2_worker(
             }
         }
         // Apply move
-        Weight tmp1 = solution.penalty();
         solution.add(v1_best);
         //std::cout << "it " << iterations
             //<< " v1_best " << v1_best
@@ -362,11 +369,10 @@ void localsearch_rowweighting_2_worker(
             //<< " v " << solution.number_of_vertices()
             //<< " c " << solution.edges().number_of_edges(2)
             //<< std::endl;
-        assert(solution.penalty() == tmp1 + score1_best);
         // Update scores.
         for (const auto& edge: instance.vertex(v1_best).edges)
             if (solution.covers(edge.e) >= 1)
-                vertices[edge.v].score += solution.penalty(edge.e);
+                vertices[edge.v].score += solution_penalties[edge.e];
         // Update sets
         vertices[v1_best].timestamp = iterations;
         vertices[v1_best].last_addition = iterations;
@@ -399,7 +405,6 @@ void localsearch_rowweighting_2_worker(
         if (v2_best == -1)
             v2_best = v1_best;
         // Apply move
-        Weight tmp2 = solution.penalty();
         solution.remove(v2_best);
         //std::cout << "it " << iterations
             //<< " v2_best " << v2_best
@@ -408,11 +413,10 @@ void localsearch_rowweighting_2_worker(
             //<< " v " << solution.number_of_vertices()
             //<< " c " << solution.edges().number_of_edges(2)
             //<< std::endl;
-        assert(solution.penalty() == tmp2 - score2_best);
         // Update scores.
         for (const auto& edge: instance.vertex(v2_best).edges)
             if (solution.covers(edge.e) <= 1)
-                vertices[edge.v].score -= solution.penalty(edge.e);
+                vertices[edge.v].score -= solution_penalties[edge.e];
         // Update sets
         vertices[v2_best].timestamp = iterations;
         vertices[v2_best].last_removal  = iterations;
@@ -423,7 +427,7 @@ void localsearch_rowweighting_2_worker(
         // Update penalties: we increment the penalty of each edge with both
         // ends in the solution.
         for (auto it = solution.edges().begin(2); it != solution.edges().end(2); ++it) {
-            solution.increment_penalty(*it);
+            solution_penalties[*it]++;
             vertices[instance.edge(*it).v1].score++;
             vertices[instance.edge(*it).v2].score++;
         }
