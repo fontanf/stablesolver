@@ -195,11 +195,12 @@ Instance Instance::complementary()
     for (VertexId v = 0; v < number_of_vertices(); ++v){
         instance.set_weight(v, vertex(v).weight);
         neighbors.clear();
+        neighbors.add(v);
         for (const auto& edge: vertex(v).edges)
-            if (edge.v > v)
-                neighbors.add(edge.v);
+            neighbors.add(edge.v);
         for (auto it = neighbors.out_begin(); it != neighbors.out_end(); ++it)
-            instance.add_edge(v, *it);
+            if (*it > v)
+                instance.add_edge(v, *it);
     }
 
     return instance;
