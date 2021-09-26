@@ -85,6 +85,9 @@ void localsearch_rowweighting_1_worker(
                     << ", comp " << c
                     << " (" << component.iterations_without_improvment << ")";
                 output.update_solution(solution, c, ss, parameters.info);
+                parameters.info.output->mutex_solutions.lock();
+                parameters.new_solution_callback(output);
+                parameters.info.output->mutex_solutions.unlock();
             }
             // Update statistics
             if (component.iterations_without_improvment > 0)
@@ -235,6 +238,9 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
+    parameters.info.output->mutex_solutions.lock();
+    parameters.new_solution_callback(output);
+    parameters.info.output->mutex_solutions.unlock();
 
     auto seeds = optimizationtools::bob_floyd(parameters.number_of_threads, std::numeric_limits<Seed>::max(), generator);
     std::vector<std::thread> threads;
@@ -306,6 +312,9 @@ void localsearch_rowweighting_2_worker(
                     << ", it " << iterations
                     << " (" << iterations_without_improvment << ")";
                 output.update_solution(solution, ss, parameters.info);
+                parameters.info.output->mutex_solutions.lock();
+                parameters.new_solution_callback(output);
+                parameters.info.output->mutex_solutions.unlock();
             }
 
             // Update statistics
@@ -447,6 +456,9 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
+    parameters.info.output->mutex_solutions.lock();
+    parameters.new_solution_callback(output);
+    parameters.info.output->mutex_solutions.unlock();
 
     auto seeds = optimizationtools::bob_floyd(parameters.number_of_threads, std::numeric_limits<Seed>::max(), generator);
     std::vector<std::thread> threads;
