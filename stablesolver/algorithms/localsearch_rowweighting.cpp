@@ -132,9 +132,8 @@ void localsearch_rowweighting_1_worker(
         }
 
         // Draw randomly an uncovered edge e.
-        std::uniform_int_distribution<EdgeId> d_e(
-                0, solution.edges().number_of_elements(2) - 1);
-        EdgeId e = *(solution.edges().begin(2) + d_e(generator));
+        std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
+        EdgeId e = *std::next(solution.conflicts().begin(), d_e(generator));
         //std::cout << "it " << iterations
             //<< " e " << e
             //<< " covers " << (int)solution.covers(e)
@@ -208,9 +207,9 @@ void localsearch_rowweighting_1_worker(
         // "reduce" becomes true if we divide by 2 all penalties to avoid
         // integer overflow (this very rarely occur in practice).
         bool reduce = false;
-        for (auto it = solution.edges().begin(2); it != solution.edges().end(2); ++it) {
+        for (auto it = solution.conflicts().begin(); it != solution.conflicts().end(); ++it) {
             solution_penalties[*it]++;
-            if (solution_penalties[*it] > std::numeric_limits<Weight>::max() / 2)
+            if (solution_penalties[*it] > std::numeric_limits<Penalty>::max() / 2)
                 reduce = true;
         }
         if (reduce) {
@@ -389,9 +388,8 @@ void localsearch_rowweighting_2_worker(
         v_last_added = v1_best;
 
         // Draw randomly an uncovered edge e.
-        std::uniform_int_distribution<EdgeId> d_e(
-                0, solution.edges().number_of_elements(2) - 1);
-        EdgeId e = *(solution.edges().begin(2) + d_e(generator));
+        std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
+        EdgeId e = *std::next(solution.conflicts().begin(), d_e(generator));
         //std::cout << "it " << iterations
             //<< " e " << e
             //<< " covers " << (int)solution.covers(e)
@@ -435,7 +433,7 @@ void localsearch_rowweighting_2_worker(
 
         // Update penalties: we increment the penalty of each edge with both
         // ends in the solution.
-        for (auto it = solution.edges().begin(2); it != solution.edges().end(2); ++it) {
+        for (auto it = solution.conflicts().begin(); it != solution.conflicts().end(); ++it) {
             solution_penalties[*it]++;
             vertices[instance.edge(*it).v1].score++;
             vertices[instance.edge(*it).v2].score++;

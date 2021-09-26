@@ -6,6 +6,7 @@
 #include "optimizationtools/indexed_map.hpp"
 
 #include <functional>
+#include <unordered_set>
 
 namespace stablesolver
 {
@@ -41,15 +42,17 @@ public:
     /** Return 'true' iff vertex v is in the solution. */
     inline int8_t contains(VertexId v) const { return vertices_.contains(v); }
     /** Return the number of ends of edge e in the solution. */
-    inline int8_t covers(EdgeId e) const { return edges_[e]; }
+    inline int8_t covers(EdgeId e);
+    /** Get the number of conflitcs in the solution. */
+    EdgePos number_of_conflicts() const { return conflicts_.size(); }
     /** Return 'true' iff the solution is feasible. */
-    inline bool feasible() const { return (edges_.number_of_elements(2) == 0); }
+    inline bool feasible() const { return (conflicts_.empty()); }
     /** Return 'true' iff component c is feasible. */
     inline bool feasible(ComponentId c) const { return component_number_of_conflictss_[c] == 0; }
     /** Get the set of vertices of the solution. */
     const optimizationtools::IndexedSet& vertices() const { return vertices_; };
     /** Get the set of edges of the solution. */
-    const optimizationtools::DoublyIndexedMap& edges() const { return edges_; }
+    const std::unordered_set<EdgeId>& conflicts() const { return conflicts_; }
 
     /*
      * Setters.
@@ -73,8 +76,8 @@ private:
     const Instance& instance_;
     /** Set of vertices of the solution. */
     optimizationtools::IndexedSet vertices_;
-    /** Map storing for each edge, the number of ends in the solution. */
-    optimizationtools::DoublyIndexedMap edges_;
+    /** Set of conflicting edges. */
+    std::unordered_set<EdgeId> conflicts_;
     /** Number of conflicts in each component. */
     std::vector<EdgeId> component_number_of_conflictss_;
     /** Weights of each component. */
@@ -83,6 +86,23 @@ private:
     Weight weight_ = 0;
 
 };
+
+int8_t Solution::covers(EdgeId e)
+{
+    if (contains(instance_.edge(e).v1)) {
+        if (contains(instance_.edge(e).v2)) {
+            return 2;
+        } else {
+            return 1;
+        }
+    } else {
+        if (contains(instance_.edge(e).v2)) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
 
 void Solution::add(VertexId v)
 {
@@ -95,15 +115,15 @@ void Solution::add(VertexId v)
     }
 
     ComponentId c = instance().vertex(v).component;
-    vertices_.add(v);
     for (const auto& edge: instance().vertex(v).edges) {
-        edges_.set(edge.e, edges_[edge.e] + 1);
-        if (covers(edge.e) == 2)
+        if (covers(edge.e) == 1) {
             component_number_of_conflictss_[c]++;
-        assert(covers(edge.e) < 2 || (contains(instance().edge(edge.e).v1) && contains(instance().edge(edge.e).v2)));
+            conflicts_.insert(edge.e);
+        }
     }
     weight_               += instance().vertex(v).weight;
     component_weights_[c] += instance().vertex(v).weight;
+    vertices_.add(v);
 }
 
 void Solution::remove(VertexId v)
@@ -118,14 +138,14 @@ void Solution::remove(VertexId v)
 
     ComponentId c = instance().vertex(v).component;
     for (const auto& edge: instance().vertex(v).edges) {
-        if (covers(edge.e) == 2)
+        if (covers(edge.e) == 2) {
             component_number_of_conflictss_[c]--;
-        edges_.set(edge.e, edges_[edge.e] - 1);
-        assert(covers(edge.e) < 2 || (contains(instance().edge(edge.e).v1) && contains(instance().edge(edge.e).v2)));
+            conflicts_.erase(edge.e);
+        }
     }
-    vertices_.remove(v);
     weight_               -= instance().vertex(v).weight;
     component_weights_[c] -= instance().vertex(v).weight;
+    vertices_.remove(v);
 }
 
 std::ostream& operator<<(std::ostream& os, const Solution& solution);

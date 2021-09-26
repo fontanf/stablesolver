@@ -110,7 +110,7 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
 
         // Update penalties: we increment the penalty of each uncovered element.
         sets_in_to_update.clear();
-        for (auto it = solution.edges().begin(2); it != solution.edges().end(2); ++it) {
+        for (auto it = solution.conflicts().begin(); it != solution.conflicts().end(); ++it) {
             VertexId v1 = instance.edge(*it).v1;
             VertexId v2 = instance.edge(*it).v2;
             solution_penalties[*it]++;

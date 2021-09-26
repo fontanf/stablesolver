@@ -7,24 +7,17 @@ using namespace stablesolver;
 Solution::Solution(const Instance& instance):
     instance_(instance),
     vertices_(instance.number_of_vertices()),
-    edges_(instance.number_of_edges(), 3),
     component_number_of_conflictss_(instance.number_of_components(), 0),
     component_weights_(instance.number_of_components(), 0)
 {
-    for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
-        edges_.set(e, 0);
 }
 
 Solution::Solution(const Instance& instance, std::string certificate_path):
     instance_(instance),
     vertices_(instance.number_of_vertices()),
-    edges_(instance.number_of_edges(), 3),
     component_number_of_conflictss_(instance.number_of_components(), 0),
     component_weights_(instance.number_of_components(), 0)
 {
-    for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
-        edges_.set(e, 0);
-
     if (certificate_path.empty())
         return;
     std::ifstream file(certificate_path);
@@ -43,7 +36,7 @@ Solution::Solution(const Instance& instance, std::string certificate_path):
 Solution::Solution(const Solution& solution):
     instance_(solution.instance_),
     vertices_(solution.vertices_),
-    edges_(solution.edges_),
+    conflicts_(solution.conflicts_),
     component_number_of_conflictss_(solution.component_number_of_conflictss_),
     component_weights_(solution.component_weights_),
     weight_(solution.weight_)
@@ -53,11 +46,11 @@ Solution& Solution::operator=(const Solution& solution)
 {
     if (this != &solution) {
         assert(&instance_ == &solution.instance_);
-        vertices_                   = solution.vertices_;
-        edges_                      = solution.edges_;
+        vertices_                       = solution.vertices_;
+        conflicts_                      = solution.conflicts_;
         component_number_of_conflictss_ = solution.component_number_of_conflictss_;
-        component_weights_          = solution.component_weights_;
-        weight_                     = solution.weight_;
+        component_weights_              = solution.component_weights_;
+        weight_                         = solution.weight_;
     }
     return *this;
 }

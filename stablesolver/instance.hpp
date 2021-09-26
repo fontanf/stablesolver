@@ -11,13 +11,13 @@
 namespace stablesolver
 {
 
-typedef int64_t VertexId; // v
-typedef int64_t VertexPos; // v_pos
+typedef int32_t VertexId; // v
+typedef int32_t VertexPos; // v_pos
 typedef int64_t EdgeId; // e
 typedef int64_t EdgePos; // e_pos
 typedef int64_t Weight; // w
 typedef int64_t ComponentId; // c
-typedef int64_t Penalty;
+typedef int16_t Penalty;
 typedef int64_t Counter;
 typedef int64_t Seed;
 
