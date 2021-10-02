@@ -30,8 +30,8 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
 - Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch --threads 3"`
 
 - Row weighting local search (unweighted only)
-  - based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) `-a "localsearch_rowweighting_1 --threads 4 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
-  - based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) `-a "localsearch_rowweighting_2 --threads 4 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+  - based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) `-a "localsearch_rowweighting_1 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+  - based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) `-a "localsearch_rowweighting_2 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
 
 - Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) `-a "largeneighborhoodsearch"`
 
