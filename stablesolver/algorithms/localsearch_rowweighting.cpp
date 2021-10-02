@@ -134,7 +134,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 
         // Draw randomly an uncovered edge e.
         std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
-        EdgeId e = *std::next(solution.conflicts().begin(), d_e(generator));
+        EdgeId e_cur = *std::next(solution.conflicts().begin(), d_e(generator));
         //std::cout << "it " << iterations
             //<< " e " << e
             //<< " covers " << (int)solution.covers(e)
@@ -148,7 +148,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         Weight    p_best = -1;
         // For each set s1 covering edge e which is not part of the solution
         // and which is not the last set removed.
-        for (VertexId v1: {instance.edge(e).v1, instance.edge(e).v2}) {
+        for (VertexId v1: {instance.edge(e_cur).v1, instance.edge(e_cur).v2}) {
             if (v1 == component.v_last_added)
                 continue;
             Penalty p0 = 0;
@@ -193,6 +193,20 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
             vertices[v1_best].last_removal  = component.iterations;
             vertices[v2_best].last_addition = component.iterations;
             vertices[v1_best].iterations += (component.iterations - vertices[v1_best].last_addition);
+            // Update penalties.
+            bool reduce = false;
+            for (const auto& edge: instance.vertex(v2_best).edges) {
+                if (solution.covers(edge.e) == 2) {
+                    solution_penalties[edge.e]++;
+                    if (solution_penalties[edge.e] > std::numeric_limits<Penalty>::max() / 2)
+                        reduce = true;
+                }
+            }
+            if (reduce) {
+                //std::cout << "reduce" << std::endl;
+                for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
+                    solution_penalties[e] = (solution_penalties[e] - 1) / 2 + 1;
+            }
         }
         // Update tabu
         component.v_last_removed = v1_best;
@@ -203,21 +217,6 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
             //<< " p " << solution.penalty()
             //<< " v " << solution.number_of_vertices()
             //<< std::endl;
-
-        // Update penalties: we increment the penalty of each uncovered edge.
-        // "reduce" becomes true if we divide by 2 all penalties to avoid
-        // integer overflow (this very rarely occur in practice).
-        bool reduce = false;
-        for (auto it = solution.conflicts().begin(); it != solution.conflicts().end(); ++it) {
-            solution_penalties[*it]++;
-            if (solution_penalties[*it] > std::numeric_limits<Penalty>::max() / 2)
-                reduce = true;
-        }
-        if (reduce) {
-            //std::cout << "reduce" << std::endl;
-            for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
-                solution_penalties[e] = (solution_penalties[e] - 1) / 2 + 1;
-        }
 
         // Update component.iterations and component.iterations_without_improvment.
         component.iterations++;
@@ -298,7 +297,7 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
             iterations_without_improvment = 0;
 
             // Find the best shift move.
-            VertexId   v_best = -1;
+            VertexId v_best = -1;
             Weight score_best = -1;
             for (auto it_v = solution.vertices().out_begin(); it_v != solution.vertices().out_end(); ++it_v) {
                 if (v_best == -1
@@ -339,7 +338,7 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
         }
 
         // Find the cheapest vertex to add.
-        VertexId   v1_best = -1;
+        VertexId v1_best = -1;
         Weight score1_best = -1;
         for (auto it_v = solution.vertices().out_begin(); it_v != solution.vertices().out_end(); ++it_v) {
             VertexId v = *it_v;
@@ -383,16 +382,16 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
 
         // Draw randomly an uncovered edge e.
         std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
-        EdgeId e = *std::next(solution.conflicts().begin(), d_e(generator));
+        EdgeId e_cur = *std::next(solution.conflicts().begin(), d_e(generator));
         //std::cout << "it " << iterations
             //<< " e " << e
             //<< " covers " << (int)solution.covers(e)
             //<< std::endl;
 
         // Find the best vertex to remove.
-        VertexId   v2_best = -1;
+        VertexId v2_best = -1;
         Weight score2_best = -1;
-        for (VertexId v: {instance.edge(e).v1, instance.edge(e).v2}) {
+        for (VertexId v: {instance.edge(e_cur).v1, instance.edge(e_cur).v2}) {
             if (v == v_last_added)
                 continue;
             if (v2_best == -1
