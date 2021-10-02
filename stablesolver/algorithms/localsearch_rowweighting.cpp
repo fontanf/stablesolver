@@ -11,9 +11,9 @@ using namespace stablesolver;
 LocalSearchRowWeighting1Output& LocalSearchRowWeighting1Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    //PUT(info, "Algorithm", "Iterations", iterations);
+    PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    //VER(info, "Iterations: " << iterations << std::endl);
+    VER(info, "Number of iterations: " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -39,17 +39,20 @@ struct LocalSearchRowWeighting1Vertex
     Counter iterations = 0;
 };
 
-void localsearch_rowweighting_1_worker(
-        const Instance& instance,
-        Seed seed,
-        LocalSearchRowWeighting1OptionalParameters parameters,
-        LocalSearchRowWeighting1Output& output,
-        Counter thread_id)
+LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
+        Instance& instance,
+        std::mt19937_64& generator,
+        LocalSearchRowWeighting1OptionalParameters parameters)
 {
-    std::mt19937_64 generator(seed);
-    parameters.info.output->mutex_solutions.lock();
-    Solution solution = output.solution;
-    parameters.info.output->mutex_solutions.unlock();
+    VER(parameters.info, "*** localsearch_rowweighting_1 ***" << std::endl);
+
+    // Compute initial greedy solution.
+    LocalSearchRowWeighting1Output output(instance, parameters.info);
+    Solution solution = greedy_gwmin(instance).solution;
+    std::stringstream ss;
+    ss << "initial solution";
+    output.update_solution(solution, ss, parameters.info);
+    parameters.new_solution_callback(output);
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeighting1Vertex> vertices(instance.number_of_vertices());
@@ -62,11 +65,11 @@ void localsearch_rowweighting_1_worker(
     std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
 
     ComponentId c = 0;
-    for (Counter iterations = 1; !parameters.info.needs_to_end(); ++iterations) {
+    for (output.number_of_iterations = 0; !parameters.info.needs_to_end(); ++output.number_of_iterations) {
         //std::cout << "it " << iterations << std::endl;
 
         // Compute component
-        if (iterations % (components.back().iteration_max + 1) >= components[c].iteration_max) {
+        if (output.number_of_iterations % (components.back().iteration_max + 1) >= components[c].iteration_max) {
             c = (c + 1) % instance.number_of_components();
             //std::cout << "c " << c << " " << components[c].iteration_max
                 //<< " e " << instance.component(c).edges.size()
@@ -80,10 +83,8 @@ void localsearch_rowweighting_1_worker(
             if (output.solution.weight(c) < solution.weight(c)) {
                 // Update best solution
                 std::stringstream ss;
-                ss << "thread " << thread_id
-                    << ", it " << iterations
-                    << ", comp " << c
-                    << " (" << component.iterations_without_improvment << ")";
+                ss << "iterations " << output.number_of_iterations
+                    << ", component " << c;
                 output.update_solution(solution, c, ss, parameters.info);
                 parameters.info.output->mutex_solutions.lock();
                 parameters.new_solution_callback(output);
@@ -120,7 +121,7 @@ void localsearch_rowweighting_1_worker(
             // Apply best move
             solution.add(v_best);
             // Update sets
-            vertices[v_best].timestamp = iterations;
+            vertices[v_best].timestamp = output.number_of_iterations;
             vertices[v_best].last_addition = component.iterations;
             // Update tabu
             component.v_last_added = v_best;
@@ -187,8 +188,8 @@ void localsearch_rowweighting_1_worker(
             solution.remove(v1_best);
             solution.add(v2_best);
             // Update sets
-            vertices[v1_best].timestamp = iterations;
-            vertices[v2_best].timestamp = iterations;
+            vertices[v1_best].timestamp = output.number_of_iterations;
+            vertices[v2_best].timestamp = output.number_of_iterations;
             vertices[v1_best].last_removal  = component.iterations;
             vertices[v2_best].last_addition = component.iterations;
             vertices[v1_best].iterations += (component.iterations - vertices[v1_best].last_addition);
@@ -222,32 +223,6 @@ void localsearch_rowweighting_1_worker(
         component.iterations++;
         component.iterations_without_improvment++;
     }
-}
-
-LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
-        Instance& instance,
-        std::mt19937_64& generator,
-        LocalSearchRowWeighting1OptionalParameters parameters)
-{
-    VER(parameters.info, "*** localsearch_rowweighting_1 ***" << std::endl);
-
-    // Compute initial greedy solution.
-    LocalSearchRowWeighting1Output output(instance, parameters.info);
-    Solution solution = greedy_gwmin(instance).solution;
-    std::stringstream ss;
-    ss << "initial solution";
-    output.update_solution(solution, ss, parameters.info);
-    parameters.info.output->mutex_solutions.lock();
-    parameters.new_solution_callback(output);
-    parameters.info.output->mutex_solutions.unlock();
-
-    auto seeds = optimizationtools::bob_floyd(parameters.number_of_threads, std::numeric_limits<Seed>::max(), generator);
-    std::vector<std::thread> threads;
-    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
-        threads.push_back(std::thread(localsearch_rowweighting_1_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
-
-    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
-        threads[thread_id].join();
 
     return output.algorithm_end(parameters.info);
 }
@@ -257,9 +232,9 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    //PUT(info, "Algorithm", "Iterations", iterations);
+    PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    //VER(info, "Iterations: " << iterations << std::endl);
+    VER(info, "Number of iterations: " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -272,16 +247,21 @@ struct LocalSearchRowWeighting2Vertex
     Weight  score = 0;
 };
 
-void localsearch_rowweighting_2_worker(
+LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
         const Instance& instance,
-        Seed seed,
-        LocalSearchRowWeighting2OptionalParameters parameters,
-        LocalSearchRowWeighting2Output& output,
-        Counter thread_id)
+        std::mt19937_64& generator,
+        LocalSearchRowWeighting2OptionalParameters parameters)
 {
-    std::mt19937_64 generator(seed);
+    VER(parameters.info, "*** localsearch_rowweighting_2 ***" << std::endl);
+
+    // Compute initial greedy solution.
+    LocalSearchRowWeighting2Output output(instance, parameters.info);
+    Solution solution = greedy_gwmin(instance).solution;
+    std::stringstream ss;
+    ss << "initial solution";
+    output.update_solution(solution, ss, parameters.info);
     parameters.info.output->mutex_solutions.lock();
-    Solution solution = output.solution;
+    parameters.new_solution_callback(output);
     parameters.info.output->mutex_solutions.unlock();
 
     // Initialize local search structures.
@@ -299,7 +279,7 @@ void localsearch_rowweighting_2_worker(
     VertexId v_last_added = -1;
 
     Counter iterations_without_improvment = 0;
-    for (Counter iterations = 1; !parameters.info.needs_to_end(); ++iterations, iterations_without_improvment++) {
+    for (output.number_of_iterations = 0; !parameters.info.needs_to_end(); ++output.number_of_iterations, iterations_without_improvment++) {
         //std::cout << "it " << iterations << std::endl;
 
         while (solution.feasible()) {
@@ -307,9 +287,7 @@ void localsearch_rowweighting_2_worker(
             // Update best solution
             if (output.solution.weight() < solution.weight()) {
                 std::stringstream ss;
-                ss << "thread " << thread_id
-                    << ", it " << iterations
-                    << " (" << iterations_without_improvment << ")";
+                ss << "iteration " << output.number_of_iterations;
                 output.update_solution(solution, ss, parameters.info);
                 parameters.info.output->mutex_solutions.lock();
                 parameters.new_solution_callback(output);
@@ -345,11 +323,19 @@ void localsearch_rowweighting_2_worker(
                 if (solution.covers(edge.e) >= 1)
                     vertices[edge.v].score += solution_penalties[edge.e];
             // Update vertices
-            vertices[v_best].timestamp = iterations;
-            vertices[v_best].last_addition = iterations;
+            vertices[v_best].timestamp = output.number_of_iterations;
+            vertices[v_best].last_addition = output.number_of_iterations;
             // Update tabu
             v_last_removed = -1;
             v_last_added   = -1;
+            // Update penalties.
+            for (const auto& edge: instance.vertex(v_best).edges) {
+                if (solution.covers(edge.e) >= 2) {
+                    solution_penalties[edge.e]++;
+                    vertices[instance.edge(edge.e).v1].score++;
+                    vertices[instance.edge(edge.e).v2].score++;
+                }
+            }
         }
 
         // Find the cheapest vertex to add.
@@ -382,10 +368,18 @@ void localsearch_rowweighting_2_worker(
             if (solution.covers(edge.e) >= 1)
                 vertices[edge.v].score += solution_penalties[edge.e];
         // Update sets
-        vertices[v1_best].timestamp = iterations;
-        vertices[v1_best].last_addition = iterations;
+        vertices[v1_best].timestamp = output.number_of_iterations;
+        vertices[v1_best].last_addition = output.number_of_iterations;
         // Update tabu
         v_last_added = v1_best;
+        // Update penalties.
+        for (const auto& edge: instance.vertex(v1_best).edges) {
+            if (solution.covers(edge.e) >= 2) {
+                solution_penalties[edge.e]++;
+                vertices[instance.edge(edge.e).v1].score++;
+                vertices[instance.edge(edge.e).v2].score++;
+            }
+        }
 
         // Draw randomly an uncovered edge e.
         std::uniform_int_distribution<EdgeId> d_e(0, solution.number_of_conflicts() - 1);
@@ -425,46 +419,12 @@ void localsearch_rowweighting_2_worker(
             if (solution.covers(edge.e) <= 1)
                 vertices[edge.v].score -= solution_penalties[edge.e];
         // Update sets
-        vertices[v2_best].timestamp = iterations;
-        vertices[v2_best].last_removal  = iterations;
-        vertices[v2_best].iterations += (iterations - vertices[v2_best].last_addition);
+        vertices[v2_best].timestamp = output.number_of_iterations;
+        vertices[v2_best].last_removal  = output.number_of_iterations;
+        vertices[v2_best].iterations += (output.number_of_iterations - vertices[v2_best].last_addition);
         // Update tabu
         v_last_removed = v2_best;
-
-        // Update penalties: we increment the penalty of each edge with both
-        // ends in the solution.
-        for (auto it = solution.conflicts().begin(); it != solution.conflicts().end(); ++it) {
-            solution_penalties[*it]++;
-            vertices[instance.edge(*it).v1].score++;
-            vertices[instance.edge(*it).v2].score++;
-        }
     }
-}
-
-LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
-        const Instance& instance,
-        std::mt19937_64& generator,
-        LocalSearchRowWeighting2OptionalParameters parameters)
-{
-    VER(parameters.info, "*** localsearch_rowweighting_2 ***" << std::endl);
-
-    // Compute initial greedy solution.
-    LocalSearchRowWeighting2Output output(instance, parameters.info);
-    Solution solution = greedy_gwmin(instance).solution;
-    std::stringstream ss;
-    ss << "initial solution";
-    output.update_solution(solution, ss, parameters.info);
-    parameters.info.output->mutex_solutions.lock();
-    parameters.new_solution_callback(output);
-    parameters.info.output->mutex_solutions.unlock();
-
-    auto seeds = optimizationtools::bob_floyd(parameters.number_of_threads, std::numeric_limits<Seed>::max(), generator);
-    std::vector<std::thread> threads;
-    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
-        threads.push_back(std::thread(localsearch_rowweighting_2_worker, std::ref(instance), seeds[thread_id], parameters, std::ref(output), thread_id));
-
-    for (Counter thread_id = 0; thread_id < parameters.number_of_threads; ++thread_id)
-        threads[thread_id].join();
 
     return output.algorithm_end(parameters.info);
 }
