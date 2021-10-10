@@ -28,10 +28,10 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
 - Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch --threads 3"`
 
 - Row weighting local search (unweighted only)
-  - based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) `-a "localsearch_rowweighting_1 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
-  - based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) `-a "localsearch_rowweighting_2 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+  - based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) [DOI](https://doi.org/10.1145/3377929.3398184) `-a "localsearch_rowweighting_1 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+  - based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) [DOI](https://doi.org/10.1016/j.ejor.2015.05.038) `-a "localsearch_rowweighting_2 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
 
-- Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) `-a "largeneighborhoodsearch"`
+- Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) [DOI](https://doi.org/10.1080/01605682.2019.1621218) `-a "largeneighborhoodsearch"`
 
 ### Clique Solver
 
@@ -39,7 +39,7 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
   - `-a greedy_gwmin`, adapted from the stable version, same complexity
   - `-a greedy_strong`
 
-- Mixed-Integer Linear Programs (implemented with CPLEX) `-a milp_cplex`
+- Mixed-Integer Linear Program (implemented with CPLEX), see "Worst-case analysis of clique MIPs" (Naderi et al., 2021) [DOI][https://doi.org/10.1007/s10107-021-01706-2] `-a milp_cplex`
 
 ## Usage (command line)
 
