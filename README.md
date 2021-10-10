@@ -39,7 +39,7 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
   - `-a greedy_gwmin`, adapted from the stable version, same complexity
   - `-a greedy_strong`
 
-- Mixed-Integer Linear Program (implemented with CPLEX), see "Worst-case analysis of clique MIPs" (Naderi et al., 2021) [DOI][https://doi.org/10.1007/s10107-021-01706-2] `-a milp_cplex`
+- Mixed-Integer Linear Program (implemented with CPLEX), see "Worst-case analysis of clique MIPs" (Naderi et al., 2021) [DOI](https://doi.org/10.1007/s10107-021-01706-2) `-a milp_cplex`
 
 ## Usage (command line)
 
