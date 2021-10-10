@@ -10,13 +10,26 @@ cc_library(
 )
 
 cc_library(
+        name = "milp_cplex",
+        hdrs = ["milp_cplex.hpp"],
+        srcs = ["milp_cplex.cpp"],
+        deps = [
+                "//cliquesolver:cliquesolver",
+        ] + CPLEX_DEP,
+        copts = CPLEX_COPTS,
+        visibility = ["//visibility:public"],
+)
+
+cc_library(
         name = "algorithms",
         hdrs = ["algorithms.hpp"],
         srcs = ["algorithms.cpp"],
         deps = [
                 ":greedy",
+                ":milp_cplex",
                 "@boost//:program_options",
-        ],
+        ] + CPLEX_DEP,
+        copts = CPLEX_COPTS,
         visibility = ["//visibility:public"],
 )
 

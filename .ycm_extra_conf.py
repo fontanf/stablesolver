@@ -3,6 +3,7 @@ def Settings( **kwargs ):
             'flags': [
                 '-x', 'c++',
                 '-Wall', '-Wextra', '-Werror',
+                '-DCPLEX_FOUND',
                 '-DIL_STD', # Cplex
                 '-I', '.',
                 '-I', './bazel-stablesolver/external/json/single_include',

@@ -27,6 +27,13 @@ Output cliquesolver::run(
     } else if (algorithm_args[0] == "greedy_strong") {
         return greedy_strong(instance, info);
 
+#if CPLEX_FOUND
+    } else if (algorithm_args[0] == "milp_cplex") {
+        MilpCplexOptionalParameters parameters;
+        parameters.info = info;
+        return milp_cplex(instance, parameters);
+#endif
+
     } else {
         std::cerr << "\033[31m" << "ERROR, unknown algorithm: " << algorithm_argv[0] << "\033[0m" << std::endl;
         assert(false);

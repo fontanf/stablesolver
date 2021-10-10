@@ -1,7 +1,5 @@
 # Stable Solver and Clique Solver
 
-WORK IN PROGRESS
-
 Solvers for the Maximum(-Weight) Independent Set and for the Maximum(-Weight) Clique Problems.
 
 ![stable](stable.png?raw=true "stable")
@@ -40,6 +38,8 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
 - Greedy algorithms:
   - `-a greedy_gwmin`, adapted from the stable version, same complexity
   - `-a greedy_strong`
+
+- Mixed-Integer Linear Programs (implemented with CPLEX) `-a milp_cplex`
 
 ## Usage (command line)
 

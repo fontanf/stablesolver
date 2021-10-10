@@ -1,3 +1,5 @@
+config_setting(name = "cplex_build", values = {"define": "cplex=true"}, visibility = ["//visibility:public"])
+
 load("//stablesolver:variables.bzl", "STDCPP")
 
 cc_library(

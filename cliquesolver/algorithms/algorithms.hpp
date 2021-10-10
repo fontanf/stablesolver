@@ -3,6 +3,7 @@
 #include "cliquesolver/solution.hpp"
 
 #include "cliquesolver/algorithms/greedy.hpp"
+#include "cliquesolver/algorithms/milp_cplex.hpp"
 
 namespace cliquesolver
 {
