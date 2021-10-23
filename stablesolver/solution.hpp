@@ -54,6 +54,8 @@ public:
     /** Get the set of edges of the solution. */
     const std::unordered_set<EdgeId>& conflicts() const { return conflicts_; }
 
+    bool is_striclty_better_than(const Solution& solution) const;
+
     /*
      * Setters.
      */
@@ -111,7 +113,7 @@ void Solution::add(VertexId v)
     if (contains(v)) {
         throw std::invalid_argument(
                 "Cannot add vertex " + std::to_string(v)
-                + " which is already in the solution");
+                + " which is already in the solution.");
     }
 
     ComponentId c = instance().vertex(v).component;
@@ -133,7 +135,7 @@ void Solution::remove(VertexId v)
     if (!contains(v)) {
         throw std::invalid_argument(
                 "Cannot remove vertex " + std::to_string(v)
-                + " which is not in the solution");
+                + " which is not in the solution.");
     }
 
     ComponentId c = instance().vertex(v).component;
@@ -169,12 +171,6 @@ struct Output
 
     void update_solution(
             const Solution& solution_new,
-            const std::stringstream& s,
-            optimizationtools::Info& info) { update_solution(solution_new, -1, s, info); }
-
-    void update_solution(
-            const Solution& solution_new,
-            ComponentId c,
             const std::stringstream& s,
             optimizationtools::Info& info);
 

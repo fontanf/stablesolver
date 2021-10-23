@@ -5,11 +5,12 @@
 using namespace stablesolver;
 
 Output stablesolver::greedy_gwmin(
-        const Instance& instance,
+        const Instance& instance_original,
         optimizationtools::Info info)
 {
     VER(info, "*** greedy_gwmin ***" << std::endl);
-    Output output(instance, info);
+    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
+    Output output(instance_original, info);
     Solution solution(instance);
 
     std::vector<double> vertices_values(instance.number_of_vertices(), 0);
@@ -38,11 +39,12 @@ Output stablesolver::greedy_gwmin(
 }
 
 Output stablesolver::greedy_gwmax(
-        const Instance& instance,
+        const Instance& instance_original,
         optimizationtools::Info info)
 {
     VER(info, "*** greedy_gwmax ***" << std::endl);
-    Output output(instance, info);
+    Output output(instance_original, info);
+    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
 
     auto f = [&instance](VertexId v)
     {
@@ -84,11 +86,12 @@ Output stablesolver::greedy_gwmax(
 }
 
 Output stablesolver::greedy_gwmin2(
-        const Instance& instance,
+        const Instance& instance_original,
         optimizationtools::Info info)
 {
     VER(info, "*** greedy_gwmin2 ***" << std::endl);
-    Output output(instance, info);
+    Output output(instance_original, info);
+    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
     Solution solution(instance);
 
     std::vector<double> vertices_values(instance.number_of_vertices(), 0);
@@ -123,11 +126,12 @@ Output stablesolver::greedy_gwmin2(
 }
 
 Output stablesolver::greedy_strong(
-        const Instance& instance,
+        const Instance& instance_original,
         optimizationtools::Info info)
 {
     VER(info, "*** greedy_strong ***" << std::endl);
-    Output output(instance, info);
+    Output output(instance_original, info);
+    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
     Solution solution(instance);
 
     optimizationtools::IndexedSet candidates(instance.number_of_vertices());

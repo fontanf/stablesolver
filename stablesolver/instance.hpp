@@ -54,7 +54,31 @@ struct Component
     std::vector<VertexId> vertices;
 };
 
-class Instance 
+struct UnreductionOperations
+{
+    /**
+     * List of vertices from the original graph to add if the considered vertex
+     * is in the solution of the reduced instance.
+     */
+    std::vector<VertexId> in;
+
+    /**
+     * List of vertices from the original graph to add if the considered vertex
+     * is NOT in the solution of the reduced instance.
+     */
+    std::vector<VertexId> out;
+};
+
+class Instance;
+struct ReductionOutput
+{
+    std::shared_ptr<Instance> instance = nullptr;
+    std::vector<UnreductionOperations> unreduction_operations;
+    std::vector<VertexId> mandatory_vertices;
+    Weight extra_weight = 0;
+};
+
+class Instance
 {
 
 public:
@@ -71,7 +95,7 @@ public:
     /** Set the weight of vertex 'v' to 'weight'. */
     void set_weight(VertexId v, Weight weight);
     /** Add an edge between vertex 'v1' and vertex 'v2'. */
-    void add_edge(VertexId v1, VertexId v2);
+    void add_edge(VertexId v1, VertexId v2, int check_duplicate = 0);
     /** Set the weight of all vertices to 1. */
     void set_unweighted();
     /** Compute the connected components of the instance. */
@@ -79,6 +103,8 @@ public:
 
     /** Create the complementary instance. */
     Instance complementary();
+
+    void reduce();
 
     /*
      * Getters.
@@ -104,6 +130,15 @@ public:
     inline VertexId maximum_degree() const { return maximum_degree_; }
     /** Get the total weight of the instance. */
     inline Weight total_weight() const { return total_weight_; }
+
+    /*
+     * Reduction information.
+     */
+
+    inline Instance* reduced_instance() const { return reduction_output_.instance.get(); }
+    inline const UnreductionOperations unreduction_operations(VertexId v) const { return reduction_output_.unreduction_operations[v]; }
+    inline Weight extra_weight() const { return reduction_output_.extra_weight; }
+    inline const std::vector<VertexId>& mandatory_vertices() const { return reduction_output_.mandatory_vertices; }
 
     /*
      * Export.
@@ -146,6 +181,12 @@ private:
     Weight total_weight_ = 0;
 
     /*
+     * Reduction structures.
+     */
+
+    ReductionOutput reduction_output_;
+
+    /*
      * Private methods.
      */
 
@@ -157,6 +198,12 @@ private:
     void read_matrixmarket(std::ifstream& file);
     /** Read an instance file in 'chaco' format. */
     void read_chaco(std::ifstream& file);
+
+    /** Perform isolated vertex removal reduction. */
+    static ReductionOutput reduce_isolated_vertex_removal(const ReductionOutput& reduction_output_old);
+
+    /** Perform vertex folding reduction. */
+    static ReductionOutput reduce_vertex_folding(const ReductionOutput& reduction_output_old);
 
 };
 

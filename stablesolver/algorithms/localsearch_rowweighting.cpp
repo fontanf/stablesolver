@@ -40,19 +40,24 @@ struct LocalSearchRowWeighting1Vertex
 };
 
 LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
-        Instance& instance,
+        Instance& instance_original,
         std::mt19937_64& generator,
         LocalSearchRowWeighting1OptionalParameters parameters)
 {
     VER(parameters.info, "*** localsearch_rowweighting_1 ***" << std::endl);
 
     // Compute initial greedy solution.
-    LocalSearchRowWeighting1Output output(instance, parameters.info);
+    LocalSearchRowWeighting1Output output(instance_original, parameters.info);
+    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
     Solution solution = greedy_gwmin(instance).solution;
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
     parameters.new_solution_callback(output);
+    Solution solution_best(solution);
+
+    if (instance.number_of_vertices() == 0)
+        return output.algorithm_end(parameters.info);
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeighting1Vertex> vertices(instance.number_of_vertices());
@@ -68,6 +73,17 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
     for (output.number_of_iterations = 0; !parameters.info.needs_to_end(); ++output.number_of_iterations) {
         //std::cout << "it " << iterations << std::endl;
 
+        // Update best solution
+        if (output.number_of_iterations % 100000 == 0
+                && solution_best.is_striclty_better_than(output.solution)) {
+            std::stringstream ss;
+            ss << "iteration " << output.number_of_iterations;
+            output.update_solution(solution_best, ss, parameters.info);
+            parameters.info.output->mutex_solutions.lock();
+            parameters.new_solution_callback(output);
+            parameters.info.output->mutex_solutions.unlock();
+        }
+
         // Compute component
         if (output.number_of_iterations % (components.back().iteration_max + 1) >= components[c].iteration_max) {
             c = (c + 1) % instance.number_of_components();
@@ -80,15 +96,15 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 
         while (solution.feasible(c)) {
             // New best solution
-            if (output.solution.weight(c) < solution.weight(c)) {
-                // Update best solution
-                std::stringstream ss;
-                ss << "iterations " << output.number_of_iterations
-                    << ", component " << c;
-                output.update_solution(solution, c, ss, parameters.info);
-                parameters.info.output->mutex_solutions.lock();
-                parameters.new_solution_callback(output);
-                parameters.info.output->mutex_solutions.unlock();
+            if (solution_best.weight(c) < solution.weight(c)) {
+                // Update solution_best.
+                for (VertexId v: instance.component(c).vertices) {
+                    if (solution_best.contains(v) && !solution.contains(v)) {
+                        solution_best.remove(v);
+                    } else if (!solution_best.contains(v) && solution.contains(v)) {
+                        solution_best.add(v);
+                    }
+                }
             }
             // Update statistics
             if (component.iterations_without_improvment > 0)
@@ -96,7 +112,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 
             // Find the best shift move.
             VertexId v_best = -1;
-            Weight  p_best = -1;
+            Weight p_best = -1;
             // For each set s of the current solution which belongs to the
             // currently considered component and is not mandatory.
             for (auto it_v = solution.vertices().out_begin(); it_v != solution.vertices().out_end(); ++it_v) {
@@ -118,6 +134,8 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
                     p_best = p;
                 }
             }
+            if (v_best == -1)
+                throw std::runtime_error("v_best == -1.");
             // Apply best move
             solution.add(v_best);
             // Update sets
@@ -247,14 +265,15 @@ struct LocalSearchRowWeighting2Vertex
 };
 
 LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
-        const Instance& instance,
+        const Instance& instance_original,
         std::mt19937_64& generator,
         LocalSearchRowWeighting2OptionalParameters parameters)
 {
     VER(parameters.info, "*** localsearch_rowweighting_2 ***" << std::endl);
 
     // Compute initial greedy solution.
-    LocalSearchRowWeighting2Output output(instance, parameters.info);
+    LocalSearchRowWeighting2Output output(instance_original, parameters.info);
+    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
     Solution solution = greedy_gwmin(instance).solution;
     std::stringstream ss;
     ss << "initial solution";
@@ -262,6 +281,9 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
     parameters.info.output->mutex_solutions.lock();
     parameters.new_solution_callback(output);
     parameters.info.output->mutex_solutions.unlock();
+
+    if (instance.number_of_vertices() == 0)
+        return output.algorithm_end(parameters.info);
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeighting2Vertex> vertices(instance.number_of_vertices());
@@ -282,9 +304,8 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
         //std::cout << "it " << iterations << std::endl;
 
         while (solution.feasible()) {
-
             // Update best solution
-            if (output.solution.weight() < solution.weight()) {
+            if (solution.is_striclty_better_than(output.solution)) {
                 std::stringstream ss;
                 ss << "iteration " << output.number_of_iterations;
                 output.update_solution(solution, ss, parameters.info);

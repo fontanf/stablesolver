@@ -44,13 +44,48 @@ Solution::Solution(const Solution& solution):
 
 Solution& Solution::operator=(const Solution& solution)
 {
-    if (this != &solution) {
-        assert(&instance_ == &solution.instance_);
-        vertices_                       = solution.vertices_;
-        conflicts_                      = solution.conflicts_;
-        component_number_of_conflictss_ = solution.component_number_of_conflictss_;
-        component_weights_              = solution.component_weights_;
-        weight_                         = solution.weight_;
+    if (&instance_ == &solution.instance_) {
+        if (this != &solution) {
+            vertices_                       = solution.vertices_;
+            conflicts_                      = solution.conflicts_;
+            component_number_of_conflictss_ = solution.component_number_of_conflictss_;
+            component_weights_              = solution.component_weights_;
+            weight_                         = solution.weight_;
+        }
+    } else if (instance_.reduced_instance() == &solution.instance_) {
+        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
+            if (contains(v))
+                remove(v);
+        for (VertexId v: instance_.mandatory_vertices()) {
+            //std::cout << "mandatory " << v << std::endl;
+            add(v);
+        }
+        for (VertexId v = 0; v < instance_.reduced_instance()->number_of_vertices(); ++v) {
+            if (solution.contains(v)) {
+                for (VertexId v2: instance_.unreduction_operations(v).in) {
+                    //std::cout << "+" << v << " => " << v2 << std::endl;
+                    add(v2);
+                }
+            } else {
+                for (VertexId v2: instance_.unreduction_operations(v).out) {
+                    //std::cout << "-" << v << " => " << v2 << std::endl;
+                    add(v2);
+                }
+            }
+        }
+        if (weight() != solution.weight() + instance_.extra_weight()) {
+            throw std::runtime_error(
+                    "Wrong weight after unreduction. Weight: "
+                    + std::to_string(weight())
+                    + "; reduced solution weight: "
+                    + std::to_string(solution.weight())
+                    + "; extra weight: "
+                    + std::to_string(instance_.extra_weight())
+                    + ".");
+        }
+    } else {
+        throw std::runtime_error(
+                "Cannot assign solution from a different instance.");
     }
     return *this;
 }
@@ -71,6 +106,24 @@ void Solution::write(std::string certificate_path)
     file.close();
 }
 
+bool Solution::is_striclty_better_than(const Solution& solution) const
+{
+    if (!feasible())
+        return false;
+    if (!solution.feasible())
+        return true;
+    if (&instance_ == &solution.instance_) {
+        return weight() > solution.weight();
+    } else if (&instance_ == solution.instance_.reduced_instance()) {
+        return weight() + solution.instance_.extra_weight() > solution.weight();
+    } else if (instance_.reduced_instance() == &solution.instance_) {
+        return weight() > solution.weight() + instance_.extra_weight();
+    } else {
+        throw std::runtime_error(
+                "Cannot compare solutions from different instances.");
+    }
+}
+
 std::ostream& stablesolver::operator<<(std::ostream& os, const Solution& solution)
 {
     os << "n " << solution.number_of_vertices()
@@ -85,8 +138,10 @@ std::ostream& stablesolver::operator<<(std::ostream& os, const Solution& solutio
 
 Output::Output(const Instance& instance, optimizationtools::Info& info):
     solution(instance),
-    upper_bound(instance.total_weight() + 1)
+    upper_bound(instance.total_weight())
 {
+    if (instance.reduced_instance() != nullptr)
+        upper_bound = instance.extra_weight() + instance.reduced_instance()->total_weight();
     VER(info, std::left << std::setw(16) << "T (s)");
     VER(info, std::left << std::setw(16) << "LB");
     VER(info, std::left << std::setw(16) << "UB");
@@ -119,39 +174,13 @@ void Output::print(
 
 void Output::update_solution(
         const Solution& solution_new,
-        ComponentId c,
         const std::stringstream& s,
         optimizationtools::Info& info)
 {
     info.output->mutex_solutions.lock();
 
-    bool ok = false;
-    if (c == -1) {
-        if (solution_new.feasible() && (!solution.feasible() || solution.weight() < solution_new.weight()))
-            ok = true;
-    } else {
-        if (solution_new.feasible(c) && solution.weight(c) < solution_new.weight(c))
-            ok = true;
-    }
-
-    if (ok) {
-        if (c == -1) {
-            for (VertexId v = 0; v < solution.instance().number_of_vertices(); ++v) {
-                if (solution.contains(v) && !solution_new.contains(v)) {
-                    solution.remove(v);
-                } else if (!solution.contains(v) && solution_new.contains(v)) {
-                    solution.add(v);
-                }
-            }
-        } else {
-            for (VertexId v: solution.instance().component(c).vertices) {
-                if (solution.contains(v) && !solution_new.contains(v)) {
-                    solution.remove(v);
-                } else if (!solution.contains(v) && solution_new.contains(v)) {
-                    solution.add(v);
-                }
-            }
-        }
+    if (solution_new.is_striclty_better_than(solution)) {
+        solution = solution_new;
         print(info, s);
 
         info.output->number_of_solutions++;
