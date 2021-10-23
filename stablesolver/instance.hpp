@@ -72,10 +72,9 @@ struct UnreductionOperations
 class Instance;
 struct ReductionOutput
 {
-    std::shared_ptr<Instance> instance = nullptr;
+    Instance* instance = nullptr;
     std::vector<UnreductionOperations> unreduction_operations;
     std::vector<VertexId> mandatory_vertices;
-    Weight extra_weight = 0;
 };
 
 class Instance
@@ -106,6 +105,9 @@ public:
 
     void reduce();
 
+    /** Destructor. */
+    ~Instance() { if (reduction_output_.instance != nullptr) delete reduction_output_.instance; }
+
     /*
      * Getters.
      */
@@ -135,9 +137,20 @@ public:
      * Reduction information.
      */
 
-    inline Instance* reduced_instance() const { return reduction_output_.instance.get(); }
+    /**
+     * Get a pointer to the reduced instance.
+     *
+     * Return 'nullptr' if no reduction has been applied.
+     */
+    inline Instance* reduced_instance() const { return reduction_output_.instance; }
+    /**
+     * Get the weight to add to a solution of the reduced instance to get the
+     * weight of the corresponding solution of the original instance.
+     **/
+    inline Weight extra_weight() const { return extra_weight_; }
+    /** Get the unreduction operations of vertex 'v'. */
     inline const UnreductionOperations unreduction_operations(VertexId v) const { return reduction_output_.unreduction_operations[v]; }
-    inline Weight extra_weight() const { return reduction_output_.extra_weight; }
+    /** Get the list of mandatory vertices from the orignal instance. */
     inline const std::vector<VertexId>& mandatory_vertices() const { return reduction_output_.mandatory_vertices; }
 
     /*
@@ -184,7 +197,13 @@ private:
      * Reduction structures.
      */
 
+    /** Reduction output. */
     ReductionOutput reduction_output_;
+    /**
+     * Weight to add to a solution of the reduced instance to get the weight of
+     * the corresponding solution of the original instance.
+     **/
+    Weight extra_weight_;
 
     /*
      * Private methods.
@@ -200,10 +219,11 @@ private:
     void read_chaco(std::ifstream& file);
 
     /** Perform isolated vertex removal reduction. */
-    static ReductionOutput reduce_isolated_vertex_removal(const ReductionOutput& reduction_output_old);
-
+    static ReductionOutput reduce_isolated_vertex_removal(
+            const ReductionOutput& reduction_output_old);
     /** Perform vertex folding reduction. */
-    static ReductionOutput reduce_vertex_folding(const ReductionOutput& reduction_output_old);
+    static ReductionOutput reduce_vertex_folding(
+            const ReductionOutput& reduction_output_old);
 
 };
 

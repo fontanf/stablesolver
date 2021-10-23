@@ -336,7 +336,7 @@ ReductionOutput Instance::reduce_isolated_vertex_removal(
     }
     // Update instance and unreduction_operations.
     VertexId n = instance.number_of_vertices() - fixed_vertices.number_of_elements();
-    reduction_output.instance = std::shared_ptr<Instance>(new Instance(n));
+    reduction_output.instance = new Instance(n);
     reduction_output.unreduction_operations = std::vector<UnreductionOperations>(n);
     // Add vertices.
     std::vector<VertexId> original2reduced(instance.number_of_vertices(), -1);
@@ -412,7 +412,7 @@ ReductionOutput Instance::reduce_vertex_folding(
     reduction_output.mandatory_vertices = reduction_output_old.mandatory_vertices;
     // Update instance and unreduction_operations.
     VertexId n = instance.number_of_vertices() - folded_vertices.number_of_elements(0);
-    reduction_output.instance = std::shared_ptr<Instance>(new Instance(n));
+    reduction_output.instance = new Instance(n);
     reduction_output.unreduction_operations = std::vector<UnreductionOperations>(n);
     // Add vertices.
     std::vector<VertexId> original2reduced(instance.number_of_vertices(), -1);
@@ -502,20 +502,11 @@ ReductionOutput Instance::reduce_vertex_folding(
 void Instance::reduce()
 {
     // Compute fixed vertices.
-    reduction_output_.instance = std::shared_ptr<Instance>(new Instance(
-                number_of_vertices()));
-    reduction_output_.unreduction_operations = std::vector<UnreductionOperations>(number_of_vertices());
-    for (VertexId v = 0; v < number_of_vertices(); ++v) {
-        reduction_output_.instance->set_weight(v, vertex(v).weight);
+    reduction_output_.instance = this;
+    reduction_output_.unreduction_operations
+        = std::vector<UnreductionOperations>(number_of_vertices());
+    for (VertexId v = 0; v < number_of_vertices(); ++v)
         reduction_output_.unreduction_operations[v].in.push_back(v);
-    }
-    // Add edges.
-    for (EdgeId e = 0; e < number_of_edges(); ++e) {
-        VertexId v1 = edge(e).v1;
-        VertexId v2 = edge(e).v2;
-        reduction_output_.instance->add_edge(v1, v2, 0);
-    }
-    reduction_output_.instance->compute_components();
 
     for (Counter round_number = 0; round_number < 10; ++round_number) {
         bool found = false;
@@ -524,50 +515,30 @@ void Instance::reduce()
             auto reduction_output = reduce_isolated_vertex_removal(reduction_output_);
             if (reduction_output.instance != nullptr) {
                 found = true;
+                if (reduction_output_.instance != this)
+                    delete reduction_output_.instance;
                 reduction_output_ = reduction_output;
             }
         }
-
-        //for (VertexId v0 = 0; v0 < reduction_output_.instance->number_of_vertices(); ++v0) {
-        //    std::cout << v0 << ":" << std::endl;
-        //    std::cout << "* in:";
-        //    for (VertexId v: reduction_output_.unreduction_operations[v0].in)
-        //        std::cout << " " << v;
-        //    std::cout << std::endl;
-        //    std::cout << "* out:";
-        //    for (VertexId v: reduction_output_.unreduction_operations[v0].out)
-        //        std::cout << " " << v;
-        //    std::cout << std::endl;
-        //}
 
         {
             auto reduction_output = reduce_vertex_folding(reduction_output_);
             if (reduction_output.instance != nullptr) {
                 found = true;
+                if (reduction_output_.instance != this)
+                    delete reduction_output_.instance;
                 reduction_output_ = reduction_output;
             }
         }
-
-        //for (VertexId v0 = 0; v0 < reduction_output_.instance->number_of_vertices(); ++v0) {
-        //    std::cout << v0 << ":" << std::endl;
-        //    std::cout << "* in:";
-        //    for (VertexId v: reduction_output_.unreduction_operations[v0].in)
-        //        std::cout << " " << v;
-        //    std::cout << std::endl;
-        //    std::cout << "* out:";
-        //    for (VertexId v: reduction_output_.unreduction_operations[v0].out)
-        //        std::cout << " " << v;
-        //    std::cout << std::endl;
-        //}
 
         if (!found)
             break;
     }
 
-    reduction_output_.extra_weight = 0;
+    extra_weight_ = 0;
     for (VertexId v: reduction_output_.mandatory_vertices)
-        reduction_output_.extra_weight += vertex(v).weight;
+        extra_weight_ += vertex(v).weight;
     for (VertexId v = 0; v < reduction_output_.instance->number_of_vertices(); ++v)
-        reduction_output_.extra_weight += reduction_output_.unreduction_operations[v].out.size();
+        extra_weight_ += reduction_output_.unreduction_operations[v].out.size();
 }
 
