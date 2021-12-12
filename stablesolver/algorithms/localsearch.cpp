@@ -1,6 +1,6 @@
 #include "stablesolver/algorithms/localsearch.hpp"
 
-#include "localsearchsolver/a_star_local_search.hpp"
+#include "localsearchsolver/best_first_local_search.hpp"
 
 using namespace stablesolver;
 using namespace localsearchsolver;
@@ -18,13 +18,6 @@ public:
 
     inline Weight&       weight(GlobalCost& global_cost) { return std::get<0>(global_cost); }
     inline Weight  weight(const GlobalCost& global_cost) { return std::get<0>(global_cost); }
-
-    static GlobalCost global_cost_worst()
-    {
-        return {
-            std::numeric_limits<Weight>::max(),
-        };
-    }
 
     /*
      * Solutions.
@@ -160,11 +153,11 @@ public:
 
     struct Move
     {
+        Move(): v(-1) { }
+
         VertexId v;
         GlobalCost global_cost;
     };
-
-    static Move move_null() { return {-1, global_cost_worst()}; }
 
     struct MoveHasher
     {
@@ -196,8 +189,8 @@ public:
         std::vector<Move> moves;
         for (VertexId v: vertices_) {
             GlobalCost c = (contains(solution, v))?
-                cost_remove(solution, v, global_cost_worst()):
-                cost_add(solution, v, global_cost_worst());
+                cost_remove(solution, v, worst<GlobalCost>()):
+                cost_add(solution, v, worst<GlobalCost>());
             Move move;
             move.v = v;
             move.global_cost = c;
@@ -218,7 +211,7 @@ public:
     inline void local_search(
             Solution& solution,
             std::mt19937_64& generator,
-            const Move& tabu = move_null())
+            const Move& tabu = Move())
     {
         // Get neighborhoods.
         std::vector<Counter> neighborhoods = {0};
@@ -448,27 +441,28 @@ LocalSearchOutput& LocalSearchOutput::algorithm_end(
 }
 
 LocalSearchOutput stablesolver::localsearch(
-        const Instance& instance,
+        const Instance& instance_original,
         std::mt19937_64&,
         LocalSearchOptionalParameters parameters)
 {
     VER(parameters.info, "*** localsearch ***" << std::endl);
-    LocalSearchOutput output(instance, parameters.info);
+    LocalSearchOutput output(instance_original, parameters.info);
+    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
 
     // Create LocalScheme.
     LocalScheme::Parameters parameters_local_scheme;
     LocalScheme local_scheme(instance, parameters_local_scheme);
 
     // Run A*.
-    AStarLocalSearchOptionalParameters<LocalScheme> parameters_a_star;
-    //parameters_a_star.info.set_verbose(true);
-    parameters_a_star.info.set_time_limit(parameters.info.remaining_time());
-    parameters_a_star.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
-    parameters_a_star.number_of_threads_1 = 1;
-    parameters_a_star.number_of_threads_2 = parameters.number_of_threads;
-    parameters_a_star.initial_solution_ids = std::vector<Counter>(
-            parameters_a_star.number_of_threads_2, 0);
-    parameters_a_star.new_solution_callback
+    BestFirstLocalSearchOptionalParameters<LocalScheme> parameters_best_first;
+    //parameters_best_first.info.set_verbose(true);
+    parameters_best_first.info.set_time_limit(parameters.info.remaining_time());
+    parameters_best_first.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
+    parameters_best_first.number_of_threads_1 = 1;
+    parameters_best_first.number_of_threads_2 = parameters.number_of_threads;
+    parameters_best_first.initial_solution_ids = std::vector<Counter>(
+            parameters_best_first.number_of_threads_2, 0);
+    parameters_best_first.new_solution_callback
         = [&instance, &parameters, &output](
                 const LocalScheme::Solution& solution)
         {
@@ -479,7 +473,7 @@ LocalSearchOutput stablesolver::localsearch(
             std::stringstream ss;
             output.update_solution(sol, ss, parameters.info);
         };
-    a_star_local_search(local_scheme, parameters_a_star);
+    best_first_local_search(local_scheme, parameters_best_first);
 
     return output.algorithm_end(parameters.info);
 }
