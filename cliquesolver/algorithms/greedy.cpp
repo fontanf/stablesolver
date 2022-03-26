@@ -9,7 +9,13 @@ Output cliquesolver::greedy_gwmin(
         const Instance& instance,
         optimizationtools::Info info)
 {
-    VER(info, "*** greedy_gwmin ***" << std::endl);
+    cliquesolver::init_display(instance, info);
+    VER(info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Greedy GWMIN" << std::endl
+            << std::endl);
+
     Output output(instance, info);
     Solution solution(instance);
 
@@ -42,7 +48,13 @@ Output cliquesolver::greedy_strong(
         const Instance& instance,
         optimizationtools::Info info)
 {
-    VER(info, "*** greedy_strong ***" << std::endl);
+    cliquesolver::init_display(instance, info);
+    VER(info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Strong Greedy" << std::endl
+            << std::endl);
+
     Output output(instance, info);
     Solution solution(instance);
 

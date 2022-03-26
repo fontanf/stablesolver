@@ -106,7 +106,7 @@ public:
     void reduce();
 
     /** Destructor. */
-    ~Instance() { if (reduction_output_.instance != nullptr) delete reduction_output_.instance; }
+    ~Instance() { if (reduction_output_.instance != this) delete reduction_output_.instance; }
 
     /*
      * Getters.
@@ -228,6 +228,10 @@ private:
 };
 
 std::ostream& operator<<(std::ostream &os, const Instance& ins);
+
+void init_display(
+        const Instance& instance,
+        optimizationtools::Info& info);
 
 }
 

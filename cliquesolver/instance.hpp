@@ -16,5 +16,9 @@ typedef stablesolver::Edge Edge;
 typedef stablesolver::VertexEdge VertexEdge;
 typedef stablesolver::Instance Instance;
 
+void init_display(
+        const Instance& instance,
+        optimizationtools::Info& info);
+
 }
 

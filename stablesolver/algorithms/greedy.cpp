@@ -8,7 +8,13 @@ Output stablesolver::greedy_gwmin(
         const Instance& instance_original,
         optimizationtools::Info info)
 {
-    VER(info, "*** greedy_gwmin ***" << std::endl);
+    init_display(instance_original, info);
+    VER(info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Greedy GWMIN" << std::endl
+            << std::endl);
+
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
     Output output(instance_original, info);
     Solution solution(instance);
@@ -42,7 +48,13 @@ Output stablesolver::greedy_gwmax(
         const Instance& instance_original,
         optimizationtools::Info info)
 {
-    VER(info, "*** greedy_gwmax ***" << std::endl);
+    init_display(instance_original, info);
+    VER(info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Greedy GWMAX" << std::endl
+            << std::endl);
+
     Output output(instance_original, info);
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
 
@@ -89,7 +101,13 @@ Output stablesolver::greedy_gwmin2(
         const Instance& instance_original,
         optimizationtools::Info info)
 {
-    VER(info, "*** greedy_gwmin2 ***" << std::endl);
+    init_display(instance_original, info);
+    VER(info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Greedy GWMIN2" << std::endl
+            << std::endl);
+
     Output output(instance_original, info);
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
     Solution solution(instance);
@@ -129,7 +147,13 @@ Output stablesolver::greedy_strong(
         const Instance& instance_original,
         optimizationtools::Info info)
 {
-    VER(info, "*** greedy_strong ***" << std::endl);
+    init_display(instance_original, info);
+    VER(info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Strong Greedy" << std::endl
+            << std::endl);
+
     Output output(instance_original, info);
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
     Solution solution(instance);

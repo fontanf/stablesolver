@@ -445,7 +445,13 @@ LocalSearchOutput stablesolver::localsearch(
         std::mt19937_64&,
         LocalSearchOptionalParameters parameters)
 {
-    VER(parameters.info, "*** localsearch ***" << std::endl);
+    init_display(instance_original, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Local Search" << std::endl
+            << std::endl);
+
     LocalSearchOutput output(instance_original, parameters.info);
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
 

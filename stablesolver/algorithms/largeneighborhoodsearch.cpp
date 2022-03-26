@@ -29,7 +29,12 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
         Instance& instance,
         LargeNeighborhoodSearchOptionalParameters parameters)
 {
-    VER(parameters.info, "*** largeneighborhoodsearch ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Large Neighborhood Search" << std::endl
+            << std::endl);
 
     //instance.fix_identical(parameters.info);
     //instance.fix_dominated(parameters.info);

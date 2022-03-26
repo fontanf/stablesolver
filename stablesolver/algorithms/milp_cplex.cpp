@@ -42,12 +42,19 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
     }
 }
 
-/************************** Model 1, |E| constraints **************************/
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////// Model 1, |E| constraints ///////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 MilpCplexOutput stablesolver::milp_1_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** milp_1_cplex ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "MILP 1 (CPLEX)" << std::endl
+            << std::endl);
 
     MilpCplexOutput output(instance, parameters.info);
 
@@ -119,12 +126,19 @@ MilpCplexOutput stablesolver::milp_1_cplex(
     return output.algorithm_end(parameters.info);
 }
 
-/************************** Model 2, |V| constraints **************************/
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////// Model 2, |V| constraints ///////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 MilpCplexOutput stablesolver::milp_2_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** milp_2_cplex ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "MILP 2 (CPLEX)" << std::endl
+            << std::endl);
 
     MilpCplexOutput output(instance, parameters.info);
 
@@ -201,12 +215,19 @@ MilpCplexOutput stablesolver::milp_2_cplex(
     return output.algorithm_end(parameters.info);
 }
 
-/************************** Model 1, |E| constraints **************************/
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////// Model 1, |E| constraints ///////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 MilpCplexOutput stablesolver::milp_3_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** milp_3_cplex ***" << std::endl);
+    init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "MILP 3 (CPLEX)" << std::endl
+            << std::endl);
 
     MilpCplexOutput output(instance, parameters.info);
 

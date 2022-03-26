@@ -26,11 +26,16 @@ struct MilpCplexOutput: Output
 };
 
 MilpCplexOutput milp_1_cplex(
-        const Instance& instance, MilpCplexOptionalParameters parameters = {});
+        const Instance& instance,
+        MilpCplexOptionalParameters parameters = {});
+
 MilpCplexOutput milp_2_cplex(
-        const Instance& instance, MilpCplexOptionalParameters parameters = {});
+        const Instance& instance,
+        MilpCplexOptionalParameters parameters = {});
+
 MilpCplexOutput milp_3_cplex(
-        const Instance& instance, MilpCplexOptionalParameters parameters = {});
+        const Instance& instance,
+        MilpCplexOptionalParameters parameters = {});
 
 }
 

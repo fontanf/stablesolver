@@ -73,32 +73,8 @@ int main(int argc, char *argv[])
         .set_sigint_handler()
         ;
 
-    VER(info, "Instance" << std::endl);
-    VER(info, "* Number of vertices:              " << instance.number_of_vertices() << std::endl);
-    VER(info, "* Number of edges:                 " << instance.number_of_edges() << std::endl);
-    VER(info, "* Maximum degree:                  " << instance.maximum_degree() << std::endl);
-    VER(info, "* Number of connected components:  " << instance.number_of_components() << std::endl);
-    //VER(info, "* Connected components:           ");
-    //for (ComponentId c = 0; c < instance.number_of_components(); ++c)
-    //    VER(info, " " << c << "/" << instance.component(c).vertices.size() << "/" << instance.component(c).edges.size());
-    VER(info, std::endl);
-
     if (vm.count("reduce"))
         instance.reduce();
-
-    if (vm.count("reduce")) {
-        Instance& instance_reduced = *instance.reduced_instance();
-        VER(info, "Reduced instance" << std::endl);
-        VER(info, "* Number of vertices:              " << instance_reduced.number_of_vertices() << std::endl);
-        VER(info, "* Number of edges:                 " << instance_reduced.number_of_edges() << std::endl);
-        VER(info, "* Maximum degree:                  " << instance_reduced.maximum_degree() << std::endl);
-        VER(info, "* Extra weight:                    " << instance.extra_weight() << std::endl);
-        VER(info, "* Number of connected components:  " << instance_reduced.number_of_components() << std::endl);
-        //VER(info, "* Connected components:           ");
-        //for (ComponentId c = 0; c < instance_reduced.number_of_components(); ++c)
-        //    VER(info, " " << c << "/" << instance_reduced.component(c).vertices.size() << "/" << instance_reduced.component(c).edges.size());
-        VER(info, std::endl);
-    }
 
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);

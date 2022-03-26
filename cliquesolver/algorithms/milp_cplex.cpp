@@ -43,7 +43,12 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
 MilpCplexOutput cliquesolver::milp_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
-    VER(parameters.info, "*** milp_cplex ***" << std::endl);
+    cliquesolver::init_display(instance, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "MILP (CPLEX)" << std::endl
+            << std::endl);
 
     MilpCplexOutput output(instance, parameters.info);
     VertexId n = instance.number_of_vertices();

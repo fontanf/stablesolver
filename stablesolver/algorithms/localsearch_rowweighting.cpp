@@ -6,14 +6,16 @@
 
 using namespace stablesolver;
 
-/******************************* localsearch_rowweighting_1 ********************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////// localsearch_rowweighting_1 //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 LocalSearchRowWeighting1Output& LocalSearchRowWeighting1Output::algorithm_end(
         optimizationtools::Info& info)
 {
     PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    VER(info, "Number of iterations: " << number_of_iterations << std::endl);
+    VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -44,7 +46,12 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         std::mt19937_64& generator,
         LocalSearchRowWeighting1OptionalParameters parameters)
 {
-    VER(parameters.info, "*** localsearch_rowweighting_1 ***" << std::endl);
+    init_display(instance_original, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Row Weighting Local Search 1" << std::endl
+            << std::endl);
 
     // Compute initial greedy solution.
     LocalSearchRowWeighting1Output output(instance_original, parameters.info);
@@ -244,14 +251,16 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
     return output.algorithm_end(parameters.info);
 }
 
-/******************************* localsearch_rowweighting_2 ********************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////// localsearch_rowweighting_2 //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
         optimizationtools::Info& info)
 {
     PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    VER(info, "Number of iterations: " << number_of_iterations << std::endl);
+    VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -269,7 +278,12 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
         std::mt19937_64& generator,
         LocalSearchRowWeighting2OptionalParameters parameters)
 {
-    VER(parameters.info, "*** localsearch_rowweighting_2 ***" << std::endl);
+    init_display(instance_original, parameters.info);
+    VER(parameters.info,
+               "Algorithm" << std::endl
+            << "---------" << std::endl
+            << "Row Weighting Local Search 1" << std::endl
+            << std::endl);
 
     // Compute initial greedy solution.
     LocalSearchRowWeighting2Output output(instance_original, parameters.info);
