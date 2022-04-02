@@ -281,6 +281,72 @@ void Instance::compute_components()
     //}
 }
 
+ReductionOutput Instance::reduce_pendant_vertices(
+        const ReductionOutput& reduction_output_old)
+{
+    const Instance& instance = *reduction_output_old.instance;
+    optimizationtools::IndexedSet neighbors(instance.number_of_vertices());
+    optimizationtools::DoublyIndexedMap fixed_vertices(instance.number_of_vertices(), 2);
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
+        if (instance.degree(v) != 1)
+            continue;
+        Weight w = instance.vertex(v).weight;
+        VertexId v1 = instance.vertex(v).edges[0].v;
+        if (instance.vertex(v1).weight > w)
+            continue;
+        fixed_vertices.set(v, 1);
+        fixed_vertices.set(instance.vertex(v).edges[0].v, 0);
+    }
+    //std::cout << fixed_vertices.number_of_elements() << std::endl;
+
+    ReductionOutput reduction_output;
+    if (fixed_vertices.number_of_elements() == 0)
+        return reduction_output;
+
+    // Update mandatory_vertices.
+    reduction_output.mandatory_vertices = reduction_output_old.mandatory_vertices;
+    for (auto it = fixed_vertices.begin(1); it != fixed_vertices.end(1); ++it) {
+        VertexId v = *it;
+        for (VertexId v2: reduction_output_old.unreduction_operations[v].in) {
+            reduction_output.mandatory_vertices.push_back(v2);
+        }
+    }
+    for (auto it = fixed_vertices.begin(0); it != fixed_vertices.end(0); ++it) {
+        VertexId v = *it;
+        for (VertexId v2: reduction_output_old.unreduction_operations[v].out) {
+            reduction_output.mandatory_vertices.push_back(v2);
+        }
+    }
+    // Update instance and unreduction_operations.
+    VertexId n = instance.number_of_vertices() - fixed_vertices.number_of_elements();
+    reduction_output.instance = new Instance(n);
+    reduction_output.unreduction_operations = std::vector<UnreductionOperations>(n);
+    // Add vertices.
+    std::vector<VertexId> original2reduced(instance.number_of_vertices(), -1);
+    VertexId v_new = 0;
+    for (auto it = fixed_vertices.out_begin(); it != fixed_vertices.out_end(); ++it) {
+        VertexId v = *it;
+        original2reduced[v] = v_new;
+        reduction_output.instance->set_weight(v_new, instance.vertex(v).weight);
+        reduction_output.unreduction_operations[v_new]
+            = reduction_output_old.unreduction_operations[v];
+        v_new++;
+    }
+    // Add edges.
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
+        VertexId v1 = instance.edge(e).v1;
+        VertexId v2 = instance.edge(e).v2;
+        VertexId v1_new = original2reduced[v1];
+        VertexId v2_new = original2reduced[v2];
+        if (v1_new != -1 && v2_new != -1) {
+            reduction_output.instance->add_edge(v1_new, v2_new, 0);
+        }
+    }
+    reduction_output.instance->compute_components();
+
+    return reduction_output;
+}
+
 ReductionOutput Instance::reduce_isolated_vertex_removal(
         const ReductionOutput& reduction_output_old)
 {
@@ -783,7 +849,7 @@ void Instance::reduce()
         bool found = false;
 
         {
-            auto reduction_output = reduce_isolated_vertex_removal(reduction_output_);
+            auto reduction_output = reduce_pendant_vertices(reduction_output_);
             if (reduction_output.instance != nullptr) {
                 found = true;
                 if (reduction_output_.instance != this)
@@ -794,6 +860,16 @@ void Instance::reduce()
 
         {
             auto reduction_output = reduce_vertex_folding(reduction_output_);
+            if (reduction_output.instance != nullptr) {
+                found = true;
+                if (reduction_output_.instance != this)
+                    delete reduction_output_.instance;
+                reduction_output_ = reduction_output;
+            }
+        }
+
+        {
+            auto reduction_output = reduce_isolated_vertex_removal(reduction_output_);
             if (reduction_output.instance != nullptr) {
                 found = true;
                 if (reduction_output_.instance != this)

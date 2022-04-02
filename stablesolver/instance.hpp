@@ -240,6 +240,10 @@ private:
      * Private methods.
      */
 
+    /*
+     * Read input file.
+     */
+
     /** Read an instance file in 'dimacs1992' format. */
     void read_dimacs1992(std::ifstream& file);
     /** Read an instance file in 'dimacs2010' format. */
@@ -248,6 +252,21 @@ private:
     void read_matrixmarket(std::ifstream& file);
     /** Read an instance file in 'chaco' format. */
     void read_chaco(std::ifstream& file);
+
+    /*
+     * Reductions.
+     */
+
+    /**
+     * Perform pendant vertices reduction.
+     *
+     * See:
+     * - "Accelerating Local Search for the Maximum Independent Set Problem"
+     *   (Dahlum et al., 2016)
+     *   https://doi.org/10.1007/978-3-319-38851-9_9
+     */
+    static ReductionOutput reduce_pendant_vertices(
+            const ReductionOutput& reduction_output_old);
 
     /**
      * Perform isolated vertex removal reduction.
