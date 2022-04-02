@@ -227,6 +227,9 @@ private:
     /** Perform twin reduction. */
     static ReductionOutput reduce_twin(
             const ReductionOutput& reduction_output_old);
+    /** Perform domination reduction. */
+    static ReductionOutput reduce_domination(
+            const ReductionOutput& reduction_output_old);
 
 };
 
