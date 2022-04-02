@@ -13,7 +13,7 @@ class LocalScheme
 
 public:
 
-    /** Global cost: <Overweight, Weight>; */
+    /** Global cost: <Weight>; */
     using GlobalCost = std::tuple<Weight>;
 
     inline Weight&       weight(GlobalCost& global_cost) { return std::get<0>(global_cost); }
@@ -48,7 +48,7 @@ public:
     struct SolutionVertex
     {
         /**
-         * in == true iff vertex j is in the solution.
+         * in == true iff the vertex is in the solution.
          */
         bool in = false;
 
@@ -232,16 +232,16 @@ public:
             // Loop through neighborhoods.
             for (Counter neighborhood: neighborhoods) {
                 switch (neighborhood) {
-                case 0: { // Toggle neighborhood.
+                case 0: { // Add neighborhood.
                     std::shuffle(vertices_.begin(), vertices_.end(), generator);
                     VertexId v_best = -1;
                     GlobalCost c_best = global_cost(solution);
                     for (VertexId v: vertices_) {
                         if (v == tabu.v)
                             continue;
-                        GlobalCost c = (contains(solution, v))?
-                            cost_remove(solution, v, c_best):
-                            cost_add(solution, v, c_best);
+                        if (contains(solution, v))
+                            continue;
+                        GlobalCost c = cost_add(solution, v, c_best);
                         if (c >= c_best)
                             continue;
                         if (v_best != -1 && !dominates(c, c_best))
@@ -252,11 +252,7 @@ public:
                     if (v_best != -1) {
                         improved = true;
                         // Apply move.
-                        if (contains(solution, v_best)) {
-                            remove(solution, v_best);
-                        } else {
-                            add(solution, v_best);
-                        }
+                        add(solution, v_best);
                         assert(global_cost(solution) == c_best);
                     }
                     break;
@@ -374,25 +370,30 @@ private:
     {
         assert(v >= 0);
         assert(!contains(solution, v));
-        solution.vertices[v].in = true;
-        Weight p = instance_.vertex(v).weight;
-        solution.weight += p;
+
+        Weight w = instance_.vertex(v).weight;
+
+        // Remove conflicting vertices.
         for (const VertexEdge& edge: instance_.vertex(v).edges) {
             if (contains(solution, edge.v))
                 remove(solution, edge.v);
-            solution.vertices[edge.v].neighbor_weight += p;
+            solution.vertices[edge.v].neighbor_weight += w;
         }
+
+        solution.vertices[v].in = true;
+        solution.weight += w;
     }
 
     inline void remove(Solution& solution, VertexId v) const
     {
         assert(v >= 0);
         assert(contains(solution, v));
+
         solution.vertices[v].in = false;
-        Weight p = instance_.vertex(v).weight;
-        solution.weight -= p;
+        Weight w = instance_.vertex(v).weight;
+        solution.weight -= w;
         for (const VertexEdge& edge: instance_.vertex(v).edges)
-            solution.vertices[edge.v].neighbor_weight -= p;
+            solution.vertices[edge.v].neighbor_weight -= w;
     }
 
     /*
@@ -409,7 +410,9 @@ private:
     inline GlobalCost cost_add(const Solution& solution, VertexId v, GlobalCost) const
     {
         return {
-            -(solution.weight + instance_.vertex(v).weight - solution.vertices[v].neighbor_weight),
+            -(solution.weight
+                    + instance_.vertex(v).weight
+                    - solution.vertices[v].neighbor_weight),
         };
     }
 
