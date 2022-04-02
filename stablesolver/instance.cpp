@@ -266,15 +266,18 @@ void Instance::compute_components()
         components_[edge(e).component].edges.push_back(e);
 
     //for (const auto& component: components_) {
-    //    std::cout << "Component " << component.id << std::endl;
-    //    std::cout << "Vertices:";
-    //    for (VertexId v: component.vertices)
-    //        std::cout << " " << v;
-    //    std::cout << std::endl;
-    //    std::cout << "Edges:";
-    //    for (EdgeId e: component.edges)
-    //        std::cout << " " << edge(e).v1 << "," << edge(e).v2;
-    //    std::cout << std::endl;
+    //    std::cout << "Component " << component.id
+    //        << " n " << component.vertices.size()
+    //        << " m " << component.edges.size()
+    //        << std::endl;
+    //    //std::cout << "Vertices:";
+    //    //for (VertexId v: component.vertices)
+    //    //    std::cout << " " << v;
+    //    //std::cout << std::endl;
+    //    //std::cout << "Edges:";
+    //    //for (EdgeId e: component.edges)
+    //    //    std::cout << " " << edge(e).v1 << "," << edge(e).v2;
+    //    //std::cout << std::endl;
     //}
 }
 

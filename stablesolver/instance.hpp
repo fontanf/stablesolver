@@ -21,39 +21,63 @@ typedef int64_t Seed;
 
 class Solution;
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * Structure that stores the information of a neighbor for a considered vertex.
+ */
 struct VertexEdge
 {
+    /** Id of the edge. */
     EdgeId e;
+    /** Id of the neighbor. */
     VertexId v;
 };
 
+/**
+ * Structure that stores the information for a vertex.
+ */
 struct Vertex
 {
+    /** Unique id of the vertex. */
     VertexId id;
+    /** Weight of the vertex. */
     Weight weight = 1;
+    /** Id of the connected component of the vertex. */
     ComponentId component = -1;
+    /** Neighbors of the vertex. */
     std::vector<VertexEdge> edges;
 };
 
+/**
+ * Structure that stores the information for an edge.
+ */
 struct Edge
 {
+    /** Unique id of the edge. */
     EdgeId id;
+    /** Id of the first end of the edge. */
     VertexId v1;
+    /** Id of the second end of the edge. */
     VertexId v2;
+    /** Id of the connected component of the edge. */
     ComponentId component = -1;
 };
 
+/**
+ * Structure that stores the information for a connected component.
+ */
 struct Component
 {
+    /** Unique id of the connected component. */
     ComponentId id;
+    /** Ids of the edges in the connected component. */
     std::vector<EdgeId> edges;
+    /** Ids of the vertices in the connected component. */
     std::vector<VertexId> vertices;
 };
 
+/**
+ * Structure that stores the unreduction operation for a considered vertex.
+ */
 struct UnreductionOperations
 {
     /**
@@ -70,10 +94,17 @@ struct UnreductionOperations
 };
 
 class Instance;
+
+/**
+ * Structure returned by the reduction operations.
+ */
 struct ReductionOutput
 {
+    /** Pointer to the reduced instance. */
     Instance* instance = nullptr;
+    /** For each vertex, unreduction operations. */
     std::vector<UnreductionOperations> unreduction_operations;
+    /** Mandatory vertices (from the original instance). */
     std::vector<VertexId> mandatory_vertices;
 };
 
@@ -218,16 +249,50 @@ private:
     /** Read an instance file in 'chaco' format. */
     void read_chaco(std::ifstream& file);
 
-    /** Perform isolated vertex removal reduction. */
+    /**
+     * Perform isolated vertex removal reduction.
+     *
+     * See:
+     * - "Exactly Solving the Maximum Weight Independent Set Problem on Large
+     *   Real-World Graphs" (Lamm et al., 2019)
+     *   https://doi.org/10.1137/1.9781611975499.12
+     */
     static ReductionOutput reduce_isolated_vertex_removal(
             const ReductionOutput& reduction_output_old);
-    /** Perform vertex folding reduction. */
+    /**
+     * Perform vertex folding reduction.
+     *
+     * See:
+     * - "Branch-and-reduce exponential/FPT algorithms in practice: A case
+     *   study of vertex cover" (Akibaa et Iwata, 2016)
+     *   https://doi.org/10.1016/j.tcs.2015.09.023
+     * - "Exactly Solving the Maximum Weight Independent Set Problem on Large
+     *   Real-World Graphs" (Lamm et al., 2019)
+     *   https://doi.org/10.1137/1.9781611975499.12
+     */
     static ReductionOutput reduce_vertex_folding(
             const ReductionOutput& reduction_output_old);
-    /** Perform twin reduction. */
+    /**
+     * Perform twin reduction.
+     *
+     * See:
+     * - "Branch-and-reduce exponential/FPT algorithms in practice: A case
+     *   study of vertex cover" (Akibaa et Iwata, 2016)
+     *   https://doi.org/10.1016/j.tcs.2015.09.023
+     * - "Exactly Solving the Maximum Weight Independent Set Problem on Large
+     *   Real-World Graphs" (Lamm et al., 2019)
+     *   https://doi.org/10.1137/1.9781611975499.12
+     */
     static ReductionOutput reduce_twin(
             const ReductionOutput& reduction_output_old);
-    /** Perform domination reduction. */
+    /**
+     * Perform domination reduction.
+     *
+     * See:
+     * - "Branch-and-reduce exponential/FPT algorithms in practice: A case
+     *   study of vertex cover" (Akibaa et Iwata, 2016)
+     *   https://doi.org/10.1016/j.tcs.2015.09.023
+     */
     static ReductionOutput reduce_domination(
             const ReductionOutput& reduction_output_old);
 
