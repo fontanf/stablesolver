@@ -2,8 +2,6 @@
 
 #include "optimizationtools/info.hpp"
 #include "optimizationtools/utils.hpp"
-#include "optimizationtools/indexed_map.hpp"
-#include "optimizationtools/doubly_indexed_map.hpp"
 
 #include <random>
 #include <set>
@@ -23,7 +21,9 @@ typedef int64_t Seed;
 
 class Solution;
 
-/******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct VertexEdge
 {
@@ -223,6 +223,9 @@ private:
             const ReductionOutput& reduction_output_old);
     /** Perform vertex folding reduction. */
     static ReductionOutput reduce_vertex_folding(
+            const ReductionOutput& reduction_output_old);
+    /** Perform twin reduction. */
+    static ReductionOutput reduce_twin(
             const ReductionOutput& reduction_output_old);
 
 };

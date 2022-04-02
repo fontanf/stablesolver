@@ -94,6 +94,8 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         // Compute component
         if (output.number_of_iterations % (components.back().iteration_max + 1) >= components[c].iteration_max) {
             c = (c + 1) % instance.number_of_components();
+            while (instance.component(c).vertices.size() == 1)
+                c = (c + 1) % instance.number_of_components();
             //std::cout << "c " << c << " " << components[c].iteration_max
                 //<< " e " << instance.component(c).edges.size()
                 //<< " s " << instance.component(c).vertices.size()

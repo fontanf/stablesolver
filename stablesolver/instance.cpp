@@ -1,5 +1,8 @@
 #include "stablesolver/instance.hpp"
 
+#include "optimizationtools/indexed_map.hpp"
+#include "optimizationtools/doubly_indexed_map.hpp"
+
 #include <sstream>
 #include <iomanip>
 #include <thread>
@@ -227,6 +230,7 @@ Instance Instance::complementary()
 
 void Instance::compute_components()
 {
+    //std::cout << "compute_components" << std::endl;
     std::vector<VertexId> stack;
     VertexId v0 = 0;
     for (ComponentId c = 0;; ++c) {
@@ -236,8 +240,8 @@ void Instance::compute_components()
         if (v0 == number_of_vertices())
             break;
         //std::cout << "c " << c << " v " << v << std::endl;
-        components_.push_back(Component());
-        components_.back().id = c;
+        Component component;
+        component.id = c;
         stack.clear();
         stack.push_back(v0);
         vertices_[v0].component = c;
@@ -252,6 +256,7 @@ void Instance::compute_components()
                 stack.push_back(edge.v);
             }
         }
+        components_.push_back(component);
     }
 
     for (VertexId v = 0; v < number_of_vertices(); ++v)
@@ -261,17 +266,15 @@ void Instance::compute_components()
         components_[edge(e).component].edges.push_back(e);
 
     //for (const auto& component: components_) {
-    //    if (component.vertices.size() == 4 && component.edges.size() == 4) {
-    //        std::cout << "Component " << component.id << std::endl;
-    //        std::cout << "Vertices:";
-    //        for (VertexId v: component.vertices)
-    //            std::cout << " " << v;
-    //        std::cout << std::endl;
-    //        std::cout << "Edges:";
-    //        for (EdgeId e: component.edges)
-    //            std::cout << " " << edge(e).v1 << "," << edge(e).v2;
-    //        std::cout << std::endl;
-    //    }
+    //    std::cout << "Component " << component.id << std::endl;
+    //    std::cout << "Vertices:";
+    //    for (VertexId v: component.vertices)
+    //        std::cout << " " << v;
+    //    std::cout << std::endl;
+    //    std::cout << "Edges:";
+    //    for (EdgeId e: component.edges)
+    //        std::cout << " " << edge(e).v1 << "," << edge(e).v2;
+    //    std::cout << std::endl;
     //}
 }
 
@@ -361,11 +364,6 @@ ReductionOutput Instance::reduce_isolated_vertex_removal(
     }
     reduction_output.instance->compute_components();
 
-    //std::cout << "Instance" << std::endl;
-    //std::cout << "* Number of vertices:              " << reduction_output.instance->number_of_vertices() << std::endl;
-    //std::cout << "* Number of edges:                 " << reduction_output.instance->number_of_edges() << std::endl;
-    //std::cout << "* Maximum degree:                  " << reduction_output.instance->maximum_degree() << std::endl;
-    //std::cout << "* Number of connected components:  " << reduction_output.instance->number_of_components() << std::endl;
     return reduction_output;
 }
 
@@ -374,7 +372,8 @@ ReductionOutput Instance::reduce_vertex_folding(
 {
     //std::cout << "Vertex folding..." << std::endl;
     const Instance& instance = *reduction_output_old.instance;
-    optimizationtools::DoublyIndexedMap folded_vertices(instance.number_of_vertices(), 2);
+    optimizationtools::IndexedSet folded_vertices(instance.number_of_vertices());
+    std::vector<std::tuple<VertexId, VertexId, VertexId>> folded_vertices_list;
     for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
         if (instance.degree(v) != 2)
             continue;
@@ -398,20 +397,21 @@ ReductionOutput Instance::reduce_vertex_folding(
         if (!ok)
             continue;
         //std::cout << "v " << v << " v1 " << v1 << " v2 " << v2 << std::endl;
-        folded_vertices.set(v, 1);
-        folded_vertices.set(v1, 0);
-        folded_vertices.set(v2, 0);
+        folded_vertices.add(v);
+        folded_vertices.add(v1);
+        folded_vertices.add(v2);
+        folded_vertices_list.push_back({v, v1, v2});
     }
     //std::cout << folded_vertices.number_of_elements() << std::endl;
 
     ReductionOutput reduction_output;
-    if (folded_vertices.number_of_elements() == 0)
+    if (folded_vertices_list.empty())
         return reduction_output;
 
     // Update mandatory_vertices.
     reduction_output.mandatory_vertices = reduction_output_old.mandatory_vertices;
     // Update instance and unreduction_operations.
-    VertexId n = instance.number_of_vertices() - folded_vertices.number_of_elements(0);
+    VertexId n = instance.number_of_vertices() - folded_vertices.size() + folded_vertices_list.size();
     reduction_output.instance = new Instance(n);
     reduction_output.unreduction_operations = std::vector<UnreductionOperations>(n);
     // Add vertices.
@@ -425,10 +425,10 @@ ReductionOutput Instance::reduce_vertex_folding(
             = reduction_output_old.unreduction_operations[v];
         v_new++;
     }
-    for (auto it = folded_vertices.begin(1); it != folded_vertices.end(1); ++it) {
-        VertexId v = *it;
-        VertexId v1 = instance.vertex(v).edges[0].v;
-        VertexId v2 = instance.vertex(v).edges[1].v;
+    for (const auto& tuple: folded_vertices_list) {
+        VertexId v = std::get<0>(tuple);
+        VertexId v1 = std::get<1>(tuple);
+        VertexId v2 = std::get<2>(tuple);
         if (v1 == v2) {
             throw std::runtime_error(
                     "Vertex "
@@ -470,11 +470,12 @@ ReductionOutput Instance::reduce_vertex_folding(
         reduction_output.instance->add_edge(v1_new, v2_new, 0);
     }
     optimizationtools::IndexedSet neighbors_tmp(n);
-    for (auto it = folded_vertices.begin(1); it != folded_vertices.end(1); ++it) {
-        VertexId v = *it;
+    for (const auto& tuple: folded_vertices_list) {
+        VertexId v = std::get<0>(tuple);
+        VertexId v1 = std::get<1>(tuple);
+        VertexId v2 = std::get<2>(tuple);
         VertexId v_new = original2reduced[v];
-        VertexId v1 = instance.vertex(v).edges[0].v;
-        VertexId v2 = instance.vertex(v).edges[1].v;
+
         neighbors_tmp.clear();
         for (const auto& edge: instance.vertex(v1).edges)
             if (edge.v != v)
@@ -491,11 +492,167 @@ ReductionOutput Instance::reduce_vertex_folding(
     }
     reduction_output.instance->compute_components();
 
-    //std::cout << "Instance" << std::endl;
-    //std::cout << "* Number of vertices:              " << reduction_output.instance->number_of_vertices() << std::endl;
-    //std::cout << "* Number of edges:                 " << reduction_output.instance->number_of_edges() << std::endl;
-    //std::cout << "* Maximum degree:                  " << reduction_output.instance->maximum_degree() << std::endl;
-    //std::cout << "* Number of connected components:  " << reduction_output.instance->number_of_components() << std::endl;
+    return reduction_output;
+}
+
+ReductionOutput Instance::reduce_twin(
+        const ReductionOutput& reduction_output_old)
+{
+    //std::cout << "Vertex folding..." << std::endl;
+    const Instance& instance = *reduction_output_old.instance;
+    optimizationtools::IndexedSet folded_vertices(instance.number_of_vertices());
+    optimizationtools::IndexedMap<VertexPos> twin_candidates(instance.number_of_vertices(), 0);
+    std::vector<std::tuple<VertexId, VertexId, VertexId, VertexId, VertexId>> folded_vertices_list;
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
+        if (instance.degree(v) != 3)
+            continue;
+        VertexId v1 = instance.vertex(v).edges[0].v;
+        VertexId v2 = instance.vertex(v).edges[1].v;
+        VertexId v3 = instance.vertex(v).edges[2].v;
+        if (folded_vertices.contains(v)
+                || folded_vertices.contains(v1)
+                || folded_vertices.contains(v2)
+                || folded_vertices.contains(v3))
+            continue;
+        Weight w = instance.vertex(v).weight;
+        if (instance.vertex(v1).weight != w
+                || instance.vertex(v2).weight != w
+                || instance.vertex(v3).weight != w)
+            continue;
+        twin_candidates.clear();
+        for (const auto& edge: instance.vertex(v).edges) {
+            for (const auto& edge_2: instance.vertex(edge.v).edges) {
+                if (instance.degree(edge_2.v) != 3)
+                    continue;
+                if (edge_2.v == v)
+                    continue;
+                if (instance.vertex(edge_2.v).weight != w)
+                    continue;
+                if (folded_vertices.contains(edge_2.v))
+                    continue;
+                twin_candidates.set(edge_2.v, twin_candidates[edge_2.v] + 1);
+            }
+        }
+        VertexId v_twin = -1;
+        for (auto p: twin_candidates) {
+            if (p.second == 3) {
+                v_twin = p.first;
+                break;
+            }
+        }
+        if (v_twin == -1)
+            continue;
+
+        folded_vertices.add(v);
+        folded_vertices.add(v_twin);
+        folded_vertices.add(v1);
+        folded_vertices.add(v2);
+        folded_vertices.add(v3);
+        folded_vertices_list.push_back({v, v_twin, v1, v2, v3});
+    }
+    //std::cout << folded_vertices.number_of_elements() << std::endl;
+
+    ReductionOutput reduction_output;
+    if (folded_vertices.size() == 0)
+        return reduction_output;
+
+    // Update mandatory_vertices.
+    reduction_output.mandatory_vertices = reduction_output_old.mandatory_vertices;
+    // Update instance and unreduction_operations.
+    VertexId n = instance.number_of_vertices() - folded_vertices.size() + folded_vertices_list.size();
+    reduction_output.instance = new Instance(n);
+    reduction_output.unreduction_operations = std::vector<UnreductionOperations>(n);
+    // Add vertices.
+    std::vector<VertexId> original2reduced(instance.number_of_vertices(), -1);
+    VertexId v_new = 0;
+    for (auto it = folded_vertices.out_begin(); it != folded_vertices.out_end(); ++it) {
+        VertexId v = *it;
+        original2reduced[v] = v_new;
+        reduction_output.instance->set_weight(v_new, instance.vertex(v).weight);
+        reduction_output.unreduction_operations[v_new]
+            = reduction_output_old.unreduction_operations[v];
+        v_new++;
+    }
+    for (const auto& tuple: folded_vertices_list) {
+        VertexId v = std::get<0>(tuple);
+        VertexId v_twin = std::get<1>(tuple);
+        VertexId v1 = std::get<2>(tuple);
+        VertexId v2 = std::get<3>(tuple);
+        VertexId v3 = std::get<4>(tuple);
+        original2reduced[v] = v_new;
+        original2reduced[v_twin] = v_new;
+        original2reduced[v1] = v_new;
+        original2reduced[v2] = v_new;
+        original2reduced[v3] = v_new;
+        reduction_output.instance->set_weight(v_new, instance.vertex(v).weight);
+
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v].out)
+            reduction_output.unreduction_operations[v_new].in.push_back(v_tmp);
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v].in)
+            reduction_output.unreduction_operations[v_new].out.push_back(v_tmp);
+
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v_twin].out)
+            reduction_output.unreduction_operations[v_new].in.push_back(v_tmp);
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v_twin].in)
+            reduction_output.unreduction_operations[v_new].out.push_back(v_tmp);
+
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v1].in)
+            reduction_output.unreduction_operations[v_new].in.push_back(v_tmp);
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v1].out)
+            reduction_output.unreduction_operations[v_new].out.push_back(v_tmp);
+
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v2].in)
+            reduction_output.unreduction_operations[v_new].in.push_back(v_tmp);
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v2].out)
+            reduction_output.unreduction_operations[v_new].out.push_back(v_tmp);
+
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v3].in)
+            reduction_output.unreduction_operations[v_new].in.push_back(v_tmp);
+        for (VertexId v_tmp: reduction_output_old.unreduction_operations[v3].out)
+            reduction_output.unreduction_operations[v_new].out.push_back(v_tmp);
+
+        v_new++;
+    }
+    // Add edges.
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
+        VertexId v1 = instance.edge(e).v1;
+        VertexId v2 = instance.edge(e).v2;
+        if (folded_vertices.contains(v1) || folded_vertices.contains(v2))
+            continue;
+        VertexId v1_new = original2reduced[v1];
+        VertexId v2_new = original2reduced[v2];
+        reduction_output.instance->add_edge(v1_new, v2_new, 0);
+    }
+    optimizationtools::IndexedSet neighbors_tmp(n);
+    for (const auto& tuple: folded_vertices_list) {
+        VertexId v = std::get<0>(tuple);
+        VertexId v_twin = std::get<1>(tuple);
+        VertexId v1 = std::get<2>(tuple);
+        VertexId v2 = std::get<3>(tuple);
+        VertexId v3 = std::get<4>(tuple);
+        VertexId v_new = original2reduced[v];
+
+        neighbors_tmp.clear();
+        for (const auto& edge: instance.vertex(v1).edges)
+            if (edge.v != v && edge.v != v_twin)
+                if (!folded_vertices.contains(edge.v)
+                        || v_new < original2reduced[edge.v])
+                    neighbors_tmp.add(original2reduced[edge.v]);
+        for (const auto& edge: instance.vertex(v2).edges)
+            if (edge.v != v && edge.v != v_twin)
+                if (!folded_vertices.contains(edge.v)
+                        || v_new < original2reduced[edge.v])
+                    neighbors_tmp.add(original2reduced[edge.v]);
+        for (const auto& edge: instance.vertex(v3).edges)
+            if (edge.v != v && edge.v != v_twin)
+                if (!folded_vertices.contains(edge.v)
+                        || v_new < original2reduced[edge.v])
+                    neighbors_tmp.add(original2reduced[edge.v]);
+        for (VertexId v_tmp: neighbors_tmp)
+            reduction_output.instance->add_edge(v_new, v_tmp, 0);
+    }
+    reduction_output.instance->compute_components();
+
     return reduction_output;
 }
 
@@ -523,6 +680,16 @@ void Instance::reduce()
 
         {
             auto reduction_output = reduce_vertex_folding(reduction_output_);
+            if (reduction_output.instance != nullptr) {
+                found = true;
+                if (reduction_output_.instance != this)
+                    delete reduction_output_.instance;
+                reduction_output_ = reduction_output;
+            }
+        }
+
+        {
+            auto reduction_output = reduce_twin(reduction_output_);
             if (reduction_output.instance != nullptr) {
                 found = true;
                 if (reduction_output_.instance != this)
