@@ -278,6 +278,7 @@ private:
      */
     static ReductionOutput reduce_isolated_vertex_removal(
             const ReductionOutput& reduction_output_old);
+
     /**
      * Perform vertex folding reduction.
      *
@@ -291,6 +292,7 @@ private:
      */
     static ReductionOutput reduce_vertex_folding(
             const ReductionOutput& reduction_output_old);
+
     /**
      * Perform twin reduction.
      *
@@ -304,6 +306,7 @@ private:
      */
     static ReductionOutput reduce_twin(
             const ReductionOutput& reduction_output_old);
+
     /**
      * Perform domination reduction.
      *
@@ -311,8 +314,32 @@ private:
      * - "Branch-and-reduce exponential/FPT algorithms in practice: A case
      *   study of vertex cover" (Akibaa et Iwata, 2016)
      *   https://doi.org/10.1016/j.tcs.2015.09.023
+     * - "Exactly Solving the Maximum Weight Independent Set Problem on Large
+     *   Real-World Graphs" (Lamm et al., 2019)
+     *   https://doi.org/10.1137/1.9781611975499.12
      */
     static ReductionOutput reduce_domination(
+            const ReductionOutput& reduction_output_old);
+
+    /**
+     * Perform unconfined reduction.
+     *
+     * The unconfined reduction rule is a generalization of the dominance and
+     * the satellite reduction rules.
+     *
+     * See:
+     * - "Confining sets and avoiding bottleneck cases: A simple maximum
+     *   independent set algorithm in degree-3 graphs" (Xiao et
+     *   HiroshiNagamochi, 2013)
+     *   https://doi.org/10.1016/j.tcs.2012.09.022
+     * - "Accelerating Local Search for the Maximum Independent Set Problem"
+     *   (Dahlum et al., 2016)
+     *   https://doi.org/10.1007/978-3-319-38851-9_9
+     * - "Exactly Solving the Maximum Weight Independent Set Problem on Large
+     *   Real-World Graphs" (Lamm et al., 2019)
+     *   https://doi.org/10.1137/1.9781611975499.12
+     */
+    static ReductionOutput reduce_unconfined(
             const ReductionOutput& reduction_output_old);
 
 };

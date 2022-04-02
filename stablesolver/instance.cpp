@@ -836,6 +836,145 @@ ReductionOutput Instance::reduce_domination(
     return reduction_output;
 }
 
+ReductionOutput Instance::reduce_unconfined(
+        const ReductionOutput& reduction_output_old)
+{
+    //std::cout << "Vertex folding..." << std::endl;
+    const Instance& instance = *reduction_output_old.instance;
+    optimizationtools::IndexedSet removed_vertices(instance.number_of_vertices());
+    optimizationtools::IndexedSet s(instance.number_of_vertices());
+    optimizationtools::IndexedSet n_s(instance.number_of_vertices());
+    optimizationtools::IndexedSet neighbors(instance.number_of_vertices());
+    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
+        // Minimum weight in S.
+        // The unconfined reduction rule remains true while the minimum weight
+        // in S is greater or equal to the maximum weight in N(S).
+        Weight ws_min = instance.vertex(v).weight;
+        Weight wns_max = 0;
+
+        s.clear();
+        n_s.clear();
+
+        // Update S.
+        s.add(v);
+        // Update N(S).
+        for (const auto& edge: instance.vertex(v).edges) {
+            n_s.add(edge.v);
+            if (wns_max < instance.vertex(edge.v).weight)
+                wns_max = instance.vertex(edge.v).weight;
+        }
+        if (ws_min < wns_max)
+            continue;
+
+        bool can_be_removed = false;
+        for (;;) {
+            VertexId u_best = -1;
+            VertexPos n_u_minus_n_s_card_best = -1;
+            VertexId w_best = -1;
+            for (VertexId u: n_s) {
+                if (removed_vertices.contains(u))
+                    continue;
+                VertexPos n_u_inter_s_card = 0;
+                for (const auto& edge: instance.vertex(u).edges)
+                    if (s.contains(edge.v))
+                        n_u_inter_s_card++;
+                if (n_u_inter_s_card != 1)
+                    continue;
+
+                VertexPos n_u_minus_n_s_card = 0;
+                VertexPos w = -1;
+                for (const auto& edge: instance.vertex(u).edges) {
+                    if (!s.contains(edge.v)
+                            && !n_s.contains(edge.v)) {
+                        n_u_minus_n_s_card++;
+                        w = edge.v;
+                    }
+                }
+                if (u_best == -1
+                        || n_u_minus_n_s_card_best > n_u_minus_n_s_card) {
+                    u_best = u;
+                    n_u_minus_n_s_card_best = n_u_minus_n_s_card;
+                    w_best = w;
+                }
+            }
+            if (u_best == -1) {
+                can_be_removed = false;
+                break;
+            } else if (n_u_minus_n_s_card_best == 0) {
+                can_be_removed = true;
+                break;
+            } else if (n_u_minus_n_s_card_best == 1) {
+                // Update S.
+                s.add(w_best);
+                if (ws_min > instance.vertex(w_best).weight)
+                    ws_min = instance.vertex(w_best).weight;
+                // Update N(S).
+                if (n_s.contains(w_best))
+                    n_s.remove(w_best);
+                for (const auto& edge: instance.vertex(w_best).edges) {
+                    if (!s.contains(edge.v)) {
+                        n_s.add(edge.v);
+                        if (wns_max < instance.vertex(edge.v).weight)
+                            wns_max = instance.vertex(edge.v).weight;
+                    }
+                }
+                if (ws_min < wns_max) {
+                    can_be_removed = false;
+                    break;
+                }
+                continue;
+            } else {
+                can_be_removed = false;
+                break;
+            }
+        }
+
+        if (can_be_removed)
+            removed_vertices.add(v);
+    }
+    //std::cout << folded_vertices.number_of_elements() << std::endl;
+
+    ReductionOutput reduction_output;
+    if (removed_vertices.size() == 0)
+        return reduction_output;
+
+    // Update mandatory_vertices.
+    reduction_output.mandatory_vertices = reduction_output_old.mandatory_vertices;
+    for (VertexId v: removed_vertices) {
+        for (VertexId v2: reduction_output_old.unreduction_operations[v].out) {
+            reduction_output.mandatory_vertices.push_back(v2);
+        }
+    }
+    // Update instance and unreduction_operations.
+    VertexId n = instance.number_of_vertices() - removed_vertices.size();
+    reduction_output.instance = new Instance(n);
+    reduction_output.unreduction_operations = std::vector<UnreductionOperations>(n);
+    // Add vertices.
+    std::vector<VertexId> original2reduced(instance.number_of_vertices(), -1);
+    VertexId v_new = 0;
+    for (auto it = removed_vertices.out_begin(); it != removed_vertices.out_end(); ++it) {
+        VertexId v = *it;
+        original2reduced[v] = v_new;
+        reduction_output.instance->set_weight(v_new, instance.vertex(v).weight);
+        reduction_output.unreduction_operations[v_new]
+            = reduction_output_old.unreduction_operations[v];
+        v_new++;
+    }
+    // Add edges.
+    for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
+        VertexId v1 = instance.edge(e).v1;
+        VertexId v2 = instance.edge(e).v2;
+        if (removed_vertices.contains(v1) || removed_vertices.contains(v2))
+            continue;
+        VertexId v1_new = original2reduced[v1];
+        VertexId v2_new = original2reduced[v2];
+        reduction_output.instance->add_edge(v1_new, v2_new, 0);
+    }
+    reduction_output.instance->compute_components();
+
+    return reduction_output;
+}
+
 void Instance::reduce()
 {
     // Compute fixed vertices.
@@ -890,6 +1029,16 @@ void Instance::reduce()
 
         {
             auto reduction_output = reduce_domination(reduction_output_);
+            if (reduction_output.instance != nullptr) {
+                found = true;
+                if (reduction_output_.instance != this)
+                    delete reduction_output_.instance;
+                reduction_output_ = reduction_output;
+            }
+        }
+
+        {
+            auto reduction_output = reduce_unconfined(reduction_output_);
             if (reduction_output.instance != nullptr) {
                 found = true;
                 if (reduction_output_.instance != this)
