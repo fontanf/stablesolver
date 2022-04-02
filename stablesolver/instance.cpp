@@ -500,7 +500,10 @@ ReductionOutput Instance::reduce_twin(
 {
     //std::cout << "Vertex folding..." << std::endl;
     const Instance& instance = *reduction_output_old.instance;
-    optimizationtools::IndexedSet folded_vertices(instance.number_of_vertices());
+    // 0: removed
+    // 1: added
+    // 2: folded
+    optimizationtools::DoublyIndexedMap modified_vertices(instance.number_of_vertices(), 3);
     optimizationtools::IndexedMap<VertexPos> twin_candidates(instance.number_of_vertices(), 0);
     std::vector<std::tuple<VertexId, VertexId, VertexId, VertexId, VertexId>> folded_vertices_list;
     for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
@@ -509,10 +512,10 @@ ReductionOutput Instance::reduce_twin(
         VertexId v1 = instance.vertex(v).edges[0].v;
         VertexId v2 = instance.vertex(v).edges[1].v;
         VertexId v3 = instance.vertex(v).edges[2].v;
-        if (folded_vertices.contains(v)
-                || folded_vertices.contains(v1)
-                || folded_vertices.contains(v2)
-                || folded_vertices.contains(v3))
+        if (modified_vertices.contains(v)
+                || modified_vertices.contains(v1)
+                || modified_vertices.contains(v2)
+                || modified_vertices.contains(v3))
             continue;
         Weight w = instance.vertex(v).weight;
         if (instance.vertex(v1).weight != w
@@ -528,7 +531,7 @@ ReductionOutput Instance::reduce_twin(
                     continue;
                 if (instance.vertex(edge_2.v).weight != w)
                     continue;
-                if (folded_vertices.contains(edge_2.v))
+                if (modified_vertices.contains(edge_2.v))
                     continue;
                 twin_candidates.set(edge_2.v, twin_candidates[edge_2.v] + 1);
             }
@@ -542,30 +545,62 @@ ReductionOutput Instance::reduce_twin(
         }
         if (v_twin == -1)
             continue;
+        // Is there an edge inside v1, v2, v3?
+        bool has_edge = false;
+        for (const auto& edge: instance.vertex(v1).edges)
+            if (edge.v == v2 || edge.v == v3)
+                has_edge = true;
+        for (const auto& edge: instance.vertex(v2).edges)
+            if (edge.v == v3)
+                has_edge = true;
 
-        folded_vertices.add(v);
-        folded_vertices.add(v_twin);
-        folded_vertices.add(v1);
-        folded_vertices.add(v2);
-        folded_vertices.add(v3);
-        folded_vertices_list.push_back({v, v_twin, v1, v2, v3});
+        if (has_edge) {
+            modified_vertices.set(v, 1);
+            modified_vertices.set(v_twin, 1);
+            modified_vertices.set(v1, 0);
+            modified_vertices.set(v2, 0);
+            modified_vertices.set(v3, 0);
+        } else {
+            modified_vertices.set(v, 2);
+            modified_vertices.set(v_twin, 2);
+            modified_vertices.set(v1, 2);
+            modified_vertices.set(v2, 2);
+            modified_vertices.set(v3, 2);
+            folded_vertices_list.push_back({v, v_twin, v1, v2, v3});
+        }
     }
     //std::cout << folded_vertices.number_of_elements() << std::endl;
 
     ReductionOutput reduction_output;
-    if (folded_vertices.size() == 0)
+    if (modified_vertices.number_of_elements() == 0)
         return reduction_output;
 
     // Update mandatory_vertices.
     reduction_output.mandatory_vertices = reduction_output_old.mandatory_vertices;
+    for (auto it = modified_vertices.begin(1); it != modified_vertices.end(1); ++it) {
+        VertexId v = *it;
+        for (VertexId v2: reduction_output_old.unreduction_operations[v].in) {
+            reduction_output.mandatory_vertices.push_back(v2);
+        }
+    }
+    for (auto it = modified_vertices.begin(0); it != modified_vertices.end(0); ++it) {
+        VertexId v = *it;
+        for (VertexId v2: reduction_output_old.unreduction_operations[v].out) {
+            reduction_output.mandatory_vertices.push_back(v2);
+        }
+    }
     // Update instance and unreduction_operations.
-    VertexId n = instance.number_of_vertices() - folded_vertices.size() + folded_vertices_list.size();
+    VertexId n = instance.number_of_vertices()
+        - modified_vertices.number_of_elements(0)
+        - modified_vertices.number_of_elements(1)
+        - modified_vertices.number_of_elements(2)
+        + modified_vertices.number_of_elements(2) / 5;
     reduction_output.instance = new Instance(n);
     reduction_output.unreduction_operations = std::vector<UnreductionOperations>(n);
     // Add vertices.
     std::vector<VertexId> original2reduced(instance.number_of_vertices(), -1);
     VertexId v_new = 0;
-    for (auto it = folded_vertices.out_begin(); it != folded_vertices.out_end(); ++it) {
+    for (auto it = modified_vertices.out_begin(); it != modified_vertices.out_end(); ++it) {
         VertexId v = *it;
         original2reduced[v] = v_new;
         reduction_output.instance->set_weight(v_new, instance.vertex(v).weight);
@@ -617,7 +652,7 @@ ReductionOutput Instance::reduce_twin(
     for (EdgeId e = 0; e < instance.number_of_edges(); ++e) {
         VertexId v1 = instance.edge(e).v1;
         VertexId v2 = instance.edge(e).v2;
-        if (folded_vertices.contains(v1) || folded_vertices.contains(v2))
+        if (modified_vertices.contains(v1) || modified_vertices.contains(v2))
             continue;
         VertexId v1_new = original2reduced[v1];
         VertexId v2_new = original2reduced[v2];
@@ -635,17 +670,17 @@ ReductionOutput Instance::reduce_twin(
         neighbors_tmp.clear();
         for (const auto& edge: instance.vertex(v1).edges)
             if (edge.v != v && edge.v != v_twin)
-                if (!folded_vertices.contains(edge.v)
+                if (!modified_vertices.contains(edge.v)
                         || v_new < original2reduced[edge.v])
                     neighbors_tmp.add(original2reduced[edge.v]);
         for (const auto& edge: instance.vertex(v2).edges)
             if (edge.v != v && edge.v != v_twin)
-                if (!folded_vertices.contains(edge.v)
+                if (!modified_vertices.contains(edge.v)
                         || v_new < original2reduced[edge.v])
                     neighbors_tmp.add(original2reduced[edge.v]);
         for (const auto& edge: instance.vertex(v3).edges)
             if (edge.v != v && edge.v != v_twin)
-                if (!folded_vertices.contains(edge.v)
+                if (!modified_vertices.contains(edge.v)
                         || v_new < original2reduced[edge.v])
                     neighbors_tmp.add(original2reduced[edge.v]);
         for (VertexId v_tmp: neighbors_tmp)
