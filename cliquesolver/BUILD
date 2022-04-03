@@ -13,10 +13,10 @@ cc_library(
                 "solution.cpp",
         ],
         deps = [
-                "//stablesolver:stablesolver",
-                "@optimizationtools//optimizationtools:info",
-                "@optimizationtools//optimizationtools:utils",
-                "@optimizationtools//optimizationtools:indexed_collections",
+                "@optimizationtools//optimizationtools/utils:info",
+                "@optimizationtools//optimizationtools/utils:utils",
+                "@optimizationtools//optimizationtools/containers:containers",
+                "@optimizationtools//optimizationtools/graph:graph",
         ],
         visibility = ["//visibility:public"],
 )

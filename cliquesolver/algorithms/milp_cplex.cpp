@@ -11,9 +11,9 @@ ILOSTLBEGIN
 MilpCplexOutput& MilpCplexOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //PUT(info, "Algorithm", "Iterations", it);
+    //FFOT_PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);
-    //VER(info, "Iterations: " << it << std::endl);
+    //FFOT_VER(info, "Iterations: " << it << std::endl);
     return *this;
 }
 
@@ -23,7 +23,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
                     MilpCplexOutput&, output,
                     IloNumVarArray&, x)
 {
-    VertexId ub = std::floor(getBestObjValue() + TOL);
+    VertexId ub = std::floor(getBestObjValue() + FFOT_TOL);
     output.update_upper_bound(ub, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
@@ -33,7 +33,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
         Solution solution(instance);
         IloNumArray val(x.getEnv());
         getIncumbentValues(val, x);
-        for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
+        for (VertexId v = 0; v < instance.graph()->number_of_vertices(); ++v)
             if (val[v] > 0.5)
                 solution.add(v);
         output.update_solution(solution, std::stringstream(""), parameters.info);
@@ -44,14 +44,15 @@ MilpCplexOutput cliquesolver::milp_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
     cliquesolver::init_display(instance, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "MILP (CPLEX)" << std::endl
             << std::endl);
 
+    const optimizationtools::AbstractGraph* graph = instance.graph();
     MilpCplexOutput output(instance, parameters.info);
-    VertexId n = instance.number_of_vertices();
+    VertexId n = graph->number_of_vertices();
 
     IloEnv env;
     IloModel model(env);
@@ -66,7 +67,7 @@ MilpCplexOutput cliquesolver::milp_cplex(
     {
         IloExpr expr(env);
         for (VertexId v = 0; v < n; ++v)
-            expr += instance.vertex(v).weight * x[v];
+            expr += graph->weight(v) * x[v];
         IloObjective obj = IloMaximize(env, expr);
         model.add(obj);
     }
@@ -83,11 +84,13 @@ MilpCplexOutput cliquesolver::milp_cplex(
 
     // Conflict constraints.
     for (VertexId v = 0; v < n; ++v) {
-        VertexId m = n - instance.vertex(v).edges.size() + 1;
+        VertexId m = n - graph->degree(v) + 1;
         IloExpr expr(env);
         expr += z;
-        for (const auto& edge: instance.vertex(v).edges)
-            expr -= x[edge.v];
+        for (auto it = graph->neighbors_begin(v);
+                it != graph->neighbors_end(v); ++it) {
+            expr -= x[*it];
+        }
         model.add(expr <= m + 1 - m * x[v]);
     }
 
@@ -115,7 +118,7 @@ MilpCplexOutput cliquesolver::milp_cplex(
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
+            for (VertexId v = 0; v < graph->number_of_vertices(); ++v)
                 if (cplex.getValue(x[v]) > 0.5)
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
@@ -124,15 +127,15 @@ MilpCplexOutput cliquesolver::milp_cplex(
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
+            for (VertexId v = 0; v < graph->number_of_vertices(); ++v)
                 if (cplex.getValue(x[v]) > 0.5)
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        Weight ub = std::floor(cplex.getBestObjValue() + FFOT_TOL);
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     } else {
-        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        Weight ub = std::floor(cplex.getBestObjValue() + FFOT_TOL);
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     }
 

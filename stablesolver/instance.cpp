@@ -1,7 +1,7 @@
 #include "stablesolver/instance.hpp"
 
-#include "optimizationtools/indexed_map.hpp"
-#include "optimizationtools/doubly_indexed_map.hpp"
+#include "optimizationtools/containers/indexed_map.hpp"
+#include "optimizationtools/containers/doubly_indexed_map.hpp"
 
 #include <sstream>
 #include <iomanip>
@@ -1064,7 +1064,7 @@ void stablesolver::init_display(
 {
     VertexId n = instance.number_of_vertices();
     EdgeId m = instance.number_of_edges();
-    VER(info,
+    FFOT_VER(info,
                "=====================================" << std::endl
             << "            Stable Solver            " << std::endl
             << "=====================================" << std::endl
@@ -1084,7 +1084,7 @@ void stablesolver::init_display(
     if (reduced_instance != nullptr) {
         VertexId n = reduced_instance->number_of_vertices();
         EdgeId m = reduced_instance->number_of_edges();
-        VER(info,
+        FFOT_VER(info,
                    "Reduced instance" << std::endl
                 << "----------------" << std::endl
                 << "Number of vertices:              " << n << std::endl

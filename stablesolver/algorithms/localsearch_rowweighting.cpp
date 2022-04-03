@@ -13,9 +13,9 @@ using namespace stablesolver;
 LocalSearchRowWeighting1Output& LocalSearchRowWeighting1Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
+    FFOT_PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
+    FFOT_VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -47,7 +47,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         LocalSearchRowWeighting1OptionalParameters parameters)
 {
     init_display(instance_original, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Row Weighting Local Search 1" << std::endl
@@ -260,9 +260,9 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
+    FFOT_PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
+    FFOT_VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
     return *this;
 }
 
@@ -281,7 +281,7 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
         LocalSearchRowWeighting2OptionalParameters parameters)
 {
     init_display(instance_original, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Row Weighting Local Search 1" << std::endl

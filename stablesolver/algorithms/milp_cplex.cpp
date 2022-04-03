@@ -13,9 +13,9 @@ ILOSTLBEGIN
 MilpCplexOutput& MilpCplexOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //PUT(info, "Algorithm", "Iterations", it);
+    //FFOT_PUT(info, "Algorithm", "Iterations", it);
     Output::algorithm_end(info);
-    //VER(info, "Iterations: " << it << std::endl);
+    //FFOT_VER(info, "Iterations: " << it << std::endl);
     return *this;
 }
 
@@ -50,7 +50,7 @@ MilpCplexOutput stablesolver::milp_1_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "MILP 1 (CPLEX)" << std::endl
@@ -134,7 +134,7 @@ MilpCplexOutput stablesolver::milp_2_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "MILP 2 (CPLEX)" << std::endl
@@ -223,7 +223,7 @@ MilpCplexOutput stablesolver::milp_3_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "MILP 3 (CPLEX)" << std::endl

@@ -2,17 +2,17 @@
 
 #include "stablesolver/algorithms/greedy.hpp"
 
-#include "optimizationtools/indexed_set.hpp"
-#include "optimizationtools/indexed_binary_heap.hpp"
+#include "optimizationtools/containers/indexed_set.hpp"
+#include "optimizationtools/containers/indexed_binary_heap.hpp"
 
 using namespace stablesolver;
 
 LargeNeighborhoodSearchOutput& LargeNeighborhoodSearchOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    PUT(info, "Algorithm", "Iterations", iterations);
+    FFOT_PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
-    VER(info, "Iterations: " << iterations << std::endl);
+    FFOT_VER(info, "Iterations: " << iterations << std::endl);
     return *this;
 }
 
@@ -30,7 +30,7 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
         LargeNeighborhoodSearchOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Large Neighborhood Search" << std::endl

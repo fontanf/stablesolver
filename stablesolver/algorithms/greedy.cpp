@@ -1,6 +1,6 @@
 #include "stablesolver/algorithms/greedy.hpp"
 
-#include "optimizationtools/indexed_binary_heap.hpp"
+#include "optimizationtools/containers/indexed_binary_heap.hpp"
 
 using namespace stablesolver;
 
@@ -9,7 +9,7 @@ Output stablesolver::greedy_gwmin(
         optimizationtools::Info info)
 {
     init_display(instance_original, info);
-    VER(info,
+    FFOT_VER(info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Greedy GWMIN" << std::endl
@@ -49,7 +49,7 @@ Output stablesolver::greedy_gwmax(
         optimizationtools::Info info)
 {
     init_display(instance_original, info);
-    VER(info,
+    FFOT_VER(info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Greedy GWMAX" << std::endl
@@ -80,7 +80,7 @@ Output stablesolver::greedy_gwmax(
         double val = (d != 0)?
             (double)instance.vertex(p.first).weight / d / (d + 1):
             std::numeric_limits<double>::infinity();
-        if (val <= p.second.first + TOL) {
+        if (val <= p.second.first + FFOT_TOL) {
             removed_vertices[p.first] = 1;
             heap.pop();
         } else {
@@ -102,7 +102,7 @@ Output stablesolver::greedy_gwmin2(
         optimizationtools::Info info)
 {
     init_display(instance_original, info);
-    VER(info,
+    FFOT_VER(info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Greedy GWMIN2" << std::endl
@@ -148,7 +148,7 @@ Output stablesolver::greedy_strong(
         optimizationtools::Info info)
 {
     init_display(instance_original, info);
-    VER(info,
+    FFOT_VER(info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Strong Greedy" << std::endl

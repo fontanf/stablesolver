@@ -144,7 +144,7 @@ Output::Output(const Instance& instance, optimizationtools::Info& info):
 {
     if (instance.reduced_instance() != nullptr)
         upper_bound = instance.extra_weight() + instance.reduced_instance()->total_weight();
-    VER(info,
+    FFOT_VER(info,
                std::setw(12) << "T (s)"
             << std::setw(16) << "LB"
             << std::setw(16) << "UB"
@@ -171,7 +171,7 @@ void Output::print(
         (double)(upper_bound - lower_bound()) / upper_bound * 100;
     double t = round(info.elapsed_time() * 10000) / 10000;
 
-    VER(info,
+    FFOT_VER(info,
                std::setw(12) << t
             << std::setw(16) << lower_bound()
             << std::setw(16) << upper_bound
@@ -198,9 +198,9 @@ void Output::update_solution(
         info.output->number_of_solutions++;
         double t = round(info.elapsed_time() * 10000) / 10000;
         std::string sol_str = "Solution" + std::to_string(info.output->number_of_solutions);
-        PUT(info, sol_str, "Value", solution.weight());
-        PUT(info, sol_str, "Time", t);
-        PUT(info, sol_str, "String", s.str());
+        FFOT_PUT(info, sol_str, "Value", solution.weight());
+        FFOT_PUT(info, sol_str, "Time", t);
+        FFOT_PUT(info, sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end) {
             info.write_json_output();
             solution.write(info.output->certificate_path);
@@ -227,9 +227,9 @@ void Output::update_upper_bound(
         info.output->number_of_bounds++;
         double t = round(info.elapsed_time() * 10000) / 10000;
         std::string sol_str = "Bound" + std::to_string(info.output->number_of_bounds);
-        PUT(info, sol_str, "Bound", upper_bound);
-        PUT(info, sol_str, "Time", t);
-        PUT(info, sol_str, "String", s.str());
+        FFOT_PUT(info, sol_str, "Bound", upper_bound);
+        FFOT_PUT(info, sol_str, "Time", t);
+        FFOT_PUT(info, sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end)
             solution.write(info.output->certificate_path);
     }
@@ -244,11 +244,11 @@ Output& Output::algorithm_end(
     double gap = (upper_bound == 0)?
         std::numeric_limits<double>::infinity():
         (double)(upper_bound - lower_bound()) / upper_bound * 100;
-    PUT(info, "Solution", "Value", lower_bound());
-    PUT(info, "Bound", "Value", upper_bound);
-    PUT(info, "Solution", "Time", t);
-    PUT(info, "Bound", "Time", t);
-    VER(info,
+    FFOT_PUT(info, "Solution", "Value", lower_bound());
+    FFOT_PUT(info, "Bound", "Value", upper_bound);
+    FFOT_PUT(info, "Solution", "Time", t);
+    FFOT_PUT(info, "Bound", "Time", t);
+    FFOT_VER(info,
             std::endl
             << "Final statistics" << std::endl
             << "----------------" << std::endl
@@ -271,9 +271,9 @@ Weight stablesolver::algorithm_end(
         optimizationtools::Info& info)
 {
     double t = round(info.elapsed_time() * 10000) / 10000;
-    PUT(info, "Bound", "Value", upper_bound);
-    PUT(info, "Bound", "Time", t);
-    VER(info,
+    FFOT_PUT(info, "Bound", "Value", upper_bound);
+    FFOT_PUT(info, "Bound", "Time", t);
+    FFOT_VER(info,
             std::endl
             << "Final statistics" << std::endl
             << "----------------" << std::endl

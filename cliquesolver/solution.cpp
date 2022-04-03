@@ -6,15 +6,15 @@ using namespace cliquesolver;
 
 Solution::Solution(const Instance& instance):
     instance_(instance),
-    vertices_(instance.number_of_vertices()),
-    neighbors_tmp_(instance.number_of_vertices())
+    vertices_(instance.graph()->number_of_vertices()),
+    neighbors_tmp_(instance.graph()->number_of_vertices())
 {
 }
 
 Solution::Solution(const Instance& instance, std::string certificate_path):
     instance_(instance),
-    vertices_(instance.number_of_vertices()),
-    neighbors_tmp_(instance.number_of_vertices())
+    vertices_(instance.graph()->number_of_vertices()),
+    neighbors_tmp_(instance.graph()->number_of_vertices())
 {
     if (certificate_path.empty())
         return;
@@ -34,9 +34,9 @@ Solution::Solution(const Instance& instance, std::string certificate_path):
 Solution::Solution(const Solution& solution):
     instance_(solution.instance_),
     vertices_(solution.vertices_),
-    neighbors_tmp_(solution.neighbors_tmp_),
     weight_(solution.weight_),
-    penalty_(solution.penalty_)
+    penalty_(solution.penalty_),
+    neighbors_tmp_(solution.neighbors_tmp_)
 { }
 
 Solution& Solution::operator=(const Solution& solution)
@@ -44,9 +44,9 @@ Solution& Solution::operator=(const Solution& solution)
     if (this != &solution) {
         assert(&instance_ == &solution.instance_);
         vertices_      = solution.vertices_;
-        neighbors_tmp_ = solution.neighbors_tmp_;
         weight_        = solution.weight_;
         penalty_       = solution.penalty_;
+        neighbors_tmp_ = solution.neighbors_tmp_;
     }
     return *this;
 }
@@ -79,21 +79,31 @@ std::ostream& cliquesolver::operator<<(
     return os;
 }
 
-/*********************************** Output ***********************************/
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// Output ////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 Output::Output(
         const Instance& instance,
         optimizationtools::Info& info):
     solution(instance),
-    upper_bound(instance.total_weight() + 1)
+    upper_bound(instance.graph()->total_weight() + 1)
 {
-    VER(info, std::left << std::setw(12) << "T (s)");
-    VER(info, std::left << std::setw(12) << "LB");
-    VER(info, std::left << std::setw(12) << "UB");
-    VER(info, std::left << std::setw(12) << "GAP");
-    VER(info, std::left << std::setw(12) << "GAP (%)");
-    VER(info, "");
-    VER(info, std::endl);
+    FFOT_VER(info,
+               std::setw(12) << "T (s)"
+            << std::setw(12) << "LB"
+            << std::setw(12) << "UB"
+            << std::setw(12) << "GAP"
+            << std::setw(12) << "GAP (%)"
+            << std::setw(24) << "Comment"
+            << std::endl
+            << std::setw(12) << "-----"
+            << std::setw(12) << "--"
+            << std::setw(12) << "--"
+            << std::setw(12) << "---"
+            << std::setw(12) << "-------"
+            << std::setw(24) << "-------"
+            << std::endl);
     print(info, std::stringstream(""));
 }
 
@@ -106,12 +116,14 @@ void Output::print(
         (double)(upper_bound - lower_bound()) / upper_bound * 100;
     double t = round(info.elapsed_time() * 10000) / 10000;
 
-    VER(info, std::left << std::setw(12) << t);
-    VER(info, std::left << std::setw(12) << lower_bound());
-    VER(info, std::left << std::setw(12) << upper_bound);
-    VER(info, std::left << std::setw(12) << upper_bound - lower_bound());
-    VER(info, std::left << std::setw(12) << gap);
-    VER(info, s.str() << std::endl);
+    FFOT_VER(info,
+               std::setw(12) << t
+            << std::setw(12) << lower_bound()
+            << std::setw(12) << upper_bound
+            << std::setw(12) << upper_bound - lower_bound()
+            << std::setw(12) << gap
+            << std::setw(24) << s.str()
+            << std::endl);
 
     if (!info.output->only_write_at_the_end)
         info.write_json_output();
@@ -124,8 +136,9 @@ void Output::update_solution(
 {
     info.output->mutex_solutions.lock();
 
+    VertexId n = solution.instance().graph()->number_of_vertices();
     if (solution_new.feasible() && solution.weight() < solution_new.weight()) {
-        for (VertexId v = 0; v < solution.instance().number_of_vertices(); ++v) {
+        for (VertexId v = 0; v < n; ++v) {
             if (solution.contains(v) && !solution_new.contains(v)) {
                 solution.remove(v);
             } else if (!solution.contains(v) && solution_new.contains(v)) {
@@ -137,9 +150,9 @@ void Output::update_solution(
         info.output->number_of_solutions++;
         double t = round(info.elapsed_time() * 10000) / 10000;
         std::string sol_str = "Solution" + std::to_string(info.output->number_of_solutions);
-        PUT(info, sol_str, "Value", solution.weight());
-        PUT(info, sol_str, "Time", t);
-        PUT(info, sol_str, "String", s.str());
+        FFOT_PUT(info, sol_str, "Value", solution.weight());
+        FFOT_PUT(info, sol_str, "Time", t);
+        FFOT_PUT(info, sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end) {
             info.write_json_output();
             solution.write(info.output->certificate_path);
@@ -166,9 +179,9 @@ void Output::update_upper_bound(
         info.output->number_of_bounds++;
         double t = round(info.elapsed_time() * 10000) / 10000;
         std::string sol_str = "Bound" + std::to_string(info.output->number_of_bounds);
-        PUT(info, sol_str, "Bound", upper_bound);
-        PUT(info, sol_str, "Time", t);
-        PUT(info, sol_str, "String", s.str());
+        FFOT_PUT(info, sol_str, "Bound", upper_bound);
+        FFOT_PUT(info, sol_str, "Time", t);
+        FFOT_PUT(info, sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end)
             solution.write(info.output->certificate_path);
     }
@@ -183,17 +196,21 @@ Output& Output::algorithm_end(
     double gap = (upper_bound == 0)?
         std::numeric_limits<double>::infinity():
         (double)(upper_bound - lower_bound()) / upper_bound * 100;
-    PUT(info, "Solution", "Value", lower_bound());
-    PUT(info, "Bound", "Value", upper_bound);
-    PUT(info, "Solution", "Time", t);
-    PUT(info, "Bound", "Time", t);
-    VER(info, "---" << std::endl
-            << "Value: " << lower_bound() << std::endl
-            << "Number of vertices: " << solution.number_of_vertices() << std::endl
-            << "Bound: " << upper_bound << std::endl
-            << "Gap: " << upper_bound - lower_bound() << std::endl
-            << "Gap (%): " << gap << std::endl
-            << "Time (s): " << t << std::endl);
+    FFOT_PUT(info, "Solution", "Value", lower_bound());
+    FFOT_PUT(info, "Bound", "Value", upper_bound);
+    FFOT_PUT(info, "Solution", "Time", t);
+    FFOT_PUT(info, "Bound", "Time", t);
+    FFOT_VER(info,
+            std::endl
+            << "Final statistics" << std::endl
+            << "----------------" << std::endl
+            << "Value:                 " << lower_bound() << std::endl
+            << "Number of vertices:    " << solution.number_of_vertices() << std::endl
+            << "Bound:                 " << upper_bound << std::endl
+            << "Gap:                   " << upper_bound - lower_bound() << std::endl
+            << "Gap (%):               " << gap << std::endl
+            << "Time (s):              " << t << std::endl
+            );
 
     info.write_json_output();
     solution.write(info.output->certificate_path);
@@ -205,11 +222,15 @@ Weight cliquesolver::algorithm_end(
         optimizationtools::Info& info)
 {
     double t = round(info.elapsed_time() * 10000) / 10000;
-    PUT(info, "Bound", "Value", upper_bound);
-    PUT(info, "Bound", "Time", t);
-    VER(info, "---" << std::endl
-            << "Bound: " << upper_bound << std::endl
-            << "Time (s): " << t << std::endl);
+    FFOT_PUT(info, "Bound", "Value", upper_bound);
+    FFOT_PUT(info, "Bound", "Time", t);
+    FFOT_VER(info,
+            std::endl
+            << "Final statistics" << std::endl
+            << "----------------" << std::endl
+            << "Bound:                 " << upper_bound << std::endl
+            << "Time (s):              " << t << std::endl
+            );
 
     info.write_json_output();
     return upper_bound;

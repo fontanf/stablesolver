@@ -437,9 +437,9 @@ private:
 LocalSearchOutput& LocalSearchOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //PUT(info, "Algorithm", "Iterations", iterations);
+    //FFOT_PUT(info, "Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
-    //VER(info, "Iterations: " << iterations << std::endl);
+    //FFOT_VER(info, "Iterations: " << iterations << std::endl);
     return *this;
 }
 
@@ -449,7 +449,7 @@ LocalSearchOutput stablesolver::localsearch(
         LocalSearchOptionalParameters parameters)
 {
     init_display(instance_original, parameters.info);
-    VER(parameters.info,
+    FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Local Search" << std::endl

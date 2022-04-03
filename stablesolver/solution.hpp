@@ -2,8 +2,8 @@
 
 #include "stablesolver/instance.hpp"
 
-#include "optimizationtools/indexed_set.hpp"
-#include "optimizationtools/indexed_map.hpp"
+#include "optimizationtools/containers/indexed_set.hpp"
+#include "optimizationtools/containers/indexed_map.hpp"
 
 #include <functional>
 #include <unordered_set>
@@ -30,6 +30,10 @@ public:
     Solution& operator=(const Solution& solution);
     /** Destructor. */
     ~Solution() { }
+
+    /*
+     * Getters.
+     */
 
     /** Get the instance. */
     inline const Instance& instance() const { return instance_; }

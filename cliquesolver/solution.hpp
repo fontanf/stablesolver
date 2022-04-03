@@ -2,8 +2,8 @@
 
 #include "cliquesolver/instance.hpp"
 
-#include "optimizationtools/indexed_set.hpp"
-#include "optimizationtools/indexed_map.hpp"
+#include "optimizationtools/containers/indexed_set.hpp"
+#include "optimizationtools/containers/indexed_map.hpp"
 
 #include <functional>
 
@@ -15,63 +15,98 @@ class Solution
 
 public:
 
+    /*
+     * Constructors and destructor.
+     */
+
+    /** Create an empty solution. */
     Solution(const Instance& instance);
+    /** Create a solution from a certificate file. */
     Solution(const Instance& instance, std::string certificate_path);
+    /** Copy constructor. */
     Solution(const Solution& solution);
+    /** Copy assignment operator. */
     Solution& operator=(const Solution& solution);
+    /** Destructor. */
     ~Solution() { }
-    bool operator==(const Solution& solution);
 
+    /*
+     * Getters.
+     */
+
+    /** Get the instance. */
     inline const Instance& instance() const { return instance_; }
+    /** Get the number of vertices of the solution. */
     inline VertexId number_of_vertices() const { return vertices_.size(); }
+    /** Get the weight of the solution. */
     inline Weight weight() const { return weight_; }
+    /** Get the penalty of the solution. */
     inline Weight penalty() const { return penalty_; }
+    /** Return 'true' iff vertex v is in the solution. */
     inline int8_t contains(VertexId e) const { return vertices_.contains(e); }
+    /** Return 'true' iff the solution is feasible. */
     inline bool feasible() const { return penalty() == 0; }
-
+    /** Get the set of vertices of the solution. */
     const optimizationtools::IndexedSet& vertices() const { return vertices_; };
 
+    /*
+     * Setters.
+     */
+
+    /** Add vertex v to the solution. */
     inline void add(VertexId v);
+    /** Remove vertex v from the solution. */
     inline void remove(VertexId v);
 
+    /*
+     * Export.
+     */
+
+    /** Write the solution to a file. */
     void write(std::string certificate_path);
 
 private:
 
+    /** Instance. */
     const Instance& instance_;
-
+    /** Set of vertices of the solution. */
     optimizationtools::IndexedSet vertices_;
-    optimizationtools::IndexedSet neighbors_tmp_;
+    /** Weight of the solution. */
     Weight weight_ = 0;
+    /** Penalty of the solution. */
     Weight penalty_ = 0;
+
+    optimizationtools::IndexedSet neighbors_tmp_;
 
 };
 
 void Solution::add(VertexId v)
 {
-    assert(v >= 0);
-    assert(v < instance().number_of_vertices());
+    instance().graph()->check_vertex_index(v);
     assert(!contains(v));
     neighbors_tmp_.clear();
-    for (const auto& edge: instance().vertex(v).edges)
-        neighbors_tmp_.add(edge.v);
+    for (auto it = instance().graph()->neighbors_begin(v);
+            it != instance().graph()->neighbors_end(v); ++it) {
+        neighbors_tmp_.add(*it);
+    }
     for (VertexId v2: vertices())
         if (!neighbors_tmp_.contains(v2))
             penalty_ += 1;
     vertices_.add(v);
-    weight_ += instance().vertex(v).weight;
+    weight_ += instance().graph()->weight(v);
 }
 
 void Solution::remove(VertexId v)
 {
-    assert(v >= 0);
-    assert(v < instance().number_of_vertices());
+    instance().graph()->check_vertex_index(v);
     assert(contains(v));
     vertices_.remove(v);
-    weight_ -= instance().vertex(v).weight;
+    weight_ -= instance().graph()->weight(v);
     neighbors_tmp_.clear();
-    for (const auto& edge: instance().vertex(v).edges)
-        neighbors_tmp_.add(edge.v);
+    for (auto it = instance().graph()->neighbors_begin(v);
+            it != instance().graph()->neighbors_end(v); ++it) {
+        neighbors_tmp_.add(*it);
+    }
     for (VertexId v2: vertices())
         if (!neighbors_tmp_.contains(v2))
             penalty_ -= 1;
@@ -79,7 +114,9 @@ void Solution::remove(VertexId v)
 
 std::ostream& operator<<(std::ostream& os, const Solution& solution);
 
-/*********************************** Output ***********************************/
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// Output ////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct Output
 {
