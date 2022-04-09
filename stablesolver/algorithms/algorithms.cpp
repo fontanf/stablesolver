@@ -88,8 +88,7 @@ Output stablesolver::run(
         algorithm_argv.push_back(const_cast<char*>(algorithm_args[i].c_str()));
 
     if (algorithm.empty() || algorithm_args[0].empty()) {
-        std::cerr << "\033[32m" << "ERROR, missing algorithm." << "\033[0m" << std::endl;
-        return Output(instance, info);
+        throw std::invalid_argument("Missing algorithm.");
 
     } else if (algorithm_args[0] == "greedy_gwmin") {
         return greedy_gwmin(instance, info);
@@ -133,9 +132,8 @@ Output stablesolver::run(
         return largeneighborhoodsearch(instance, parameters);
 
     } else {
-        std::cerr << "\033[31m" << "ERROR, unknown algorithm: " << algorithm_argv[0] << "\033[0m" << std::endl;
-        assert(false);
-        return Output(instance, info);
+        throw std::invalid_argument(
+                "Unknown algorithm \"" + algorithm_args[0] + "\".");
     }
 }
 

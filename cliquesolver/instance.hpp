@@ -1,6 +1,7 @@
 #pragma once
 
 #include "optimizationtools/utils/info.hpp"
+#include "optimizationtools/containers/indexed_set.hpp"
 #include "optimizationtools/graph/abstract_graph.hpp"
 #include "optimizationtools/graph/adjacency_list_graph.hpp"
 
@@ -50,6 +51,10 @@ public:
      */
 
     inline const optimizationtools::AbstractGraph* graph() const { return graph_.get(); }
+
+    Weight update_core(
+            optimizationtools::IndexedSet& relevant_vertices,
+            Weight weight) const;
 
     /*
      * Export.

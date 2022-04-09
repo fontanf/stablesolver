@@ -41,6 +41,8 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
 
 - Mixed-Integer Linear Program (implemented with CPLEX), see "Worst-case analysis of clique MIPs" (Naderi et al., 2021) [DOI](https://doi.org/10.1007/s10107-021-01706-2) `-a milp_cplex`
 
+- Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch"`
+
 ## Usage (command line)
 
 Download and uncompress the instances in the `data/` folder:

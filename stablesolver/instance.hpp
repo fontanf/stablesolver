@@ -122,6 +122,8 @@ public:
 
     /** Create an instance manually. */
     Instance(VertexId number_of_vertices);
+    /** Add a vertex. */
+    void add_vertex(Weight weight = 1);
     /** Set the weight of vertex 'v' to 'weight'. */
     void set_weight(VertexId v, Weight weight);
     /** Add an edge between vertex 'v1' and vertex 'v2'. */
@@ -252,6 +254,8 @@ private:
     void read_matrixmarket(std::ifstream& file);
     /** Read an instance file in 'chaco' format. */
     void read_chaco(std::ifstream& file);
+    /** Read an instance file in 'snap' format. */
+    void read_snap(std::ifstream& file);
 
     /*
      * Reductions.

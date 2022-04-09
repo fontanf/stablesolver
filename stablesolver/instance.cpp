@@ -24,6 +24,8 @@ Instance::Instance(std::string instance_path, std::string format)
         read_matrixmarket(file);
     } else if (format == "chaco") {
         read_chaco(file);
+    } else if (format == "snap") {
+        read_snap(file);
     } else {
         throw std::invalid_argument(
                 "Unknown instance format \"" + format + "\".");
@@ -32,13 +34,19 @@ Instance::Instance(std::string instance_path, std::string format)
     compute_components();
 }
 
-Instance::Instance(VertexId number_of_vertices):
-    vertices_(number_of_vertices),
-    total_weight_(number_of_vertices)
+Instance::Instance(VertexId number_of_vertices)
 {
     for (VertexId v = 0; v < number_of_vertices; ++v)
-        vertices_[v].id = v;
-    total_weight_ = number_of_vertices;
+        add_vertex();
+}
+
+void Instance::add_vertex(Weight weight)
+{
+    Vertex vertex;
+    vertex.id = vertices_.size();
+    vertex.weight = weight;
+    total_weight_ += weight;
+    vertices_.push_back(vertex);
 }
 
 void Instance::add_edge(VertexId v1, VertexId v2, int check_duplicate)
@@ -205,6 +213,26 @@ void Instance::read_chaco(std::ifstream& file)
             if (v2 > v)
                 add_edge(v, v2);
         }
+    }
+}
+
+void Instance::read_snap(std::ifstream& file)
+{
+    std::string tmp;
+    std::vector<std::string> line;
+    do {
+        getline(file, tmp);
+    } while (tmp[0] == '#');
+
+    VertexId v1 = -1;
+    VertexId v2 = -1;
+    for (;;) {
+        file >> v1 >> v2;
+        if (file.eof())
+            break;
+        while (std::max(v1, v2) >= number_of_vertices())
+            add_vertex();
+        add_edge(v1, v2);
     }
 }
 

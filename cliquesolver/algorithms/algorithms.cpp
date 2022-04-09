@@ -5,6 +5,24 @@
 using namespace cliquesolver;
 namespace po = boost::program_options;
 
+LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
+{
+    LocalSearchOptionalParameters parameters;
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line((Counter)argv.size(), argv.data(), desc), vm);
+    try {
+        po::notify(vm);
+    } catch (const po::required_option& e) {
+        std::cout << desc << std::endl;;
+        throw "";
+    }
+    return parameters;
+}
+
 Output cliquesolver::run(
         std::string algorithm,
         const Instance& instance,
@@ -19,8 +37,7 @@ Output cliquesolver::run(
         algorithm_argv.push_back(const_cast<char*>(algorithm_args[i].c_str()));
 
     if (algorithm.empty() || algorithm_args[0].empty()) {
-        std::cerr << "\033[32m" << "ERROR, missing algorithm." << "\033[0m" << std::endl;
-        return Output(instance, info);
+        throw std::invalid_argument("Missing algorithm.");
 
     } else if (algorithm_args[0] == "greedy_gwmin") {
         return greedy_gwmin(instance, info);
@@ -34,10 +51,14 @@ Output cliquesolver::run(
         return milp_cplex(instance, parameters);
 #endif
 
+    } else if (algorithm_args[0] == "localsearch") {
+        auto parameters = read_localsearch_args(algorithm_argv);
+        parameters.info = info;
+        return localsearch(instance, generator, parameters);
+
     } else {
-        std::cerr << "\033[31m" << "ERROR, unknown algorithm: " << algorithm_argv[0] << "\033[0m" << std::endl;
-        assert(false);
-        return Output(instance, info);
+        throw std::invalid_argument(
+                "Unknown algorithm \"" + algorithm_args[0] + "\".");
     }
 }
 

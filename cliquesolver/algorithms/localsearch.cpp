@@ -1,11 +1,15 @@
-#include "stablesolver/algorithms/localsearch.hpp"
+#include "cliquesolver/algorithms/localsearch.hpp"
+
+#include "cliquesolver/algorithms/greedy.hpp"
+
+#include "optimizationtools/containers/indexed_set.hpp"
 
 #include "localsearchsolver/best_first_local_search.hpp"
 
-using namespace stablesolver;
+using namespace cliquesolver;
 using namespace localsearchsolver;
 
-namespace stablesolver
+namespace cliquesolver
 {
 
 class LocalScheme
@@ -45,41 +49,32 @@ public:
 
     inline CompactSolutionHasher compact_solution_hasher() const { return CompactSolutionHasher(); }
 
-    struct SolutionVertex
-    {
-        /**
-         * in == true iff the vertex is in the solution.
-         */
-        bool in = false;
-
-        /**
-         * neighbor_weight = p iff the sum of the weights of the neighbors of j
-         * which are in the solution is equal to p.
-         */
-        Weight neighbor_weight = 0;
-    };
-
     struct Solution
     {
-        std::vector<SolutionVertex> vertices;
+        Solution(VertexId number_of_vertices):
+            vertices(number_of_vertices),
+            addition_costs(number_of_vertices, 0) {  }
+
+        optimizationtools::IndexedSet vertices;
+        std::vector<Weight> addition_costs;
         Weight weight = 0;
     };
 
     CompactSolution solution2compact(const Solution& solution)
     {
-        std::vector<bool> vertices(instance_.number_of_vertices(), false);
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
-            if (solution.vertices[v].in)
-                vertices[v] = true;
+        std::vector<bool> vertices(instance_.graph()->number_of_vertices(), false);
+        for (VertexId v: solution.vertices)
+            vertices[v] = true;
         return vertices;
     }
 
     Solution compact2solution(const CompactSolution& compact_solution)
     {
         auto solution = empty_solution();
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
-            if (compact_solution[v])
-                add(solution, v);
+        for (VertexId v = 0; v < instance_.graph()->number_of_vertices(); ++v)
+            if (relevant_vertices_.contains(v))
+                if (compact_solution[v])
+                    add(solution, v);
         return solution;
     }
 
@@ -96,20 +91,26 @@ public:
 
     LocalScheme(
             const Instance& instance,
-            Parameters parameters):
+            Parameters parameters,
+            Output& output):
         instance_(instance),
         parameters_(parameters),
-        vertices_(instance.number_of_vertices()),
-        neighbors_(instance_.number_of_vertices()),
-        free_vertices_(instance_.number_of_vertices()),
-        free_vertices_2_(instance_.number_of_vertices())
+        output_(output),
+        relevant_vertices_(instance.graph()->number_of_vertices()),
+        tight_vertices_(instance.graph()->number_of_vertices(), -1),
+        neighbors_(instance_.graph()->number_of_vertices()),
+        neighbors_2_(instance_.graph()->number_of_vertices())
     {
-        // Initialize vertices_.
-        std::iota(vertices_.begin(), vertices_.end(), 0);
+        // Initialize relevant_vertices_.
+        relevant_vertices_.fill();
     }
 
+    /** Copy constructor. */
     LocalScheme(const LocalScheme& local_scheme):
-        LocalScheme(local_scheme.instance_, local_scheme.parameters_) { }
+        LocalScheme(
+                local_scheme.instance_,
+                local_scheme.parameters_,
+                local_scheme.output_) { }
 
     virtual ~LocalScheme() { }
 
@@ -119,19 +120,17 @@ public:
 
     inline Solution empty_solution() const
     {
-        Solution solution;
-        solution.vertices.resize(instance_.number_of_vertices());
-        return solution;
+        return Solution(instance_.graph()->number_of_vertices());
     }
 
     inline Solution initial_solution(
             Counter,
-            std::mt19937_64& generator)
+            std::mt19937_64&)
     {
+        auto output_greedy = greedy_gwmin(instance_);
         Solution solution = empty_solution();
-        std::shuffle(vertices_.begin(), vertices_.end(), generator);
-        for (VertexId v: vertices_)
-            if (solution.vertices[v].neighbor_weight == 0)
+        for (VertexId v: relevant_vertices_)
+            if (output_greedy.solution.contains(v))
                 add(solution, v);
         return solution;
     }
@@ -187,7 +186,7 @@ public:
             std::mt19937_64&)
     {
         std::vector<Move> moves;
-        for (VertexId v: vertices_) {
+        for (VertexId v: relevant_vertices_) {
             GlobalCost c = (contains(solution, v))?
                 cost_remove(solution, v, worst<GlobalCost>()):
                 cost_add(solution, v, worst<GlobalCost>());
@@ -204,7 +203,8 @@ public:
         if (contains(solution, move.v)) {
             remove(solution, move.v);
         } else {
-            add(solution, move.v);
+            if (relevant_vertices_.contains(move.v))
+                add(solution, move.v);
         }
     }
 
@@ -217,6 +217,22 @@ public:
         std::vector<Counter> neighborhoods = {0};
         if (parameters_.swap_2_1)
             neighborhoods.push_back(1);
+
+        // Update core.
+        if (best_weight_ < solution.weight) {
+            best_weight_ = solution.weight;
+            instance_.update_core(relevant_vertices_, solution.weight);
+            //std::cout << "weight " << output_.solution.weight()
+            //    << " core " << relevant_vertices_.size()
+            //    << " / " << instance_.graph()->number_of_vertices()
+            //    << std::endl;
+            for (VertexId v: solution.vertices) {
+                if (!relevant_vertices_.contains(v)) {
+                    //std::cout << "remove " << v << std::endl;
+                    remove(solution, v);
+                }
+            }
+        }
 
         Counter it = 0;
         for (;; ++it) {
@@ -233,10 +249,10 @@ public:
             for (Counter neighborhood: neighborhoods) {
                 switch (neighborhood) {
                 case 0: { // Add neighborhood.
-                    std::shuffle(vertices_.begin(), vertices_.end(), generator);
+                    relevant_vertices_.shuffle_in(generator);
                     VertexId v_best = -1;
                     GlobalCost c_best = global_cost(solution);
-                    for (VertexId v: vertices_) {
+                    for (VertexId v: relevant_vertices_) {
                         if (v == tabu.v)
                             continue;
                         if (contains(solution, v))
@@ -249,62 +265,63 @@ public:
                         v_best = v;
                         c_best = c;
                     }
+                    //std::cout << "v_best " << v_best << std::endl;
                     if (v_best != -1) {
                         improved = true;
                         // Apply move.
+                        assert(!contains(solution, v_best));
                         add(solution, v_best);
                         if (global_cost(solution) != c_best) {
                             throw std::logic_error(
                                     "Add. Costs do not match:\n"
-                                    "* Expected new cost: " + to_string(c_best) + "\n"
+                                    "* v_best: " + std::to_string(v_best) + "\n"
+                                    + "* Expected new cost: " + to_string(c_best) + "\n"
                                     + "* Actual new cost: " + to_string(global_cost(solution)) + "\n");
                         }
                     }
                     break;
                 } case 1: { // (2-1)-swap neighborhood.
-                    std::shuffle(vertices_.begin(), vertices_.end(), generator);
-                    // Get the vertices of the solution.
-                    vertices_in_.clear();
-                    for (VertexId v: vertices_) {
+                    // Find vertices connected to all but one vertex of the
+                    // current solution.
+                    tight_vertices_.clear();
+                    relevant_vertices_.shuffle_in(generator);
+                    for (VertexId v: relevant_vertices_) {
                         if (v == tabu.v)
                             continue;
                         if (contains(solution, v))
-                            vertices_in_.push_back(v);
+                            continue;
+                        VertexId v2 = -1;
+                        for (auto it = instance_.graph()->neighbors_begin(v);
+                                it != instance_.graph()->neighbors_end(v); ++it) {
+                            if (!contains(solution, *it)) {
+                                if (v2 != -1) {
+                                    v2 = -1;
+                                    break;
+                                }
+                                v2 = *it;
+                            }
+                        }
+                        if (v2 != -1) {
+                            tight_vertices_.set(v, v2);
+                        }
                     }
 
                     VertexId v_in_best = -1;
                     VertexId v_out_1_best = -1;
                     VertexId v_out_2_best = -1;
                     GlobalCost c_best = global_cost(solution);
-                    for (VertexId v_in: vertices_in_) {
-                        // Update free_vertices_
-                        free_vertices_.clear();
-                        for (const VertexEdge& edge: instance_.vertex(v_in).edges)
-                            if (solution.vertices[edge.v].neighbor_weight
-                                    == instance_.vertex(v_in).weight)
-                                free_vertices_.add(edge.v);
-                        if (free_vertices_.size() <= 2)
-                            continue;
-                        free_vertices_.shuffle_in(generator);
-                        remove(solution, v_in);
-                        for (VertexId v_out_1: free_vertices_) {
-                            assert(v_out_1 != v_in);
-                            free_vertices_2_.clear();
-                            for (VertexId v: free_vertices_)
-                                free_vertices_2_.add(v);
-                            free_vertices_2_.remove(v_out_1);
-                            for (const VertexEdge& edge: instance_.vertex(v_out_1).edges)
-                                if (free_vertices_2_.contains(edge.v))
-                                    free_vertices_2_.remove(edge.v);
-                            if (free_vertices_2_.empty())
-                                continue;
-                            free_vertices_2_.shuffle_in(generator);
-                            assert(!contains(solution, v_out_1));
-                            add(solution, v_out_1);
-                            for (VertexId v_out_2: free_vertices_2_) {
-                                assert(v_out_2 != v_in);
-                                assert(v_out_2 != v_out_1);
-                                GlobalCost c = cost_add(solution, v_out_2, c_best);
+                    for (const auto& p: tight_vertices_) {
+                        VertexId v_out_1 = p.first;
+                        VertexId v_in = p.second;
+                        for (auto it = instance_.graph()->neighbors_begin(v_out_1);
+                                it != instance_.graph()->neighbors_end(v_out_1); ++it) {
+                            VertexId v_out_2 = *it;
+                            if (tight_vertices_.contains(v_out_2)
+                                    && tight_vertices_[v_out_2] == v_in) {
+                                GlobalCost c = -(solution.weight
+                                        + instance_.graph()->weight(v_out_1)
+                                        + instance_.graph()->weight(v_out_2)
+                                        - instance_.graph()->weight(v_in));
                                 if (c >= c_best)
                                     continue;
                                 if (v_in_best != -1 && !dominates(c, c_best))
@@ -314,14 +331,12 @@ public:
                                 v_out_2_best = v_out_2;
                                 c_best = c;
                             }
-                            remove(solution, v_out_1);
                         }
-                        assert(!contains(solution, v_in));
-                        add(solution, v_in);
                     }
                     if (v_in_best != -1) {
                         improved = true;
                         // Apply move.
+                        assert(contains(solution, v_in_best));
                         remove(solution, v_in_best);
                         assert(!contains(solution, v_out_1_best));
                         add(solution, v_out_1_best);
@@ -329,7 +344,7 @@ public:
                         add(solution, v_out_2_best);
                         if (global_cost(solution) != c_best) {
                             throw std::logic_error(
-                                    "(2,1-swap). Costs do not match:\n"
+                                    "(2,1)-swap. Costs do not match:\n"
                                     "* Expected new cost: " + to_string(c_best) + "\n"
                                     + "* Actual new cost: " + to_string(global_cost(solution)) + "\n");
                         }
@@ -344,6 +359,12 @@ public:
                 break;
         }
         //print(std::cout, solution);
+
+        // Update core.
+        if (best_weight_ < solution.weight) {
+            best_weight_ = solution.weight;
+            instance_.update_core(relevant_vertices_, solution.weight);
+        }
     }
 
     /*
@@ -354,8 +375,18 @@ public:
             std::ostream &os,
             const Solution& solution)
     {
+        //os << "vertices" << std::endl;
+        //for (VertexId v: solution.vertices) {
+        //    os << v << ":" << std::endl;
+        //    for (auto it = instance_.graph()->neighbors_begin(v);
+        //            it != instance_.graph()->neighbors_end(v); ++it) {
+        //        os << " " << *it;
+        //    }
+        //    std::cout << std::endl;
+        //}
+
         os << "vertices:";
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
+        for (VertexId v = 0; v < instance_.graph()->number_of_vertices(); ++v)
             if (contains(solution, v))
                 os << " " << v;
         os << std::endl;
@@ -373,37 +404,67 @@ private:
 
     inline bool contains(const Solution& solution, VertexId v) const
     {
-        return solution.vertices[v].in;
+        return solution.vertices.contains(v);
     }
 
     inline void add(Solution& solution, VertexId v) const
     {
         assert(v >= 0);
         assert(!contains(solution, v));
+        assert(relevant_vertices_.contains(v));
+        //std::cout << "add " << v
+        //    << " c " << solution.addition_costs[v]
+        //    << " rv " << relevant_vertices_.contains(v)
+        //    << std::endl;
 
-        Weight w = instance_.vertex(v).weight;
-
-        // Remove conflicting vertices.
-        for (const VertexEdge& edge: instance_.vertex(v).edges) {
-            if (contains(solution, edge.v))
-                remove(solution, edge.v);
-            solution.vertices[edge.v].neighbor_weight += w;
+        neighbors_.clear();
+        neighbors_.add(v);
+        for (auto it = instance_.graph()->neighbors_begin(v);
+                it != instance_.graph()->neighbors_end(v); ++it) {
+            neighbors_.add(*it);
         }
 
-        solution.vertices[v].in = true;
+        Weight w = instance_.graph()->weight(v);
+
+        // Remove conflicting vertices.
+        for (VertexId v2: relevant_vertices_) {
+            if (!neighbors_.contains(v2)) {
+                if (contains(solution, v2))
+                    remove(solution, v2);
+                solution.addition_costs[v2] += w;
+            }
+        }
+
+        solution.vertices.add(v);
         solution.weight += w;
+        assert(solution.addition_costs[v] == 0);
     }
 
     inline void remove(Solution& solution, VertexId v) const
     {
         assert(v >= 0);
         assert(contains(solution, v));
+        //std::cout << "remove " << v
+        //    << " rv " << relevant_vertices_.contains(v)
+        //    << std::endl;
 
-        solution.vertices[v].in = false;
-        Weight w = instance_.vertex(v).weight;
+        neighbors_2_.clear();
+        neighbors_2_.add(v);
+        for (auto it = instance_.graph()->neighbors_begin(v);
+                it != instance_.graph()->neighbors_end(v); ++it) {
+            neighbors_2_.add(*it);
+        }
+
+        Weight w = instance_.graph()->weight(v);
+
+        solution.vertices.remove(v);
         solution.weight -= w;
-        for (const VertexEdge& edge: instance_.vertex(v).edges)
-            solution.vertices[edge.v].neighbor_weight -= w;
+        for (VertexId v2: relevant_vertices_) {
+            if (!neighbors_2_.contains(v2)) {
+                solution.addition_costs[v2] -= w;
+                assert(solution.addition_costs[v2] >= 0);
+            }
+        }
     }
 
     /*
@@ -413,7 +474,7 @@ private:
     inline GlobalCost cost_remove(const Solution& solution, VertexId v, GlobalCost) const
     {
         return {
-            - (solution.weight - instance_.vertex(v).weight),
+            - (solution.weight - instance_.graph()->weight(v)),
         };
     }
 
@@ -421,8 +482,8 @@ private:
     {
         return {
             -(solution.weight
-                    + instance_.vertex(v).weight
-                    - solution.vertices[v].neighbor_weight),
+                    + instance_.graph()->weight(v)
+                    - solution.addition_costs[v]),
         };
     }
 
@@ -432,13 +493,13 @@ private:
 
     const Instance& instance_;
     Parameters parameters_;
+    Output& output_;
+    Weight best_weight_ = 0;
 
-    std::vector<VertexId> vertices_;
-    std::vector<VertexId> vertices_in_;
-    std::vector<VertexId> vertices_out_;
-    optimizationtools::IndexedSet neighbors_;
-    optimizationtools::IndexedSet free_vertices_;
-    optimizationtools::IndexedSet free_vertices_2_;
+    optimizationtools::IndexedSet relevant_vertices_;
+    optimizationtools::IndexedMap<VertexId> tight_vertices_;
+    mutable optimizationtools::IndexedSet neighbors_;
+    mutable optimizationtools::IndexedSet neighbors_2_;
 
 };
 
@@ -453,24 +514,23 @@ LocalSearchOutput& LocalSearchOutput::algorithm_end(
     return *this;
 }
 
-LocalSearchOutput stablesolver::localsearch(
-        const Instance& instance_original,
+LocalSearchOutput cliquesolver::localsearch(
+        const Instance& instance,
         std::mt19937_64&,
         LocalSearchOptionalParameters parameters)
 {
-    init_display(instance_original, parameters.info);
+    cliquesolver::init_display(instance, parameters.info);
     FFOT_VER(parameters.info,
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Local Search" << std::endl
             << std::endl);
 
-    LocalSearchOutput output(instance_original, parameters.info);
-    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
+    LocalSearchOutput output(instance, parameters.info);
 
     // Create LocalScheme.
     LocalScheme::Parameters parameters_local_scheme;
-    LocalScheme local_scheme(instance, parameters_local_scheme);
+    LocalScheme local_scheme(instance, parameters_local_scheme, output);
 
     // Run A*.
     BestFirstLocalSearchOptionalParameters<LocalScheme> parameters_best_first;
@@ -481,16 +541,26 @@ LocalSearchOutput stablesolver::localsearch(
     parameters_best_first.number_of_threads_2 = parameters.number_of_threads;
     parameters_best_first.initial_solution_ids = std::vector<Counter>(
             parameters_best_first.number_of_threads_2, 0);
+    bool end = false;
+    parameters_best_first.info.end = &end;
     parameters_best_first.new_solution_callback
-        = [&instance, &parameters, &output](
+        = [&instance, &parameters, &output, &parameters_best_first](
                 const LocalScheme::Solution& solution)
         {
             Solution sol(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-                if (solution.vertices[v].in)
+            for (VertexId v = 0; v < instance.graph()->number_of_vertices(); ++v)
+                if (solution.vertices.contains(v))
                     sol.add(v);
             std::stringstream ss;
             output.update_solution(sol, ss, parameters.info);
+
+            optimizationtools::IndexedSet relevant_vertices(instance.graph()->number_of_vertices());
+            relevant_vertices.fill();
+            Weight upper_bound = instance.update_core(relevant_vertices, output.solution.weight());
+            output.update_upper_bound(upper_bound, ss, parameters.info);
+
+            if (output.optimal())
+                *(parameters_best_first.info.end) = true;
         };
     best_first_local_search(local_scheme, parameters_best_first);
 

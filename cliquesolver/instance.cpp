@@ -1,7 +1,5 @@
 #include "cliquesolver/instance.hpp"
 
-#include "optimizationtools/containers/indexed_set.hpp"
-
 using namespace cliquesolver;
 
 Instance::Instance(std::string instance_path, std::string format):
@@ -40,6 +38,42 @@ Instance Instance::complementary()
     }
 
     return instance;
+}
+
+Weight Instance::update_core(
+        optimizationtools::IndexedSet& relevant_vertices,
+        Weight weight) const
+{
+    std::vector<Weight> best_values(graph()->number_of_vertices(), 0);
+    std::vector<VertexId> vertex_queue;
+    for (VertexId v: relevant_vertices) {
+        best_values[v] = graph()->weight(v);
+        for (auto it = graph()->neighbors_begin(v);
+                it != graph()->neighbors_end(v); ++it) {
+            if (relevant_vertices.contains(*it))
+                best_values[v] += graph()->weight(*it);
+        }
+        if (best_values[v] <= weight)
+            vertex_queue.push_back(v);
+    }
+    while (!vertex_queue.empty()) {
+        VertexId v = vertex_queue.back();
+        relevant_vertices.remove(v);
+        vertex_queue.pop_back();
+        for (auto it = graph()->neighbors_begin(v);
+                it != graph()->neighbors_end(v); ++it) {
+            if (best_values[*it] <= weight)
+                continue;
+            best_values[*it] -= graph()->weight(v);
+            if (best_values[*it] <= weight)
+                vertex_queue.push_back(*it);
+        }
+    }
+    Weight bound = 0;
+    for (Weight value: best_values)
+        if (bound < value)
+            bound = value;
+    return bound;
 }
 
 void cliquesolver::init_display(

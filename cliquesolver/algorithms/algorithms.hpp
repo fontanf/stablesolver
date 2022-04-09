@@ -4,6 +4,7 @@
 
 #include "cliquesolver/algorithms/greedy.hpp"
 #include "cliquesolver/algorithms/milp_cplex.hpp"
+#include "cliquesolver/algorithms/localsearch.hpp"
 
 namespace cliquesolver
 {
