@@ -20,10 +20,10 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
   - `-a greedy_gwmin2`
   - `-a greedy_strong`
 
-- Mixed-Integer Linear Programs (implemented with CPLEX)
-  - Model 1, `|E|` constraints `-a milp_1_cplex`
-  - Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) [DOI](https://doi.org/10.1016/0377-2217(94)90252-6) `-a milp_2_cplex`
-  - Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) [DOI](https://doi.org/10.1287/ijoc.2016.0742) (seems useless since solvers already detect and merge clique constraints) `-a milp_3_cplex`
+- Mixed-Integer Linear Programs
+  - Model 1, `|E|` constraints  `-a milp_1_cbc` (Cbc) `-a milp_1_cplex` (CPLEX)
+  - Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) [DOI](https://doi.org/10.1016/0377-2217(94)90252-6) `-a milp_2_cplex` (CPLEX)
+  - Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) [DOI](https://doi.org/10.1287/ijoc.2016.0742) (seems useless since solvers already detect and merge clique constraints) `-a milp_3_cplex` (CPLEX)
 
 - Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch --threads 3"`
 
@@ -102,7 +102,7 @@ Number of iterations:  1177617
 ```
 
 ```shell
-./bazel-bin/stablesolver/main -v -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 --reduce -a "localsearch_rowweighting_1" -t 5
+./bazel-bin/stablesolver/main -v -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 --reduce -a "localsearch_rowweighting_1 --iterations 300000" 
 ```
 ```
 =====================================
@@ -121,37 +121,38 @@ Number of connected components:  308
 
 Reduced instance
 ----------------
-Number of vertices:              9341
-Number of edges:                 27532
-Density:                         0.000631143
-Average degree:                  5.89487
-Maximum degree:                  112
-Extra weight:                    112194
-Number of connected components:  384
+Number of vertices:              2800
+Number of edges:                 8646
+Density:                         0.0022064
+Average degree:                  6.17571
+Maximum degree:                  56
+Extra weight:                    115593
+Number of connected components:  148
 
 Algorithm
 ---------
 Row Weighting Local Search 1
 
+Parameters
+----------
+Maximum number of iterations:                      300000
+Maximum number of iterations without improvement:  -1
+
        T (s)              LB              UB             GAP         GAP (%)                 Comment
        -----              --              --             ---         -------                 -------
-       0.344               0          121535          121535             100                        
-      0.3605          116819          121535            4716         3.88036        initial solution
-      0.8304          117073          121535            4462         3.67137        iteration 100000
-      1.3683          117079          121535            4456         3.66643        iteration 200000
-      2.4145          117083          121535            4452         3.66314        iteration 400000
-      2.9515          117086          121535            4449         3.66067        iteration 500000
-       3.493          117093          121535            4442         3.65491        iteration 600000
-      4.5438          117094          121535            4441         3.65409        iteration 800000
+      0.4206               0          118393          118393             100                        
+      0.4367          117029          118393            1364          1.1521        initial solution
+      0.8126          117146          118393            1247         1.05327        iteration 100000
+         1.2          117150          118393            1243         1.04989        iteration 200000
 
 Final statistics
 ----------------
-Value:                 117094
-Number of vertices:    117094
-Vertex cover Value:    75150
-Bound:                 121535
-Gap:                   4441
-Gap (%):               3.65409
-Time (s):              5
-Number of iterations:  887355
+Value:                 117150
+Number of vertices:    117150
+Vertex cover Value:    75094
+Bound:                 118393
+Gap:                   1243
+Gap (%):               1.04989
+Time (s):              1.5649
+Number of iterations:  300000
 ```

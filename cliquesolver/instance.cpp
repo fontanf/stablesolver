@@ -2,19 +2,18 @@
 
 using namespace cliquesolver;
 
-Instance::Instance(std::string instance_path, std::string format):
+Instance::Instance(
+        std::string instance_path,
+        std::string format):
     graph_(std::unique_ptr<optimizationtools::AbstractGraph>(
                 new optimizationtools::AdjacencyListGraph(instance_path, format))),
     adjacency_list_graph_(static_cast<optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
 
-Instance::Instance(VertexId number_of_vertices):
+Instance::Instance(
+        VertexId number_of_vertices):
     graph_(std::unique_ptr<optimizationtools::AbstractGraph>(
-                new optimizationtools::AdjacencyListGraph())),
-    adjacency_list_graph_(static_cast<optimizationtools::AdjacencyListGraph*>(graph_.get()))
-{
-    for (VertexId v = 0; v < number_of_vertices; ++v)
-        adjacency_list_graph_->add_vertex();
-}
+                new optimizationtools::AdjacencyListGraph(number_of_vertices))),
+    adjacency_list_graph_(static_cast<optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
 
 Instance::Instance(const optimizationtools::AbstractGraph& abstract_graph):
     graph_(std::unique_ptr<optimizationtools::AbstractGraph>(abstract_graph.clone())) { }

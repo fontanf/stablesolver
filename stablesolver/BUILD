@@ -1,4 +1,5 @@
-config_setting(name = "cplex_build", values = {"define": "cplex=true"}, visibility = ["//visibility:public"])
+config_setting(name = "coinor_build", values = {"define": "coinor=true"}, visibility = ["//visibility:public"])
+config_setting(name = "cplex_build",  values = {"define": "cplex=true"},  visibility = ["//visibility:public"])
 
 load("//stablesolver:variables.bzl", "STDCPP")
 

@@ -51,6 +51,11 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
                "Algorithm" << std::endl
             << "---------" << std::endl
             << "Row Weighting Local Search 1" << std::endl
+            << std::endl
+            << "Parameters" << std::endl
+            << "----------" << std::endl
+            << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
+            << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
             << std::endl);
 
     // Compute initial greedy solution.
@@ -77,8 +82,14 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
     std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
 
     ComponentId c = 0;
-    for (output.number_of_iterations = 0; !parameters.info.needs_to_end(); ++output.number_of_iterations) {
+    for (output.number_of_iterations = 0;
+            !parameters.info.needs_to_end();
+            ++output.number_of_iterations) {
         //std::cout << "it " << iterations << std::endl;
+        // Check stop criteria.
+        if (parameters.maximum_number_of_iterations != -1
+                && output.number_of_iterations >= parameters.maximum_number_of_iterations)
+            break;
 
         // Update best solution
         if (output.number_of_iterations % 100000 == 0
@@ -316,7 +327,17 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
     VertexId v_last_added = -1;
 
     Counter iterations_without_improvment = 0;
-    for (output.number_of_iterations = 0; !parameters.info.needs_to_end(); ++output.number_of_iterations, iterations_without_improvment++) {
+    for (output.number_of_iterations = 0;
+            !parameters.info.needs_to_end();
+            ++output.number_of_iterations,
+            ++iterations_without_improvment) {
+        // Check stop criteria.
+        if (parameters.maximum_number_of_iterations != -1
+                && output.number_of_iterations >= parameters.maximum_number_of_iterations)
+            break;
+        if (parameters.maximum_number_of_iterations_without_improvement != -1
+                && iterations_without_improvment >= parameters.maximum_number_of_iterations_without_improvement)
+            break;
         //std::cout << "it " << iterations << std::endl;
 
         while (solution.feasible()) {

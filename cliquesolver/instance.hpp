@@ -50,18 +50,15 @@ public:
      * Getters.
      */
 
+    /** Get graph. */
     inline const optimizationtools::AbstractGraph* graph() const { return graph_.get(); }
+
+    /** Get the adjacency list graph. */
+    inline const optimizationtools::AdjacencyListGraph* adjacency_list_graph() const { return adjacency_list_graph_; }
 
     Weight update_core(
             optimizationtools::IndexedSet& relevant_vertices,
             Weight weight) const;
-
-    /*
-     * Export.
-     */
-
-    /** Write the instance to a file. */
-    void write(std::string instance_path, std::string format);
 
 private:
 
@@ -69,8 +66,14 @@ private:
      * Private attributes.
      */
 
+    /** Graph. */
     std::unique_ptr<optimizationtools::AbstractGraph> graph_ = nullptr;
 
+    /**
+     * Adjacency list graph.
+     *
+     * 'nullptr' if 'graph_' is not an AdjacencyList graph.
+     */
     optimizationtools::AdjacencyListGraph* adjacency_list_graph_ = nullptr;
 
 };

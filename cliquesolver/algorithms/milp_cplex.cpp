@@ -23,7 +23,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
                     MilpCplexOutput&, output,
                     IloNumVarArray&, x)
 {
-    VertexId ub = std::floor(getBestObjValue() + FFOT_TOL);
+    VertexId ub = getBestObjValue();
     output.update_upper_bound(ub, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
@@ -132,10 +132,10 @@ MilpCplexOutput cliquesolver::milp_cplex(
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        Weight ub = std::floor(cplex.getBestObjValue() + FFOT_TOL);
+        Weight ub = cplex.getBestObjValue();
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     } else {
-        Weight ub = std::floor(cplex.getBestObjValue() + FFOT_TOL);
+        Weight ub = cplex.getBestObjValue();
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     }
 

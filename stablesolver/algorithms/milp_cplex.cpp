@@ -25,7 +25,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
                     MilpCplexOutput&, output,
                     IloNumVarArray&, x)
 {
-    VertexId ub = std::floor(getBestObjValue() + TOL);
+    VertexId ub = getBestObjValue();
     output.update_upper_bound(ub, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
@@ -114,10 +114,10 @@ MilpCplexOutput stablesolver::milp_1_cplex(
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        Weight ub = cplex.getBestObjValue();
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     } else {
-        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        Weight ub = cplex.getBestObjValue();
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     }
 
@@ -203,10 +203,10 @@ MilpCplexOutput stablesolver::milp_2_cplex(
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        Weight ub = cplex.getBestObjValue();
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     } else {
-        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        Weight ub = cplex.getBestObjValue();
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     }
 
@@ -269,8 +269,10 @@ MilpCplexOutput stablesolver::milp_3_cplex(
         for (auto it = vertex_set_2.begin(); it != vertex_set_2.end(); ++it) {
             for (const auto& edge: instance.vertex(*it).edges) {
                 if (edge.v > *it && vertex_set_2.contains(edge.v)) {
-                    edge_indices[instance_clique.number_of_edges()] = edge.e;
-                    instance_clique.add_edge(vertex_set_2.position(*it), vertex_set_2.position(edge.v));
+                    edge_indices[instance_clique.adjacency_list_graph()->number_of_edges()] = edge.e;
+                    instance_clique.add_edge(
+                            vertex_set_2.position(*it),
+                            vertex_set_2.position(v2));
                 }
             }
         }
@@ -290,10 +292,11 @@ MilpCplexOutput stablesolver::milp_3_cplex(
         for (VertexId v_clique: output_clique.solution.vertices()) {
             VertexId v_orig = *(vertex_set_2.begin() + v_clique);
             expr += x[v_orig];
-            for (const auto& edge: instance_clique.vertex(v_clique).edges)
+            for (const auto& edge: instance_clique.adjacency_list_graph()->edges(v_orig)) {
                 if (output_clique.solution.contains(edge.v)
                         && edge.v > v_clique)
                     edge_set.add(edge_indices[edge.e]);
+            }
         }
         model.add(expr <= 1);
     }
@@ -336,10 +339,10 @@ MilpCplexOutput stablesolver::milp_3_cplex(
                     solution.add(v);
             output.update_solution(solution, std::stringstream(""), parameters.info);
         }
-        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        Weight ub = cplex.getBestObjValue();
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     } else {
-        Weight ub = std::floor(cplex.getBestObjValue() + TOL);
+        Weight ub = cplex.getBestObjValue();
         output.update_upper_bound(ub, std::stringstream(""), parameters.info);
     }
 

@@ -34,9 +34,8 @@ cc_library(
 git_repository(
     name = "optimizationtools",
     remote = "https://github.com/fontanf/optimizationtools.git",
-    commit = "c16004605aef2182a40393ead8ec7c5ea01b08c5",
-    shallow_since = "1649491882 +0200",
-
+    commit = "d0cceac58c50da5850aa3447d1b545b36debe54c",
+    shallow_since = "1650081766 +0200",
 )
 
 local_repository(
@@ -54,6 +53,20 @@ git_repository(
 local_repository(
     name = "localsearchsolver_",
     path = "../localsearchsolver/",
+)
+
+new_local_repository(
+    name = "coinor",
+    path = "/home/florian/Programmes/coinbrew/",
+    build_file_content = """
+cc_library(
+    name = "coinor",
+    hdrs = glob(["dist/include/**/*.h*"], exclude_directories = 0),
+    strip_include_prefix = "dist/include/",
+    srcs = glob(["dist/lib/**/*.so"], exclude_directories = 0),
+    visibility = ["//visibility:public"],
+)
+""",
 )
 
 new_local_repository(

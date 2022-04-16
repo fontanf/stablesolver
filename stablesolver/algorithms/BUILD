@@ -1,4 +1,5 @@
 load("//stablesolver:variables.bzl", "STDCPP",
+         "COINOR_COPTS", "COINOR_DEP",
          "CPLEX_COPTS", "CPLEX_DEP", "CPOPTIMIZER_DEP")
 
 cc_library(
@@ -6,6 +7,17 @@ cc_library(
         hdrs = ["greedy.hpp"],
         srcs = ["greedy.cpp"],
         deps = ["//stablesolver:stablesolver"],
+        visibility = ["//visibility:public"],
+)
+
+cc_library(
+        name = "milp_cbc",
+        hdrs = ["milp_cbc.hpp"],
+        srcs = ["milp_cbc.cpp"],
+        deps = [
+                "//stablesolver:stablesolver",
+        ] + COINOR_DEP,
+        copts = COINOR_COPTS,
         visibility = ["//visibility:public"],
 )
 
@@ -60,13 +72,14 @@ cc_library(
         srcs = ["algorithms.cpp"],
         deps = [
                 ":greedy",
+                ":milp_cbc",
                 ":milp_cplex",
                 ":localsearch",
                 ":localsearch_rowweighting",
                 ":largeneighborhoodsearch",
                 "@boost//:program_options",
-        ] + CPLEX_DEP,
-        copts = CPLEX_COPTS,
+        ] + COINOR_DEP + CPLEX_DEP,
+        copts = COINOR_COPTS + CPLEX_COPTS,
         visibility = ["//visibility:public"],
 )
 
