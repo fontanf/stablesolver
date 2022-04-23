@@ -12,9 +12,10 @@ using namespace stablesolver;
 Instance::Instance(std::string instance_path, std::string format)
 {
     std::ifstream file(instance_path);
-    if (!file.good())
+    if (!file.good()) {
         throw std::runtime_error(
                 "Unable to open file \"" + instance_path + "\".");
+    }
 
     if (format == "dimacs1992") {
         read_dimacs1992(file);

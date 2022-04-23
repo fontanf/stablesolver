@@ -56,7 +56,7 @@ bazel build -- //...
 Examples:
 
 ```shell
-./bazel-bin/stablesolver/main -v -i "data/dimacs1992/brock200_1.clq" --format dimacs1992 -a "localsearch_rowweighting_2" -t 1 -c solution.txt
+./bazel-bin/stablesolver/main -v -i "data/dimacs1992/brock200_1.clq" --format dimacs1992 -a "localsearch_rowweighting_2 --iterations 3000" -c solution.txt
 ```
 ```
 =====================================
@@ -77,17 +77,16 @@ Algorithm
 ---------
 Row Weighting Local Search 1
 
-       T (s)              LB              UB             GAP         GAP (%)                 Comment
-       -----              --              --             ---         -------                 -------
-      0.0001               0             200             200             100                        
-      0.0001              15             200             185            92.5        initial solution
-      0.0002              16             200             184              92             iteration 2
-      0.0073              17             200             183            91.5             iteration 2
-      0.0082              18             200             182              91             iteration 2
-      0.0084              19             200             181            90.5             iteration 3
-      0.0137              20             200             180              90          iteration 1162
-      0.0199              21             200             179            89.5          iteration 2440
-
+       T (s)              LB              UB             GAP     GAP (%)                 Comment
+       -----              --              --             ---     -------                 -------
+       0.000               0             200             200      100.00                        
+       0.000              15             200             185       92.50        initial solution
+       0.000              16             200             184       92.00             iteration 2
+       0.007              17             200             183       91.50             iteration 2
+       0.007              18             200             182       91.00             iteration 2
+       0.007              19             200             181       90.50             iteration 3
+       0.008              20             200             180       90.00          iteration 1162
+       0.010              21             200             179       89.50          iteration 2440
 
 Final statistics
 ----------------
@@ -97,8 +96,8 @@ Vertex cover Value:    179
 Bound:                 200
 Gap:                   179
 Gap (%):               89.5
-Time (s):              1
-Number of iterations:  1177617
+Time (s):              0.0103
+Number of iterations:  3000
 ```
 
 ```shell
@@ -138,12 +137,12 @@ Parameters
 Maximum number of iterations:                      300000
 Maximum number of iterations without improvement:  -1
 
-       T (s)              LB              UB             GAP         GAP (%)                 Comment
-       -----              --              --             ---         -------                 -------
-      0.4206               0          118393          118393             100                        
-      0.4367          117029          118393            1364          1.1521        initial solution
-      0.8126          117146          118393            1247         1.05327        iteration 100000
-         1.2          117150          118393            1243         1.04989        iteration 200000
+       T (s)              LB              UB             GAP     GAP (%)                 Comment
+       -----              --              --             ---     -------                 -------
+       0.425               0          118393          118393      100.00                        
+       0.441          117029          118393            1364        1.15        initial solution
+       0.815          117146          118393            1247        1.05        iteration 100000
+       1.207          117150          118393            1243        1.05        iteration 200000
 
 Final statistics
 ----------------
@@ -153,6 +152,6 @@ Vertex cover Value:    75094
 Bound:                 118393
 Gap:                   1243
 Gap (%):               1.04989
-Time (s):              1.5649
+Time (s):              1.5777
 Number of iterations:  300000
 ```

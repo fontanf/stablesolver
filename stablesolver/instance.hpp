@@ -9,15 +9,15 @@
 namespace stablesolver
 {
 
-typedef int32_t VertexId; // v
-typedef int32_t VertexPos; // v_pos
-typedef int64_t EdgeId; // e
-typedef int64_t EdgePos; // e_pos
-typedef int64_t Weight; // w
-typedef int64_t ComponentId; // c
-typedef int16_t Penalty;
-typedef int64_t Counter;
-typedef int64_t Seed;
+using VertexId = int32_t; // v
+using VertexPos = int32_t; // v_pos
+using EdgeId = int64_t; // e
+using EdgePos = int64_t; // e_pos
+using Weight = int64_t; // w
+using ComponentId = int64_t; // c
+using Penalty = int16_t;
+using Counter = int64_t;
+using Seed = int64_t;
 
 class Solution;
 

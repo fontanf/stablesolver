@@ -149,14 +149,14 @@ Output::Output(const Instance& instance, optimizationtools::Info& info):
             << std::setw(16) << "LB"
             << std::setw(16) << "UB"
             << std::setw(16) << "GAP"
-            << std::setw(16) << "GAP (%)"
+            << std::setw(12) << "GAP (%)"
             << std::setw(24) << "Comment"
             << std::endl
             << std::setw(12) << "-----"
             << std::setw(16) << "--"
             << std::setw(16) << "--"
             << std::setw(16) << "---"
-            << std::setw(16) << "-------"
+            << std::setw(12) << "-------"
             << std::setw(24) << "-------"
             << std::endl);
     print(info, std::stringstream(""));
@@ -169,14 +169,15 @@ void Output::print(
     double gap = (upper_bound == 0)?
         std::numeric_limits<double>::infinity():
         (double)(upper_bound - lower_bound()) / upper_bound * 100;
-    double t = round(info.elapsed_time() * 10000) / 10000;
+    double t = info.elapsed_time();
+    std::streamsize precision = std::cout.precision();
 
     FFOT_VER(info,
-               std::setw(12) << t
+               std::setw(12) << std::fixed << std::setprecision(3) << t << std::defaultfloat << std::setprecision(precision)
             << std::setw(16) << lower_bound()
             << std::setw(16) << upper_bound
             << std::setw(16) << upper_bound - lower_bound()
-            << std::setw(16) << gap
+            << std::setw(12) << std::fixed << std::setprecision(2) << gap << std::defaultfloat << std::setprecision(precision)
             << std::setw(24) << s.str()
             << std::endl);
 

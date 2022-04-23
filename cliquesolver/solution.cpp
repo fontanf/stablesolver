@@ -114,14 +114,15 @@ void Output::print(
     double gap = (upper_bound == 0)?
         std::numeric_limits<double>::infinity():
         (double)(upper_bound - lower_bound()) / upper_bound * 100;
-    double t = round(info.elapsed_time() * 10000) / 10000;
+    double t = info.elapsed_time();
+    std::streamsize precision = std::cout.precision();
 
     FFOT_VER(info,
-               std::setw(12) << t
+               std::setw(12) << std::fixed << std::setprecision(3) << t << std::defaultfloat << std::setprecision(precision)
             << std::setw(12) << lower_bound()
             << std::setw(12) << upper_bound
             << std::setw(12) << upper_bound - lower_bound()
-            << std::setw(12) << gap
+            << std::setw(12) << std::fixed << std::setprecision(2) << gap << std::defaultfloat << std::setprecision(precision)
             << std::setw(24) << s.str()
             << std::endl);
 
