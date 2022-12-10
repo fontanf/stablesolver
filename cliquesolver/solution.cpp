@@ -5,16 +5,16 @@
 using namespace cliquesolver;
 
 Solution::Solution(const Instance& instance):
-    instance_(instance),
+    instance_(&instance),
     vertices_(instance.graph()->number_of_vertices()),
     neighbors_tmp_(instance.graph()->number_of_vertices())
 {
 }
 
-Solution::Solution(const Instance& instance, std::string certificate_path):
-    instance_(instance),
-    vertices_(instance.graph()->number_of_vertices()),
-    neighbors_tmp_(instance.graph()->number_of_vertices())
+Solution::Solution(
+        const Instance& instance,
+        std::string certificate_path):
+    Solution(instance)
 {
     if (certificate_path.empty())
         return;
@@ -29,26 +29,6 @@ Solution::Solution(const Instance& instance, std::string certificate_path):
         file >> v;
         add(v);
     }
-}
-
-Solution::Solution(const Solution& solution):
-    instance_(solution.instance_),
-    vertices_(solution.vertices_),
-    weight_(solution.weight_),
-    penalty_(solution.penalty_),
-    neighbors_tmp_(solution.neighbors_tmp_)
-{ }
-
-Solution& Solution::operator=(const Solution& solution)
-{
-    if (this != &solution) {
-        assert(&instance_ == &solution.instance_);
-        vertices_      = solution.vertices_;
-        weight_        = solution.weight_;
-        penalty_       = solution.penalty_;
-        neighbors_tmp_ = solution.neighbors_tmp_;
-    }
-    return *this;
 }
 
 void Solution::write(std::string certificate_path)

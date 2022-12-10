@@ -21,31 +21,32 @@ public:
 
     /** Create an empty solution. */
     Solution(const Instance& instance);
+
     /** Create a solution from a certificate file. */
     Solution(const Instance& instance, std::string certificate_path);
-    /** Copy constructor. */
-    Solution(const Solution& solution);
-    /** Copy assignment operator. */
-    Solution& operator=(const Solution& solution);
-    /** Destructor. */
-    ~Solution() { }
 
     /*
      * Getters.
      */
 
     /** Get the instance. */
-    inline const Instance& instance() const { return instance_; }
+    inline const Instance& instance() const { return *instance_; }
+
     /** Get the number of vertices of the solution. */
     inline VertexId number_of_vertices() const { return vertices_.size(); }
+
     /** Get the weight of the solution. */
     inline Weight weight() const { return weight_; }
+
     /** Get the penalty of the solution. */
     inline Weight penalty() const { return penalty_; }
+
     /** Return 'true' iff vertex v is in the solution. */
     inline int8_t contains(VertexId e) const { return vertices_.contains(e); }
+
     /** Return 'true' iff the solution is feasible. */
     inline bool feasible() const { return penalty() == 0; }
+
     /** Get the set of vertices of the solution. */
     const optimizationtools::IndexedSet& vertices() const { return vertices_; };
 
@@ -55,6 +56,7 @@ public:
 
     /** Add vertex v to the solution. */
     inline void add(VertexId v);
+
     /** Remove vertex v from the solution. */
     inline void remove(VertexId v);
 
@@ -68,11 +70,14 @@ public:
 private:
 
     /** Instance. */
-    const Instance& instance_;
+    const Instance* instance_;
+
     /** Set of vertices of the solution. */
     optimizationtools::IndexedSet vertices_;
+
     /** Weight of the solution. */
     Weight weight_ = 0;
+
     /** Penalty of the solution. */
     Weight penalty_ = 0;
 
