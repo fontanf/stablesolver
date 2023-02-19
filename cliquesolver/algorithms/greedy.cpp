@@ -10,11 +10,11 @@ Output cliquesolver::greedy_gwmin(
         optimizationtools::Info info)
 {
     cliquesolver::init_display(instance, info);
-    FFOT_VER(info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Greedy GWMIN" << std::endl
-            << std::endl);
+    info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Greedy GWMIN" << std::endl
+        << std::endl;
 
     const optimizationtools::AbstractGraph* graph = instance.graph();
     Output output(instance, info);
@@ -54,11 +54,11 @@ Output cliquesolver::greedy_strong(
         optimizationtools::Info info)
 {
     cliquesolver::init_display(instance, info);
-    FFOT_VER(info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Strong Greedy" << std::endl
-            << std::endl);
+    info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Strong Greedy" << std::endl
+        << std::endl;
 
     const optimizationtools::AbstractGraph* graph = instance.graph();
     Output output(instance, info);

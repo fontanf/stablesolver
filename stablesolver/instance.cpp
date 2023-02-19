@@ -1093,37 +1093,37 @@ void stablesolver::init_display(
 {
     VertexId n = instance.number_of_vertices();
     EdgeId m = instance.number_of_edges();
-    FFOT_VER(info,
-               "=====================================" << std::endl
-            << "            Stable Solver            " << std::endl
-            << "=====================================" << std::endl
-            << std::endl
-            << "Instance" << std::endl
-            << "--------" << std::endl
-            << "Number of vertices:              " << n << std::endl
-            << "Number of edges:                 " << m << std::endl
-            << "Density:                         " << (double)m * 2 / n / (n - 1) << std::endl
-            << "Average degree:                  " << (double)instance.number_of_edges() * 2 / n << std::endl
-            << "Maximum degree:                  " << instance.maximum_degree() << std::endl
-            << "Average weight:                  " << (double)instance.total_weight() / n << std::endl
-            << "Number of connected components:  " << instance.number_of_components() << std::endl
-            << std::endl);
+    info.os()
+        << "=====================================" << std::endl
+        << "            Stable Solver            " << std::endl
+        << "=====================================" << std::endl
+        << std::endl
+        << "Instance" << std::endl
+        << "--------" << std::endl
+        << "Number of vertices:              " << n << std::endl
+        << "Number of edges:                 " << m << std::endl
+        << "Density:                         " << (double)m * 2 / n / (n - 1) << std::endl
+        << "Average degree:                  " << (double)instance.number_of_edges() * 2 / n << std::endl
+        << "Maximum degree:                  " << instance.maximum_degree() << std::endl
+        << "Average weight:                  " << (double)instance.total_weight() / n << std::endl
+        << "Number of connected components:  " << instance.number_of_components() << std::endl
+        << std::endl;
 
     const Instance* reduced_instance = instance.reduced_instance();
     if (reduced_instance != nullptr) {
         VertexId n = reduced_instance->number_of_vertices();
         EdgeId m = reduced_instance->number_of_edges();
-        FFOT_VER(info,
-                   "Reduced instance" << std::endl
-                << "----------------" << std::endl
-                << "Number of vertices:              " << n << std::endl
-                << "Number of edges:                 " << m << std::endl
-                << "Density:                         " << (double)m * 2 / n / (n - 1) << std::endl
-                << "Average degree:                  " << (double)reduced_instance->number_of_edges() * 2 / n << std::endl
-                << "Maximum degree:                  " << reduced_instance->maximum_degree() << std::endl
-                << "Extra weight:                    " << instance.extra_weight() << std::endl
-                << "Number of connected components:  " << reduced_instance->number_of_components() << std::endl
-                << std::endl);
+        info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl
+            << "Number of vertices:              " << n << std::endl
+            << "Number of edges:                 " << m << std::endl
+            << "Density:                         " << (double)m * 2 / n / (n - 1) << std::endl
+            << "Average degree:                  " << (double)reduced_instance->number_of_edges() * 2 / n << std::endl
+            << "Maximum degree:                  " << reduced_instance->maximum_degree() << std::endl
+            << "Extra weight:                    " << instance.extra_weight() << std::endl
+            << "Number of connected components:  " << reduced_instance->number_of_components() << std::endl
+            << std::endl;
     }
 }
 

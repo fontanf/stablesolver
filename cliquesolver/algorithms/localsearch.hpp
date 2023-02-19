@@ -1,9 +1,9 @@
-#pragma once
-
 /**
  * Local Search:
  *
  */
+
+#pragma once
 
 #include "cliquesolver/solution.hpp"
 

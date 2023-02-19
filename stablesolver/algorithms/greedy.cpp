@@ -9,11 +9,11 @@ Output stablesolver::greedy_gwmin(
         optimizationtools::Info info)
 {
     init_display(instance_original, info);
-    FFOT_VER(info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Greedy GWMIN" << std::endl
-            << std::endl);
+    info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Greedy GWMIN" << std::endl
+        << std::endl;
 
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
     Output output(instance_original, info);
@@ -49,11 +49,11 @@ Output stablesolver::greedy_gwmax(
         optimizationtools::Info info)
 {
     init_display(instance_original, info);
-    FFOT_VER(info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Greedy GWMAX" << std::endl
-            << std::endl);
+    info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Greedy GWMAX" << std::endl
+        << std::endl;
 
     Output output(instance_original, info);
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
@@ -102,11 +102,11 @@ Output stablesolver::greedy_gwmin2(
         optimizationtools::Info info)
 {
     init_display(instance_original, info);
-    FFOT_VER(info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Greedy GWMIN2" << std::endl
-            << std::endl);
+    info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Greedy GWMIN2" << std::endl
+        << std::endl;
 
     Output output(instance_original, info);
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
@@ -148,11 +148,11 @@ Output stablesolver::greedy_strong(
         optimizationtools::Info info)
 {
     init_display(instance_original, info);
-    FFOT_VER(info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Strong Greedy" << std::endl
-            << std::endl);
+    info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Strong Greedy" << std::endl
+        << std::endl;
 
     Output output(instance_original, info);
     const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();

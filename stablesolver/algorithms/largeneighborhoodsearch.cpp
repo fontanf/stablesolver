@@ -10,9 +10,9 @@ using namespace stablesolver;
 LargeNeighborhoodSearchOutput& LargeNeighborhoodSearchOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    FFOT_PUT(info, "Algorithm", "Iterations", iterations);
+    info.add_to_json("Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
-    FFOT_VER(info, "Iterations: " << iterations << std::endl);
+    info.os() << "Iterations: " << iterations << std::endl;
     return *this;
 }
 
@@ -30,11 +30,11 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
         LargeNeighborhoodSearchOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Large Neighborhood Search" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Large Neighborhood Search" << std::endl
+        << std::endl;
 
     //instance.fix_identical(parameters.info);
     //instance.fix_dominated(parameters.info);

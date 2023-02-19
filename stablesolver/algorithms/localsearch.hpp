@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * Local Search:
  *
@@ -18,6 +16,8 @@
  *     https://doi.org/10.1007/s11590-017-1128-7
  *
  */
+
+#pragma once
 
 #include "stablesolver/solution.hpp"
 

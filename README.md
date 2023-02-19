@@ -56,7 +56,7 @@ bazel build -- //...
 Examples:
 
 ```shell
-./bazel-bin/stablesolver/main -v -i "data/dimacs1992/brock200_1.clq" --format dimacs1992 -a "localsearch_rowweighting_2 --iterations 3000" -c solution.txt
+./bazel-bin/stablesolver/main -v 1 -i "data/dimacs1992/brock200_1.clq" --format dimacs1992 -a "localsearch_rowweighting_2 --iterations 3000" -c solution.txt
 ```
 ```
 =====================================
@@ -101,7 +101,7 @@ Number of iterations:  3000
 ```
 
 ```shell
-./bazel-bin/stablesolver/main -v -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 --reduce -a "localsearch_rowweighting_1 --iterations 300000" 
+./bazel-bin/stablesolver/main -v 1 -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 --reduce -a "localsearch_rowweighting_1 --iterations 300000" 
 ```
 ```
 =====================================

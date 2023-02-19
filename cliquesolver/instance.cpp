@@ -82,17 +82,17 @@ void cliquesolver::init_display(
     const optimizationtools::AbstractGraph* graph = instance.graph();
     VertexId n = graph->number_of_vertices();
     EdgeId m = graph->number_of_edges();
-    FFOT_VER(info,
-               "=====================================" << std::endl
-            << "            Clique Solver            " << std::endl
-            << "=====================================" << std::endl
-            << std::endl
-            << "Instance" << std::endl
-            << "--------" << std::endl
-            << "Number of vertices:              " << n << std::endl
-            << "Number of edges:                 " << m << std::endl
-            << "Density:                         " << (double)m * 2 / n / (n - 1) << std::endl
-            << "Average degree:                  " << (double)graph->number_of_edges() * 2 / n << std::endl
-            << "Maximum degree:                  " << graph->maximum_degree() << std::endl
-            << std::endl);
+    info.os()
+        << "=====================================" << std::endl
+        << "            Clique Solver            " << std::endl
+        << "=====================================" << std::endl
+        << std::endl
+        << "Instance" << std::endl
+        << "--------" << std::endl
+        << "Number of vertices:              " << n << std::endl
+        << "Number of edges:                 " << m << std::endl
+        << "Density:                         " << (double)m * 2 / n / (n - 1) << std::endl
+        << "Average degree:                  " << (double)graph->number_of_edges() * 2 / n << std::endl
+        << "Maximum degree:                  " << graph->maximum_degree() << std::endl
+        << std::endl;
 }

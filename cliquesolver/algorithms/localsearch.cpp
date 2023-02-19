@@ -17,67 +17,6 @@ class LocalScheme
 
 public:
 
-    /** Global cost: <Weight>; */
-    using GlobalCost = std::tuple<Weight>;
-
-    inline Weight&       weight(GlobalCost& global_cost) { return std::get<0>(global_cost); }
-    inline Weight  weight(const GlobalCost& global_cost) { return std::get<0>(global_cost); }
-
-    /*
-     * Solutions.
-     */
-
-    using CompactSolution = std::vector<bool>;
-
-    struct CompactSolutionHasher
-    {
-        std::hash<CompactSolution> hasher;
-
-        inline bool operator()(
-                const std::shared_ptr<CompactSolution>& compact_solution_1,
-                const std::shared_ptr<CompactSolution>& compact_solution_2) const
-        {
-            return *compact_solution_1 == *compact_solution_2;
-        }
-
-        inline std::size_t operator()(
-                const std::shared_ptr<CompactSolution>& compact_solution) const
-        {
-            return hasher(*compact_solution);
-        }
-    };
-
-    inline CompactSolutionHasher compact_solution_hasher() const { return CompactSolutionHasher(); }
-
-    struct Solution
-    {
-        Solution(VertexId number_of_vertices):
-            vertices(number_of_vertices),
-            addition_costs(number_of_vertices, 0) {  }
-
-        optimizationtools::IndexedSet vertices;
-        std::vector<Weight> addition_costs;
-        Weight weight = 0;
-    };
-
-    CompactSolution solution2compact(const Solution& solution)
-    {
-        std::vector<bool> vertices(instance_.graph()->number_of_vertices(), false);
-        for (VertexId v: solution.vertices)
-            vertices[v] = true;
-        return vertices;
-    }
-
-    Solution compact2solution(const CompactSolution& compact_solution)
-    {
-        auto solution = empty_solution();
-        for (VertexId v = 0; v < instance_.graph()->number_of_vertices(); ++v)
-            if (relevant_vertices_.contains(v))
-                if (compact_solution[v])
-                    add(solution, v);
-        return solution;
-    }
-
     /*
      * Constructors and destructor.
      */
@@ -105,18 +44,30 @@ public:
         relevant_vertices_.fill();
     }
 
-    /** Copy constructor. */
-    LocalScheme(const LocalScheme& local_scheme):
-        LocalScheme(
-                local_scheme.instance_,
-                local_scheme.parameters_,
-                local_scheme.output_) { }
+    /*
+     * Global cost.
+     */
 
-    virtual ~LocalScheme() { }
+    /** Global cost: <Weight>; */
+    using GlobalCost = std::tuple<Weight>;
+
+    inline Weight&       weight(GlobalCost& global_cost) { return std::get<0>(global_cost); }
+    inline Weight  weight(const GlobalCost& global_cost) { return std::get<0>(global_cost); }
 
     /*
-     * Initial solutions.
+     * Solutions.
      */
+
+    struct Solution
+    {
+        Solution(VertexId number_of_vertices):
+            vertices(number_of_vertices),
+            addition_costs(number_of_vertices, 0) {  }
+
+        optimizationtools::IndexedSet vertices;
+        std::vector<Weight> addition_costs;
+        Weight weight = 0;
+    };
 
     inline Solution empty_solution() const
     {
@@ -135,10 +86,6 @@ public:
         return solution;
     }
 
-    /*
-     * Solution properties.
-     */
-
     inline GlobalCost global_cost(const Solution& solution) const
     {
         return {
@@ -150,68 +97,12 @@ public:
      * Local search.
      */
 
-    struct Move
-    {
-        Move(): v(-1) { }
-
-        VertexId v;
-        GlobalCost global_cost;
-    };
-
-    struct MoveHasher
-    {
-        std::hash<VertexId> hasher;
-
-        inline bool hashable(const Move&) const { return true; }
-
-        inline bool operator()(
-                const Move& move_1,
-                const Move& move_2) const
-        {
-            return move_1.v == move_2.v;
-        }
-
-        inline std::size_t operator()(
-                const Move& move) const
-        {
-            size_t hash = hasher(move.v);
-            return hash;
-        }
-    };
-
-    inline MoveHasher move_hasher() const { return MoveHasher(); }
-
-    inline std::vector<Move> perturbations(
-            const Solution& solution,
-            std::mt19937_64&)
-    {
-        std::vector<Move> moves;
-        for (VertexId v: relevant_vertices_) {
-            GlobalCost c = (contains(solution, v))?
-                cost_remove(solution, v, worst<GlobalCost>()):
-                cost_add(solution, v, worst<GlobalCost>());
-            Move move;
-            move.v = v;
-            move.global_cost = c;
-            moves.push_back(move);
-        }
-        return moves;
-    }
-
-    inline void apply_move(Solution& solution, const Move& move) const
-    {
-        if (contains(solution, move.v)) {
-            remove(solution, move.v);
-        } else {
-            if (relevant_vertices_.contains(move.v))
-                add(solution, move.v);
-        }
-    }
+    struct Perturbation;
 
     inline void local_search(
             Solution& solution,
             std::mt19937_64& generator,
-            const Move& tabu = Move())
+            const Perturbation& tabu = Perturbation())
     {
         // Get neighborhoods.
         std::vector<Counter> neighborhoods = {0};
@@ -235,6 +126,7 @@ public:
         }
 
         Counter it = 0;
+        (void)it;
         for (;; ++it) {
             //std::cout << "it " << it
             //    << " c " << to_string(global_cost(solution))
@@ -268,7 +160,7 @@ public:
                     //std::cout << "v_best " << v_best << std::endl;
                     if (v_best != -1) {
                         improved = true;
-                        // Apply move.
+                        // Apply perturbation.
                         assert(!contains(solution, v_best));
                         add(solution, v_best);
                         if (global_cost(solution) != c_best) {
@@ -335,7 +227,7 @@ public:
                     }
                     if (v_in_best != -1) {
                         improved = true;
-                        // Apply move.
+                        // Apply perturbation.
                         assert(contains(solution, v_in_best));
                         remove(solution, v_in_best);
                         assert(!contains(solution, v_out_1_best));
@@ -366,6 +258,115 @@ public:
             instance_.update_core(relevant_vertices_, solution.weight);
         }
     }
+
+    /*
+     * Iterated local search.
+     */
+
+    struct Perturbation
+    {
+        Perturbation(): v(-1) { }
+
+        VertexId v;
+        GlobalCost global_cost;
+    };
+
+    inline std::vector<Perturbation> perturbations(
+            const Solution& solution,
+            std::mt19937_64&)
+    {
+        std::vector<Perturbation> perturbations;
+        for (VertexId v: relevant_vertices_) {
+            GlobalCost c = (contains(solution, v))?
+                cost_remove(solution, v, worst<GlobalCost>()):
+                cost_add(solution, v, worst<GlobalCost>());
+            Perturbation perturbation;
+            perturbation.v = v;
+            perturbation.global_cost = c;
+            perturbations.push_back(perturbation);
+        }
+        return perturbations;
+    }
+
+    inline void apply_perturbation(
+            Solution& solution,
+            const Perturbation& perturbation,
+            std::mt19937_64&) const
+    {
+        if (contains(solution, perturbation.v)) {
+            remove(solution, perturbation.v);
+        } else {
+            if (relevant_vertices_.contains(perturbation.v))
+                add(solution, perturbation.v);
+        }
+    }
+
+    /*
+     * Best first local search.
+     */
+
+    using CompactSolution = std::vector<bool>;
+
+    struct CompactSolutionHasher
+    {
+        std::hash<CompactSolution> hasher;
+
+        inline bool operator()(
+                const std::shared_ptr<CompactSolution>& compact_solution_1,
+                const std::shared_ptr<CompactSolution>& compact_solution_2) const
+        {
+            return *compact_solution_1 == *compact_solution_2;
+        }
+
+        inline std::size_t operator()(
+                const std::shared_ptr<CompactSolution>& compact_solution) const
+        {
+            return hasher(*compact_solution);
+        }
+    };
+
+    inline CompactSolutionHasher compact_solution_hasher() const { return CompactSolutionHasher(); }
+
+    CompactSolution solution2compact(const Solution& solution)
+    {
+        std::vector<bool> vertices(instance_.graph()->number_of_vertices(), false);
+        for (VertexId v: solution.vertices)
+            vertices[v] = true;
+        return vertices;
+    }
+
+    Solution compact2solution(const CompactSolution& compact_solution)
+    {
+        auto solution = empty_solution();
+        for (VertexId v = 0; v < instance_.graph()->number_of_vertices(); ++v)
+            if (relevant_vertices_.contains(v))
+                if (compact_solution[v])
+                    add(solution, v);
+        return solution;
+    }
+
+    struct PerturbationHasher
+    {
+        std::hash<VertexId> hasher;
+
+        inline bool hashable(const Perturbation&) const { return true; }
+
+        inline bool operator()(
+                const Perturbation& perturbation_1,
+                const Perturbation& perturbation_2) const
+        {
+            return perturbation_1.v == perturbation_2.v;
+        }
+
+        inline std::size_t operator()(
+                const Perturbation& perturbation) const
+        {
+            size_t hash = hasher(perturbation.v);
+            return hash;
+        }
+    };
+
+    inline PerturbationHasher perturbation_hasher() const { return PerturbationHasher(); }
 
     /*
      * Outputs.
@@ -426,7 +427,7 @@ private:
 
         Weight w = instance_.graph()->weight(v);
 
-        // Remove conflicting vertices.
+        // Reperturbation conflicting vertices.
         for (VertexId v2: relevant_vertices_) {
             if (!neighbors_.contains(v2)) {
                 if (contains(solution, v2))
@@ -468,7 +469,7 @@ private:
     }
 
     /*
-     * Evaluate moves.
+     * Evaluate perturbations.
      */
 
     inline GlobalCost cost_remove(const Solution& solution, VertexId v, GlobalCost) const
@@ -508,9 +509,8 @@ private:
 LocalSearchOutput& LocalSearchOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //FFOT_PUT(info, "Algorithm", "Iterations", iterations);
+    //info.add_to_json("Algorithm", "Iterations", iterations);
     Output::algorithm_end(info);
-    //FFOT_VER(info, "Iterations: " << iterations << std::endl);
     return *this;
 }
 
@@ -520,11 +520,11 @@ LocalSearchOutput cliquesolver::localsearch(
         LocalSearchOptionalParameters parameters)
 {
     cliquesolver::init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Local Search" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Local Search" << std::endl
+        << std::endl;
 
     LocalSearchOutput output(instance, parameters.info);
 

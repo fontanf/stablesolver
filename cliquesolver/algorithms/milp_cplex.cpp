@@ -11,9 +11,8 @@ ILOSTLBEGIN
 MilpCplexOutput& MilpCplexOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //FFOT_PUT(info, "Algorithm", "Iterations", it);
+    //info.add_to_json("Algorithm", "Iterations", it);
     Output::algorithm_end(info);
-    //FFOT_VER(info, "Iterations: " << it << std::endl);
     return *this;
 }
 
@@ -44,11 +43,11 @@ MilpCplexOutput cliquesolver::milp_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
     cliquesolver::init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "MILP (CPLEX)" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "MILP (CPLEX)" << std::endl
+        << std::endl;
 
     const optimizationtools::AbstractGraph* graph = instance.graph();
     MilpCplexOutput output(instance, parameters.info);

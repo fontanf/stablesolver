@@ -10,9 +10,8 @@ using namespace stablesolver;
 MilpCbcOutput& MilpCbcOutput::algorithm_end(
         optimizationtools::Info& info)
 {
-    //FFOT_PUT(info, "Algorithm", "Iterations", it);
+    //info.add_to_json("Algorithm", "Iterations", it);
     Output::algorithm_end(info);
-    //FFOT_VER(info, "Iterations: " << it << std::endl);
     return *this;
 }
 
@@ -108,11 +107,11 @@ MilpCbcOutput stablesolver::milp_1_cbc(
         MilpCbcOptionalParameters parameters)
 {
     init_display(instance, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "MILP 1 (Cbc)" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "MILP 1 (Cbc)" << std::endl
+        << std::endl;
 
     MilpCbcOutput output(instance, parameters.info);
 

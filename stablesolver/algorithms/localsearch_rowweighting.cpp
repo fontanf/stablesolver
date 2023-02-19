@@ -13,9 +13,9 @@ using namespace stablesolver;
 LocalSearchRowWeighting1Output& LocalSearchRowWeighting1Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    FFOT_PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
+    info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    FFOT_VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
+    info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
     return *this;
 }
 
@@ -47,16 +47,16 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         LocalSearchRowWeighting1OptionalParameters parameters)
 {
     init_display(instance_original, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Row Weighting Local Search 1" << std::endl
-            << std::endl
-            << "Parameters" << std::endl
-            << "----------" << std::endl
-            << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
-            << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Row Weighting Local Search 1" << std::endl
+        << std::endl
+        << "Parameters" << std::endl
+        << "----------" << std::endl
+        << "Maximum number of iterations:                      " << parameters.maximum_number_of_iterations << std::endl
+        << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
+        << std::endl;
 
     // Compute initial greedy solution.
     LocalSearchRowWeighting1Output output(instance_original, parameters.info);
@@ -97,9 +97,9 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
             std::stringstream ss;
             ss << "iteration " << output.number_of_iterations;
             output.update_solution(solution_best, ss, parameters.info);
-            parameters.info.output->mutex_solutions.lock();
+            parameters.info.lock();
             parameters.new_solution_callback(output);
-            parameters.info.output->mutex_solutions.unlock();
+            parameters.info.unlock();
         }
 
         // Compute component
@@ -271,9 +271,9 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    FFOT_PUT(info, "Algorithm", "NumberOfIterations", number_of_iterations);
+    info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
     Output::algorithm_end(info);
-    FFOT_VER(info, "Number of iterations:  " << number_of_iterations << std::endl);
+    info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
     return *this;
 }
 
@@ -292,11 +292,11 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
         LocalSearchRowWeighting2OptionalParameters parameters)
 {
     init_display(instance_original, parameters.info);
-    FFOT_VER(parameters.info,
-               "Algorithm" << std::endl
-            << "---------" << std::endl
-            << "Row Weighting Local Search 1" << std::endl
-            << std::endl);
+    parameters.info.os()
+        << "Algorithm" << std::endl
+        << "---------" << std::endl
+        << "Row Weighting Local Search 1" << std::endl
+        << std::endl;
 
     // Compute initial greedy solution.
     LocalSearchRowWeighting2Output output(instance_original, parameters.info);
@@ -305,9 +305,9 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
-    parameters.info.output->mutex_solutions.lock();
+    parameters.info.lock();
     parameters.new_solution_callback(output);
-    parameters.info.output->mutex_solutions.unlock();
+    parameters.info.unlock();
 
     if (instance.number_of_vertices() == 0)
         return output.algorithm_end(parameters.info);
@@ -346,9 +346,9 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
                 std::stringstream ss;
                 ss << "iteration " << output.number_of_iterations;
                 output.update_solution(solution, ss, parameters.info);
-                parameters.info.output->mutex_solutions.lock();
+                parameters.info.lock();
                 parameters.new_solution_callback(output);
-                parameters.info.output->mutex_solutions.unlock();
+                parameters.info.unlock();
             }
 
             // Update statistics
