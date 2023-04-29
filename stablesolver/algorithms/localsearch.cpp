@@ -14,7 +14,7 @@ class LocalScheme
 public:
 
     /*
-     * Constructors and destructor.
+     * Constructors and destructor
      */
 
     struct Parameters
@@ -39,7 +39,7 @@ public:
     }
 
     /*
-     * Global cost.
+     * Global cost
      */
 
     /** Global cost: <Weight>; */
@@ -49,7 +49,7 @@ public:
     inline Weight  weight(const GlobalCost& global_cost) { return std::get<0>(global_cost); }
 
     /*
-     * Solutions.
+     * Solutions
      */
 
     struct SolutionVertex
@@ -85,9 +85,9 @@ public:
     {
         Solution solution = empty_solution();
         std::shuffle(vertices_.begin(), vertices_.end(), generator);
-        for (VertexId v: vertices_)
-            if (solution.vertices[v].neighbor_weight == 0)
-                add(solution, v);
+        for (VertexId vertex_id: vertices_)
+            if (solution.vertices[vertex_id].neighbor_weight == 0)
+                add(solution, vertex_id);
         return solution;
     }
 
@@ -131,25 +131,25 @@ public:
                 switch (neighborhood) {
                 case 0: { // Add neighborhood.
                     std::shuffle(vertices_.begin(), vertices_.end(), generator);
-                    VertexId v_best = -1;
+                    VertexId vertex_id_best = -1;
                     GlobalCost c_best = global_cost(solution);
-                    for (VertexId v: vertices_) {
-                        if (v == tabu.v)
+                    for (VertexId vertex_id: vertices_) {
+                        if (vertex_id == tabu.vertex_id)
                             continue;
-                        if (contains(solution, v))
+                        if (contains(solution, vertex_id))
                             continue;
-                        GlobalCost c = cost_add(solution, v, c_best);
+                        GlobalCost c = cost_add(solution, vertex_id, c_best);
                         if (c >= c_best)
                             continue;
-                        if (v_best != -1 && !dominates(c, c_best))
+                        if (vertex_id_best != -1 && !dominates(c, c_best))
                             continue;
-                        v_best = v;
+                        vertex_id_best = vertex_id;
                         c_best = c;
                     }
-                    if (v_best != -1) {
+                    if (vertex_id_best != -1) {
                         improved = true;
                         // Apply perturbation.
-                        add(solution, v_best);
+                        add(solution, vertex_id_best);
                         if (global_cost(solution) != c_best) {
                             throw std::logic_error(
                                     "Add. Costs do not match:\n"
@@ -162,68 +162,68 @@ public:
                     std::shuffle(vertices_.begin(), vertices_.end(), generator);
                     // Get the vertices of the solution.
                     vertices_in_.clear();
-                    for (VertexId v: vertices_) {
-                        if (v == tabu.v)
+                    for (VertexId vertex_id: vertices_) {
+                        if (vertex_id == tabu.vertex_id)
                             continue;
-                        if (contains(solution, v))
-                            vertices_in_.push_back(v);
+                        if (contains(solution, vertex_id))
+                            vertices_in_.push_back(vertex_id);
                     }
 
-                    VertexId v_in_best = -1;
-                    VertexId v_out_1_best = -1;
-                    VertexId v_out_2_best = -1;
+                    VertexId vertex_id_in_best = -1;
+                    VertexId vertex_id_out_1_best = -1;
+                    VertexId vertex_id_out_2_best = -1;
                     GlobalCost c_best = global_cost(solution);
-                    for (VertexId v_in: vertices_in_) {
+                    for (VertexId vertex_id_in: vertices_in_) {
                         // Update free_vertices_
                         free_vertices_.clear();
-                        for (const VertexEdge& edge: instance_.vertex(v_in).edges)
-                            if (solution.vertices[edge.v].neighbor_weight
-                                    == instance_.vertex(v_in).weight)
-                                free_vertices_.add(edge.v);
+                        for (const VertexEdge& edge: instance_.vertex(vertex_id_in).edges)
+                            if (solution.vertices[edge.vertex_id].neighbor_weight
+                                    == instance_.vertex(vertex_id_in).weight)
+                                free_vertices_.add(edge.vertex_id);
                         if (free_vertices_.size() <= 2)
                             continue;
                         free_vertices_.shuffle_in(generator);
-                        remove(solution, v_in);
-                        for (VertexId v_out_1: free_vertices_) {
-                            assert(v_out_1 != v_in);
+                        remove(solution, vertex_id_in);
+                        for (VertexId vertex_id_out_1: free_vertices_) {
+                            assert(vertex_id_out_1 != vertex_id_in);
                             free_vertices_2_.clear();
                             for (VertexId v: free_vertices_)
                                 free_vertices_2_.add(v);
-                            free_vertices_2_.remove(v_out_1);
-                            for (const VertexEdge& edge: instance_.vertex(v_out_1).edges)
-                                if (free_vertices_2_.contains(edge.v))
-                                    free_vertices_2_.remove(edge.v);
+                            free_vertices_2_.remove(vertex_id_out_1);
+                            for (const VertexEdge& edge: instance_.vertex(vertex_id_out_1).edges)
+                                if (free_vertices_2_.contains(edge.vertex_id))
+                                    free_vertices_2_.remove(edge.vertex_id);
                             if (free_vertices_2_.empty())
                                 continue;
                             free_vertices_2_.shuffle_in(generator);
-                            assert(!contains(solution, v_out_1));
-                            add(solution, v_out_1);
-                            for (VertexId v_out_2: free_vertices_2_) {
-                                assert(v_out_2 != v_in);
-                                assert(v_out_2 != v_out_1);
-                                GlobalCost c = cost_add(solution, v_out_2, c_best);
+                            assert(!contains(solution, vertex_id_out_1));
+                            add(solution, vertex_id_out_1);
+                            for (VertexId vertex_id_out_2: free_vertices_2_) {
+                                assert(vertex_id_out_2 != vertex_id_in);
+                                assert(vertex_id_out_2 != vertex_id_out_1);
+                                GlobalCost c = cost_add(solution, vertex_id_out_2, c_best);
                                 if (c >= c_best)
                                     continue;
-                                if (v_in_best != -1 && !dominates(c, c_best))
+                                if (vertex_id_in_best != -1 && !dominates(c, c_best))
                                     continue;
-                                v_in_best = v_in;
-                                v_out_1_best = v_out_1;
-                                v_out_2_best = v_out_2;
+                                vertex_id_in_best = vertex_id_in;
+                                vertex_id_out_1_best = vertex_id_out_1;
+                                vertex_id_out_2_best = vertex_id_out_2;
                                 c_best = c;
                             }
-                            remove(solution, v_out_1);
+                            remove(solution, vertex_id_out_1);
                         }
-                        assert(!contains(solution, v_in));
-                        add(solution, v_in);
+                        assert(!contains(solution, vertex_id_in));
+                        add(solution, vertex_id_in);
                     }
-                    if (v_in_best != -1) {
+                    if (vertex_id_in_best != -1) {
                         improved = true;
                         // Apply perturbation.
-                        remove(solution, v_in_best);
-                        assert(!contains(solution, v_out_1_best));
-                        add(solution, v_out_1_best);
-                        assert(!contains(solution, v_out_2_best));
-                        add(solution, v_out_2_best);
+                        remove(solution, vertex_id_in_best);
+                        assert(!contains(solution, vertex_id_out_1_best));
+                        add(solution, vertex_id_out_1_best);
+                        assert(!contains(solution, vertex_id_out_2_best));
+                        add(solution, vertex_id_out_2_best);
                         if (global_cost(solution) != c_best) {
                             throw std::logic_error(
                                     "(2,1-swap). Costs do not match:\n"
@@ -249,9 +249,9 @@ public:
 
     struct Perturbation
     {
-        Perturbation(): v(-1) { }
+        Perturbation(): vertex_id(-1) { }
 
-        VertexId v;
+        VertexId vertex_id;
         GlobalCost global_cost;
     };
 
@@ -260,12 +260,12 @@ public:
             std::mt19937_64&)
     {
         std::vector<Perturbation> perturbations;
-        for (VertexId v: vertices_) {
-            GlobalCost c = (contains(solution, v))?
-                cost_remove(solution, v, worst<GlobalCost>()):
-                cost_add(solution, v, worst<GlobalCost>());
+        for (VertexId vertex_id: vertices_) {
+            GlobalCost c = (contains(solution, vertex_id))?
+                cost_remove(solution, vertex_id, worst<GlobalCost>()):
+                cost_add(solution, vertex_id, worst<GlobalCost>());
             Perturbation perturbation;
-            perturbation.v = v;
+            perturbation.vertex_id = vertex_id;
             perturbation.global_cost = c;
             perturbations.push_back(perturbation);
         }
@@ -277,10 +277,10 @@ public:
             const Perturbation& perturbation,
             std::mt19937_64&) const
     {
-        if (contains(solution, perturbation.v)) {
-            remove(solution, perturbation.v);
+        if (contains(solution, perturbation.vertex_id)) {
+            remove(solution, perturbation.vertex_id);
         } else {
-            add(solution, perturbation.v);
+            add(solution, perturbation.vertex_id);
         }
     }
 
@@ -313,18 +313,24 @@ public:
     CompactSolution solution2compact(const Solution& solution)
     {
         std::vector<bool> vertices(instance_.number_of_vertices(), false);
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
-            if (solution.vertices[v].in)
-                vertices[v] = true;
+        for (VertexId vertex_id = 0;
+                vertex_id < instance_.number_of_vertices();
+                ++vertex_id) {
+            if (solution.vertices[vertex_id].in)
+                vertices[vertex_id] = true;
+        }
         return vertices;
     }
 
     Solution compact2solution(const CompactSolution& compact_solution)
     {
         auto solution = empty_solution();
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
-            if (compact_solution[v])
-                add(solution, v);
+        for (VertexId vertex_id = 0;
+                vertex_id < instance_.number_of_vertices();
+                ++vertex_id) {
+            if (compact_solution[vertex_id])
+                add(solution, vertex_id);
+        }
         return solution;
     }
 
@@ -338,13 +344,13 @@ public:
                 const Perturbation& perturbation_1,
                 const Perturbation& perturbation_2) const
         {
-            return perturbation_1.v == perturbation_2.v;
+            return perturbation_1.vertex_id == perturbation_2.vertex_id;
         }
 
         inline std::size_t operator()(
                 const Perturbation& perturbation) const
         {
-            size_t hash = hasher(perturbation.v);
+            size_t hash = hasher(perturbation.vertex_id);
             return hash;
         }
     };
@@ -360,9 +366,12 @@ public:
             const Solution& solution)
     {
         os << "vertices:";
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
-            if (contains(solution, v))
-                os << " " << v;
+        for (VertexId vertex_id = 0;
+                vertex_id < instance_.number_of_vertices();
+                ++vertex_id) {
+            if (contains(solution, vertex_id))
+                os << " " << vertex_id;
+        }
         os << std::endl;
         os << "weight: " << solution.weight << std::endl;
         return os;
@@ -376,58 +385,70 @@ private:
      * Manipulate solutions.
      */
 
-    inline bool contains(const Solution& solution, VertexId v) const
+    inline bool contains(
+            const Solution& solution,
+            VertexId vertex_id) const
     {
-        return solution.vertices[v].in;
+        return solution.vertices[vertex_id].in;
     }
 
-    inline void add(Solution& solution, VertexId v) const
+    inline void add(
+            Solution& solution,
+            VertexId vertex_id) const
     {
-        assert(v >= 0);
-        assert(!contains(solution, v));
+        assert(vertex_id >= 0);
+        assert(!contains(solution, vertex_id));
 
-        Weight w = instance_.vertex(v).weight;
+        Weight weight = instance_.vertex(vertex_id).weight;
 
         // Reperturbation conflicting vertices.
-        for (const VertexEdge& edge: instance_.vertex(v).edges) {
-            if (contains(solution, edge.v))
-                remove(solution, edge.v);
-            solution.vertices[edge.v].neighbor_weight += w;
+        for (const VertexEdge& edge: instance_.vertex(vertex_id).edges) {
+            if (contains(solution, edge.vertex_id))
+                remove(solution, edge.vertex_id);
+            solution.vertices[edge.vertex_id].neighbor_weight += weight;
         }
 
-        solution.vertices[v].in = true;
-        solution.weight += w;
+        solution.vertices[vertex_id].in = true;
+        solution.weight += weight;
     }
 
-    inline void remove(Solution& solution, VertexId v) const
+    inline void remove(
+            Solution& solution,
+            VertexId vertex_id) const
     {
-        assert(v >= 0);
-        assert(contains(solution, v));
+        assert(vertex_id >= 0);
+        assert(contains(solution, vertex_id));
 
-        solution.vertices[v].in = false;
-        Weight w = instance_.vertex(v).weight;
-        solution.weight -= w;
-        for (const VertexEdge& edge: instance_.vertex(v).edges)
-            solution.vertices[edge.v].neighbor_weight -= w;
+        solution.vertices[vertex_id].in = false;
+        Weight weight = instance_.vertex(vertex_id).weight;
+        solution.weight -= weight;
+        for (const VertexEdge& edge: instance_.vertex(vertex_id).edges)
+            solution.vertices[edge.vertex_id].neighbor_weight -= weight;
     }
 
     /*
      * Evaluate perturbations.
      */
 
-    inline GlobalCost cost_remove(const Solution& solution, VertexId v, GlobalCost) const
+    inline GlobalCost cost_remove(
+            const Solution& solution,
+            VertexId vertex_id,
+            GlobalCost) const
     {
         return {
-            - (solution.weight - instance_.vertex(v).weight),
+            - (solution.weight - instance_.vertex(vertex_id).weight),
         };
     }
 
-    inline GlobalCost cost_add(const Solution& solution, VertexId v, GlobalCost) const
+    inline GlobalCost cost_add(
+            const Solution& solution,
+            VertexId vertex_id,
+            GlobalCost) const
     {
         return {
             -(solution.weight
-                    + instance_.vertex(v).weight
-                    - solution.vertices[v].neighbor_weight),
+                    + instance_.vertex(vertex_id).weight
+                    - solution.vertices[vertex_id].neighbor_weight),
         };
     }
 

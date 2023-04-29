@@ -23,17 +23,20 @@ Instance Instance::complementary()
     Instance instance(graph()->number_of_vertices());
     optimizationtools::IndexedSet neighbors(graph()->number_of_vertices());
 
-    for (VertexId v = 0; v < graph()->number_of_vertices(); ++v){
-        instance.set_weight(v, graph()->weight(v));
+    for (VertexId vertex_id = 0;
+            vertex_id < graph()->number_of_vertices();
+            ++vertex_id){
+        instance.set_weight(vertex_id, graph()->weight(vertex_id));
         neighbors.clear();
-        neighbors.add(v);
-        for (auto it = graph()->neighbors_begin(v);
-                it != graph()->neighbors_end(v); ++it) {
+        neighbors.add(vertex_id);
+        for (auto it = graph()->neighbors_begin(vertex_id);
+                it != graph()->neighbors_end(vertex_id);
+                ++it) {
             neighbors.add(*it);
         }
         for (auto it = neighbors.out_begin(); it != neighbors.out_end(); ++it)
-            if (*it > v)
-                instance.add_edge(v, *it);
+            if (*it > vertex_id)
+                instance.add_edge(vertex_id, *it);
     }
 
     return instance;
@@ -45,25 +48,27 @@ Weight Instance::update_core(
 {
     std::vector<Weight> best_values(graph()->number_of_vertices(), 0);
     std::vector<VertexId> vertex_queue;
-    for (VertexId v: relevant_vertices) {
-        best_values[v] = graph()->weight(v);
-        for (auto it = graph()->neighbors_begin(v);
-                it != graph()->neighbors_end(v); ++it) {
+    for (VertexId vertex_id: relevant_vertices) {
+        best_values[vertex_id] = graph()->weight(vertex_id);
+        for (auto it = graph()->neighbors_begin(vertex_id);
+                it != graph()->neighbors_end(vertex_id);
+                ++it) {
             if (relevant_vertices.contains(*it))
-                best_values[v] += graph()->weight(*it);
+                best_values[vertex_id] += graph()->weight(*it);
         }
-        if (best_values[v] <= weight)
-            vertex_queue.push_back(v);
+        if (best_values[vertex_id] <= weight)
+            vertex_queue.push_back(vertex_id);
     }
     while (!vertex_queue.empty()) {
-        VertexId v = vertex_queue.back();
-        relevant_vertices.remove(v);
+        VertexId vertex_id = vertex_queue.back();
+        relevant_vertices.remove(vertex_id);
         vertex_queue.pop_back();
-        for (auto it = graph()->neighbors_begin(v);
-                it != graph()->neighbors_end(v); ++it) {
+        for (auto it = graph()->neighbors_begin(vertex_id);
+                it != graph()->neighbors_end(vertex_id);
+                ++it) {
             if (best_values[*it] <= weight)
                 continue;
-            best_values[*it] -= graph()->weight(v);
+            best_values[*it] -= graph()->weight(vertex_id);
             if (best_values[*it] <= weight)
                 vertex_queue.push_back(*it);
         }

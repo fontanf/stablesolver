@@ -45,7 +45,7 @@ public:
     inline Weight weight(ComponentId c) const { return component_weights_[c]; }
 
     /** Return 'true' iff vertex v is in the solution. */
-    inline int8_t contains(VertexId v) const { return vertices_.contains(v); }
+    inline int8_t contains(VertexId vertex_id) const { return vertices_.contains(vertex_id); }
 
     /** Return the number of ends of edge e in the solution. */
     inline int8_t covers(EdgeId e);
@@ -108,14 +108,14 @@ private:
 
 int8_t Solution::covers(EdgeId e)
 {
-    if (contains(instance().edge(e).v1)) {
-        if (contains(instance().edge(e).v2)) {
+    if (contains(instance().edge(e).vertex_id_1)) {
+        if (contains(instance().edge(e).vertex_id_2)) {
             return 2;
         } else {
             return 1;
         }
     } else {
-        if (contains(instance().edge(e).v2)) {
+        if (contains(instance().edge(e).vertex_id_2)) {
             return 1;
         } else {
             return 0;
@@ -123,48 +123,48 @@ int8_t Solution::covers(EdgeId e)
     }
 }
 
-void Solution::add(VertexId v)
+void Solution::add(VertexId vertex_id)
 {
     // Checks.
-    instance().check_vertex_index(v);
-    if (contains(v)) {
+    instance().check_vertex_index(vertex_id);
+    if (contains(vertex_id)) {
         throw std::invalid_argument(
-                "Cannot add vertex " + std::to_string(v)
+                "Cannot add vertex " + std::to_string(vertex_id)
                 + " which is already in the solution.");
     }
 
-    ComponentId c = instance().vertex(v).component;
-    for (const auto& edge: instance().vertex(v).edges) {
-        if (covers(edge.e) == 1) {
+    ComponentId c = instance().vertex(vertex_id).component;
+    for (const auto& edge: instance().vertex(vertex_id).edges) {
+        if (covers(edge.edge_id) == 1) {
             component_number_of_conflictss_[c]++;
-            conflicts_.insert(edge.e);
+            conflicts_.insert(edge.edge_id);
         }
     }
-    weight_ += instance().vertex(v).weight;
-    component_weights_[c] += instance().vertex(v).weight;
-    vertices_.add(v);
+    weight_ += instance().vertex(vertex_id).weight;
+    component_weights_[c] += instance().vertex(vertex_id).weight;
+    vertices_.add(vertex_id);
 }
 
-void Solution::remove(VertexId v)
+void Solution::remove(VertexId vertex_id)
 {
     // Checks.
-    instance().check_vertex_index(v);
-    if (!contains(v)) {
+    instance().check_vertex_index(vertex_id);
+    if (!contains(vertex_id)) {
         throw std::invalid_argument(
-                "Cannot remove vertex " + std::to_string(v)
+                "Cannot remove vertex " + std::to_string(vertex_id)
                 + " which is not in the solution.");
     }
 
-    ComponentId c = instance().vertex(v).component;
-    for (const auto& edge: instance().vertex(v).edges) {
-        if (covers(edge.e) == 2) {
+    ComponentId c = instance().vertex(vertex_id).component;
+    for (const auto& edge: instance().vertex(vertex_id).edges) {
+        if (covers(edge.edge_id) == 2) {
             component_number_of_conflictss_[c]--;
-            conflicts_.erase(edge.e);
+            conflicts_.erase(edge.edge_id);
         }
     }
-    weight_ -= instance().vertex(v).weight;
-    component_weights_[c] -= instance().vertex(v).weight;
-    vertices_.remove(v);
+    weight_ -= instance().vertex(vertex_id).weight;
+    component_weights_[c] -= instance().vertex(vertex_id).weight;
+    vertices_.remove(vertex_id);
 }
 
 std::ostream& operator<<(std::ostream& os, const Solution& solution);

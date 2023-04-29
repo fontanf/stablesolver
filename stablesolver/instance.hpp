@@ -27,10 +27,10 @@ class Solution;
 struct VertexEdge
 {
     /** Id of the edge. */
-    EdgeId e;
+    EdgeId edge_id;
 
     /** Id of the neighbor. */
-    VertexId v;
+    VertexId vertex_id;
 };
 
 /**
@@ -38,9 +38,6 @@ struct VertexEdge
  */
 struct Vertex
 {
-    /** Unique id of the vertex. */
-    VertexId id;
-
     /** Weight of the vertex. */
     Weight weight = 1;
 
@@ -56,14 +53,11 @@ struct Vertex
  */
 struct Edge
 {
-    /** Unique id of the edge. */
-    EdgeId id;
-
     /** Id of the first end of the edge. */
-    VertexId v1;
+    VertexId vertex_id_1;
 
     /** Id of the second end of the edge. */
-    VertexId v2;
+    VertexId vertex_id_2;
 
     /** Id of the connected component of the edge. */
     ComponentId component = -1;
@@ -138,10 +132,10 @@ public:
     void add_vertex(Weight weight = 1);
 
     /** Set the weight of vertex 'v' to 'weight'. */
-    void set_weight(VertexId v, Weight weight);
+    void set_weight(VertexId vertex_id, Weight weight);
 
-    /** Add an edge between vertex 'v1' and vertex 'v2'. */
-    void add_edge(VertexId v1, VertexId v2, int check_duplicate = 0);
+    /** Add an edge between vertex 'vertex_id_1' and vertex 'vertex_id_2'. */
+    void add_edge(VertexId vertex_id_1, VertexId vertex_id_2, int check_duplicate = 0);
 
     /** Set the weight of all vertices to 1. */
     void set_unweighted();

@@ -32,10 +32,16 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
         Solution solution(instance);
         IloNumArray val(x.getEnv());
         getIncumbentValues(val, x);
-        for (VertexId v = 0; v < instance.graph()->number_of_vertices(); ++v)
-            if (val[v] > 0.5)
-                solution.add(v);
-        output.update_solution(solution, std::stringstream(""), parameters.info);
+        for (VertexId vertex_id = 0;
+                vertex_id < instance.graph()->number_of_vertices();
+                ++vertex_id) {
+            if (val[vertex_id] > 0.5)
+                solution.add(vertex_id);
+        }
+        output.update_solution(
+                solution,
+                std::stringstream(""),
+                parameters.info);
     }
 }
 
@@ -65,8 +71,8 @@ MilpCplexOutput cliquesolver::milp_cplex(
     // Objective
     {
         IloExpr expr(env);
-        for (VertexId v = 0; v < n; ++v)
-            expr += graph->weight(v) * x[v];
+        for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id)
+            expr += graph->weight(vertex_id) * x[vertex_id];
         IloObjective obj = IloMaximize(env, expr);
         model.add(obj);
     }
@@ -76,21 +82,22 @@ MilpCplexOutput cliquesolver::milp_cplex(
     // Linking constraints between x and z.
     {
         IloExpr expr(env);
-        for (VertexId v = 0; v < n; ++v)
-            expr += x[v];
+        for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id)
+            expr += x[vertex_id];
         model.add(z == expr);
     }
 
     // Conflict constraints.
-    for (VertexId v = 0; v < n; ++v) {
-        VertexId m = n - graph->degree(v) + 1;
+    for (VertexId vertex_id = 0; vertex_id < n; ++vertex_id) {
+        VertexId m = n - graph->degree(vertex_id) + 1;
         IloExpr expr(env);
         expr += z;
-        for (auto it = graph->neighbors_begin(v);
-                it != graph->neighbors_end(v); ++it) {
+        for (auto it = graph->neighbors_begin(vertex_id);
+                it != graph->neighbors_end(vertex_id);
+                ++it) {
             expr -= x[*it];
         }
-        model.add(expr <= m + 1 - m * x[v]);
+        model.add(expr <= m + 1 - m * x[vertex_id]);
     }
 
     IloCplex cplex(model);
@@ -117,25 +124,46 @@ MilpCplexOutput cliquesolver::milp_cplex(
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < graph->number_of_vertices(); ++v)
-                if (cplex.getValue(x[v]) > 0.5)
-                    solution.add(v);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph->number_of_vertices();
+                    ++vertex_id) {
+                if (cplex.getValue(x[vertex_id]) > 0.5)
+                    solution.add(vertex_id);
+            }
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
-        output.update_upper_bound(output.solution.weight(), std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                output.solution.weight(),
+                std::stringstream(""),
+                parameters.info);
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < graph->number_of_vertices(); ++v)
-                if (cplex.getValue(x[v]) > 0.5)
-                    solution.add(v);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            for (VertexId vertex_id = 0;
+                    vertex_id < graph->number_of_vertices();
+                    ++vertex_id) {
+                if (cplex.getValue(x[vertex_id]) > 0.5)
+                    solution.add(vertex_id);
+            }
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                ub,
+                std::stringstream(""),
+                parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                ub,
+                std::stringstream(""),
+                parameters.info);
     }
 
     env.end();

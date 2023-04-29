@@ -66,14 +66,20 @@ MilpCplexOutput stablesolver::milp_1_cplex(
 
     // Objective
     IloExpr expr(env);
-    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-        expr += instance.vertex(v).weight * x[v];
+    for (VertexId vertex_id = 0;
+            vertex_id < instance.number_of_vertices();
+            ++vertex_id) {
+        expr += instance.vertex(vertex_id).weight * x[vertex_id];
+    }
     IloObjective obj = IloMaximize(env, expr);
     model.add(obj);
 
     // Constraints
-    for (EdgeId e = 0; e < instance.number_of_edges(); ++e)
-        model.add(x[instance.edge(e).v1] + x[instance.edge(e).v2] <= 1);
+    for (EdgeId edge_id = 0; edge_id < instance.number_of_edges(); ++edge_id) {
+        model.add(x[
+                instance.edge(edge_id).vertex_id_1]
+                + x[instance.edge(edge_id).vertex_id_2] <= 1);
+    }
 
     IloCplex cplex(model);
 
@@ -99,25 +105,45 @@ MilpCplexOutput stablesolver::milp_1_cplex(
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-                if (cplex.getValue(x[v]) > 0.5)
-                    solution.add(v);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            for (VertexId vertex_id = 0;
+                    vertex_id < instance.number_of_vertices();
+                    ++vertex_id)
+                if (cplex.getValue(x[vertex_id]) > 0.5)
+                    solution.add(vertex_id);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
-        output.update_upper_bound(output.solution.weight(), std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                output.solution.weight(),
+                std::stringstream(""),
+                parameters.info);
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-                if (cplex.getValue(x[v]) > 0.5)
-                    solution.add(v);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            for (VertexId vertex_id = 0;
+                    vertex_id < instance.number_of_vertices();
+                    ++vertex_id) {
+                if (cplex.getValue(x[vertex_id]) > 0.5)
+                    solution.add(vertex_id);
+            }
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                ub,
+                std::stringstream(""),
+                parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                ub,
+                std::stringstream(""),
+                parameters.info);
     }
 
     env.end();
@@ -150,18 +176,23 @@ MilpCplexOutput stablesolver::milp_2_cplex(
 
     // Objective
     IloExpr expr(env);
-    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-        expr += instance.vertex(v).weight * x[v];
+    for (VertexId vertex_id = 0;
+            vertex_id < instance.number_of_vertices();
+            ++vertex_id) {
+        expr += instance.vertex(vertex_id).weight * x[vertex_id];
+    }
     IloObjective obj = IloMaximize(env, expr);
     model.add(obj);
 
     // Constraints
-    for (VertexId v = 0; v < instance.number_of_vertices(); ++v) {
+    for (VertexId vertex_id = 0;
+            vertex_id < instance.number_of_vertices();
+            ++vertex_id) {
         IloExpr expr(env);
-        expr += instance.degree(v) * x[v];
-        for (const auto& edge: instance.vertex(v).edges)
-            expr += x[edge.v];
-        model.add(expr <= instance.degree(v));
+        expr += instance.degree(vertex_id) * x[vertex_id];
+        for (const auto& edge: instance.vertex(vertex_id).edges)
+            expr += x[edge.vertex_id];
+        model.add(expr <= instance.degree(vertex_id));
     }
 
     IloCplex cplex(model);
@@ -188,25 +219,45 @@ MilpCplexOutput stablesolver::milp_2_cplex(
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-                if (cplex.getValue(x[v]) > 0.5)
-                    solution.add(v);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            for (VertexId vertex_id = 0;
+                    vertex_id < instance.number_of_vertices();
+                    ++vertex_id)
+                if (cplex.getValue(x[vertex_id]) > 0.5)
+                    solution.add(vertex_id);
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
-        output.update_upper_bound(output.solution.weight(), std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                output.solution.weight(),
+                std::stringstream(""),
+                parameters.info);
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-                if (cplex.getValue(x[v]) > 0.5)
-                    solution.add(v);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            for (VertexId vertex_id = 0;
+                    vertex_id < instance.number_of_vertices();
+                    ++vertex_id) {
+                if (cplex.getValue(x[vertex_id]) > 0.5)
+                    solution.add(vertex_id);
+            }
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                ub,
+                std::stringstream(""),
+                parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                ub,
+                std::stringstream(""),
+                parameters.info);
     }
 
     env.end();
@@ -239,8 +290,11 @@ MilpCplexOutput stablesolver::milp_3_cplex(
 
     // Objective
     IloExpr expr(env);
-    for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-        expr += instance.vertex(v).weight * x[v];
+    for (VertexId vertex_id = 0;
+            vertex_id < instance.number_of_vertices();
+            ++vertex_id) {
+        expr += instance.vertex(vertex_id).weight * x[vertex_id];
+    }
     IloObjective obj = IloMaximize(env, expr);
     model.add(obj);
 
@@ -253,25 +307,26 @@ MilpCplexOutput stablesolver::milp_3_cplex(
         if (edge_set.contains(e))
             continue;
         // Compute vertices
-        VertexId v1 = instance.edge(e).v1;
-        VertexId v2 = instance.edge(e).v2;
+        VertexId vertex_id_1 = instance.edge(e).vertex_id_1;
+        VertexId vertex_id_2 = instance.edge(e).vertex_id_2;
         vertex_set_1.clear();
         vertex_set_2.clear();
-        for (const auto& edge: instance.vertex(v1).edges)
-            if (edge.v != v2)
-                vertex_set_1.add(edge.v);
-        for (const auto& edge: instance.vertex(v2).edges)
-            if (vertex_set_1.contains(edge.v))
-                vertex_set_2.add(edge.v);
+        for (const auto& edge: instance.vertex(vertex_id_1).edges)
+            if (edge.vertex_id != vertex_id_2)
+                vertex_set_1.add(edge.vertex_id);
+        for (const auto& edge: instance.vertex(vertex_id_2).edges)
+            if (vertex_set_1.contains(edge.vertex_id))
+                vertex_set_2.add(edge.vertex_id);
         cliquesolver::Instance instance_clique(vertex_set_2.size());
         // Add edges
         for (auto it = vertex_set_2.begin(); it != vertex_set_2.end(); ++it) {
             for (const auto& edge: instance.vertex(*it).edges) {
-                if (edge.v > *it && vertex_set_2.contains(edge.v)) {
-                    edge_indices[instance_clique.adjacency_list_graph()->number_of_edges()] = edge.e;
+                if (edge.vertex_id > *it
+                        && vertex_set_2.contains(edge.vertex_id)) {
+                    edge_indices[instance_clique.adjacency_list_graph()->number_of_edges()] = edge.edge_id;
                     instance_clique.add_edge(
                             vertex_set_2.position(*it),
-                            vertex_set_2.position(v2));
+                            vertex_set_2.position(vertex_id_2));
                 }
             }
         }
@@ -279,22 +334,22 @@ MilpCplexOutput stablesolver::milp_3_cplex(
         auto output_clique = cliquesolver::greedy_gwmin(instance_clique);
         // Build constraint
         IloExpr expr(env);
-        expr += x[v1] + x[v2];
-        for (const auto& edge: instance.vertex(v1).edges)
-            if (vertex_set_2.contains(edge.v)
-                    && output_clique.solution.contains(vertex_set_2.position(edge.v)))
-                edge_set.add(edge.e);
-        for (const auto& edge: instance.vertex(v2).edges)
-            if (vertex_set_2.contains(edge.v)
-                    && output_clique.solution.contains(vertex_set_2.position(edge.v)))
-                edge_set.add(edge.e);
-        for (VertexId v_clique: output_clique.solution.vertices()) {
-            VertexId v_orig = *(vertex_set_2.begin() + v_clique);
-            expr += x[v_orig];
-            for (const auto& edge: instance_clique.adjacency_list_graph()->edges(v_orig)) {
-                if (output_clique.solution.contains(edge.v)
-                        && edge.v > v_clique)
-                    edge_set.add(edge_indices[edge.e]);
+        expr += x[vertex_id_1] + x[vertex_id_2];
+        for (const auto& edge: instance.vertex(vertex_id_1).edges)
+            if (vertex_set_2.contains(edge.vertex_id)
+                    && output_clique.solution.contains(vertex_set_2.position(edge.vertex_id)))
+                edge_set.add(edge.edge_id);
+        for (const auto& edge: instance.vertex(vertex_id_2).edges)
+            if (vertex_set_2.contains(edge.vertex_id)
+                    && output_clique.solution.contains(vertex_set_2.position(edge.vertex_id)))
+                edge_set.add(edge.edge_id);
+        for (VertexId vertex_id_clique: output_clique.solution.vertices()) {
+            VertexId vertex_id_orig = *(vertex_set_2.begin() + vertex_id_clique);
+            expr += x[vertex_id_orig];
+            for (const auto& edge: instance_clique.adjacency_list_graph()->edges(vertex_id_orig)) {
+                if (output_clique.solution.contains(edge.vertex_id)
+                        && edge.vertex_id > vertex_id_clique)
+                    edge_set.add(edge_indices[edge.edge_id]);
             }
         }
         model.add(expr <= 1);
@@ -324,25 +379,46 @@ MilpCplexOutput stablesolver::milp_3_cplex(
     } else if (cplex.getStatus() == IloAlgorithm::Optimal) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-                if (cplex.getValue(x[v]) > 0.5)
-                    solution.add(v);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            for (VertexId vertex_id = 0;
+                    vertex_id < instance.number_of_vertices();
+                    ++vertex_id) {
+                if (cplex.getValue(x[vertex_id]) > 0.5)
+                    solution.add(vertex_id);
+            }
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
-        output.update_upper_bound(output.solution.weight(), std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                output.solution.weight(),
+                std::stringstream(""),
+                parameters.info);
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
-            for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
-                if (cplex.getValue(x[v]) > 0.5)
-                    solution.add(v);
-            output.update_solution(solution, std::stringstream(""), parameters.info);
+            for (VertexId vertex_id = 0;
+                    vertex_id < instance.number_of_vertices();
+                    ++vertex_id) {
+                if (cplex.getValue(x[vertex_id]) > 0.5)
+                    solution.add(vertex_id);
+            }
+            output.update_solution(
+                    solution,
+                    std::stringstream(""),
+                    parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                ub,
+                std::stringstream(""),
+                parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_upper_bound(
+                ub,
+                std::stringstream(""),
+                parameters.info);
     }
 
     env.end();

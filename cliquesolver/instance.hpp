@@ -23,7 +23,7 @@ class Instance
 public:
 
     /*
-     * Constructors and destructor.
+     * Constructors and destructor
      */
 
     /** Create an instance from a file. */
@@ -36,10 +36,20 @@ public:
     VertexId add_vertex(Weight weight = 1) { return adjacency_list_graph_->add_vertex(weight); }
 
     /** Set the weight of vertex 'v' to 'weight'. */
-    void set_weight(VertexId v, Weight weight) { return adjacency_list_graph_->set_weight(v, weight); }
+    void set_weight(
+            VertexId vertex_id,
+            Weight weight)
+    {
+        return adjacency_list_graph_->set_weight(vertex_id, weight);
+    }
 
-    /** Add an edge between vertex 'v1' and vertex 'v2'. */
-    void add_edge(VertexId v1, VertexId v2) { adjacency_list_graph_->add_edge(v1, v2); }
+    /** Add an edge between vertex 'vertex_id_1' and vertex 'vertex_id_2'. */
+    void add_edge(
+            VertexId vertex_id_1,
+            VertexId vertex_id_2)
+    {
+        adjacency_list_graph_->add_edge(vertex_id_1, vertex_id_2);
+    }
 
     /** Set the weight of all vertices to 1. */
     void set_unweighted() { adjacency_list_graph_->set_unweighted(); }

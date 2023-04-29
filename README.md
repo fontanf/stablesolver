@@ -101,7 +101,7 @@ Number of iterations:  3000
 ```
 
 ```shell
-./bazel-bin/stablesolver/main -v 1 -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 --reduce -a "localsearch_rowweighting_1 --iterations 300000" 
+./bazel-bin/stablesolver/main -v 1 -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 --reduce -a "localsearch_rowweighting_1 --iterations 300000"
 ```
 ```
 =====================================

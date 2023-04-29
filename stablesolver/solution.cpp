@@ -35,23 +35,28 @@ Solution::Solution(
 void Solution::update(const Solution& solution)
 {
     if (instance().reduced_instance() == solution.instance_) {
-        for (VertexId v = 0; v < instance().number_of_vertices(); ++v)
-            if (contains(v))
-                remove(v);
-        for (VertexId v: instance().mandatory_vertices()) {
-            //std::cout << "mandatory " << v << std::endl;
-            add(v);
+        for (VertexId vertex_id = 0;
+                vertex_id < instance().number_of_vertices();
+                ++vertex_id) {
+            if (contains(vertex_id))
+                remove(vertex_id);
         }
-        for (VertexId v = 0; v < instance().reduced_instance()->number_of_vertices(); ++v) {
-            if (solution.contains(v)) {
-                for (VertexId v2: instance().unreduction_operations(v).in) {
-                    //std::cout << "+" << v << " => " << v2 << std::endl;
-                    add(v2);
+        for (VertexId vertex_id: instance().mandatory_vertices()) {
+            //std::cout << "mandatory " << vertex_id << std::endl;
+            add(vertex_id);
+        }
+        for (VertexId vertex_id = 0;
+                vertex_id < instance().reduced_instance()->number_of_vertices();
+                ++vertex_id) {
+            if (solution.contains(vertex_id)) {
+                for (VertexId vertex_id_2: instance().unreduction_operations(vertex_id).in) {
+                    //std::cout << "+" << v << " => " << vertex_id_2 << std::endl;
+                    add(vertex_id_2);
                 }
             } else {
-                for (VertexId v2: instance().unreduction_operations(v).out) {
-                    //std::cout << "-" << v << " => " << v2 << std::endl;
-                    add(v2);
+                for (VertexId vertex_id_2: instance().unreduction_operations(vertex_id).out) {
+                    //std::cout << "-" << v << " => " << vertex_id_2 << std::endl;
+                    add(vertex_id_2);
                 }
             }
         }
@@ -81,8 +86,8 @@ void Solution::write(std::string certificate_path)
     }
 
     //cert << number_of_vertices() << std::endl;
-    for (VertexId v: vertices())
-        file << v << " ";
+    for (VertexId vertex_id: vertices())
+        file << vertex_id << " ";
     file.close();
 }
 
@@ -109,8 +114,8 @@ std::ostream& stablesolver::operator<<(std::ostream& os, const Solution& solutio
     os << "n " << solution.number_of_vertices()
         << " w " << solution.weight()
         << std::endl;
-    for (VertexId v: solution.vertices())
-        os << v << " ";
+    for (VertexId vertex_id: solution.vertices())
+        os << vertex_id << " ";
     return os;
 }
 

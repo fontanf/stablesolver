@@ -21,26 +21,29 @@ Output cliquesolver::greedy_gwmin(
     Solution solution(instance);
 
     std::vector<double> vertices_values(graph->number_of_vertices(), 0);
-    for (VertexId v = 0; v < graph->number_of_vertices(); ++v) {
-        vertices_values[v] = (double)graph->weight(v)
-            / (graph->number_of_vertices() - 1 - graph->degree(v) + 1);
+    for (VertexId vertex_id = 0;
+            vertex_id < graph->number_of_vertices();
+            ++vertex_id) {
+        vertices_values[vertex_id] = (double)graph->weight(vertex_id)
+            / (graph->number_of_vertices() - 1 - graph->degree(vertex_id) + 1);
     }
 
     std::vector<VertexId> sorted_vertices(graph->number_of_vertices(), 0);
     std::iota(sorted_vertices.begin(), sorted_vertices.end(), 0);
     std::sort(sorted_vertices.begin(), sorted_vertices.end(),
-            [&vertices_values](VertexId v1, VertexId v2) -> bool
+            [&vertices_values](VertexId vertex_id_1, VertexId vertex_id_2) -> bool
         {
-            return vertices_values[v1] > vertices_values[v2];
+            return vertices_values[vertex_id_1] > vertices_values[vertex_id_2];
         });
 
     std::vector<VertexPos> available_vertices(graph->number_of_vertices(), 0);
-    for (VertexId v: sorted_vertices) {
-        if (available_vertices[v] < solution.number_of_vertices())
+    for (VertexId vertex_id: sorted_vertices) {
+        if (available_vertices[vertex_id] < solution.number_of_vertices())
             continue;
-        solution.add(v);
-        for (auto it = graph->neighbors_begin(v);
-                it != graph->neighbors_end(v); ++it) {
+        solution.add(vertex_id);
+        for (auto it = graph->neighbors_begin(vertex_id);
+                it != graph->neighbors_end(vertex_id);
+                ++it) {
             available_vertices[*it]++;
         }
     }
@@ -66,28 +69,33 @@ Output cliquesolver::greedy_strong(
 
     optimizationtools::DoublyIndexedMap candidates(
             graph->number_of_vertices(), graph->number_of_vertices());
-    for (VertexId v = 0; v < graph->number_of_vertices(); ++v)
-        candidates.set(v, 0);
+    for (VertexId vertex_id = 0;
+            vertex_id < graph->number_of_vertices();
+            ++vertex_id)
+        candidates.set(vertex_id, 0);
     while (candidates.number_of_elements(solution.number_of_vertices()) > 0) {
-        VertexId v_best = -1;
+        VertexId vertex_id_best = -1;
         VertexPos score_best = -1;
         for (auto it_v = candidates.begin(solution.number_of_vertices());
-                it_v != candidates.end(solution.number_of_vertices()); ++it_v) {
-            VertexId v = *it_v;
+                it_v != candidates.end(solution.number_of_vertices());
+                ++it_v) {
+            VertexId vertex_id = *it_v;
             VertexPos score = 0;
-            for (auto it = graph->neighbors_begin(v);
-                    it != graph->neighbors_end(v); ++it) {
+            for (auto it = graph->neighbors_begin(vertex_id);
+                    it != graph->neighbors_end(vertex_id);
+                    ++it) {
                 if (candidates.contains(*it))
                     score += graph->weight(*it);
             }
-            if (v_best == -1 || score_best < score) {
-                v_best = v;
+            if (vertex_id_best == -1 || score_best < score) {
+                vertex_id_best = vertex_id;
                 score_best = score;
             }
         }
-        solution.add(v_best);
-        for (auto it = graph->neighbors_begin(v_best);
-                it != graph->neighbors_end(v_best); ++it) {
+        solution.add(vertex_id_best);
+        for (auto it = graph->neighbors_begin(vertex_id_best);
+                it != graph->neighbors_end(vertex_id_best);
+                ++it) {
             candidates.set(*it, candidates[*it] + 1);
         }
     }

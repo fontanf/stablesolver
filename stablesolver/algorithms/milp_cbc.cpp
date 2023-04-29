@@ -89,10 +89,16 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
             || output_.solution.weight() < -solver->getObjValue()) {
         const double *solution_cbc = solver->getColSolution();
         Solution solution(instance_);
-        for (VertexId v = 0; v < instance_.number_of_vertices(); ++v)
-            if (solution_cbc[v] > 0.5)
-                solution.add(v);
-        output_.update_solution(solution, std::stringstream(""), parameters_.info);
+        for (VertexId vertex_id = 0;
+                vertex_id < instance_.number_of_vertices();
+                ++vertex_id) {
+            if (solution_cbc[vertex_id] > 0.5)
+                solution.add(vertex_id);
+        }
+        output_.update_solution(
+                solution,
+                std::stringstream(""),
+                parameters_.info);
     }
 
     return noAction;
@@ -141,8 +147,8 @@ MilpCbcOutput stablesolver::milp_1_cbc(
         row_starts.push_back(elements.size());
         number_of_elements_in_rows.push_back(0);
         number_of_rows++;
-        element_columns.push_back(instance.edge(e).v1);
-        element_columns.push_back(instance.edge(e).v2);
+        element_columns.push_back(instance.edge(e).vertex_id_1);
+        element_columns.push_back(instance.edge(e).vertex_id_2);
         elements.push_back(1);
         elements.push_back(1);
         number_of_elements_in_rows.back()++;
