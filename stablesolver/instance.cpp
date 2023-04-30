@@ -417,55 +417,55 @@ bool Instance::reduce_pendant_vertices()
     if (fixed_vertices.number_of_elements() == 0)
         return false;
 
-    UnreductionInfo unreduction_info_new;
-    unreduction_info_new.original_instance = unreduction_info_.original_instance;
+    UnreductionInfo new_unreduction_info;
+    new_unreduction_info.original_instance = unreduction_info_.original_instance;
 
     // Update mandatory_vertices.
-    unreduction_info_new.mandatory_vertices = unreduction_info_.mandatory_vertices;
+    new_unreduction_info.mandatory_vertices = unreduction_info_.mandatory_vertices;
     for (auto it = fixed_vertices.begin(1); it != fixed_vertices.end(1); ++it) {
         VertexId vertex_id = *it;
-        for (VertexId vertex_id_2: unreduction_info_.unreduction_operations[vertex_id].in) {
-            unreduction_info_new.mandatory_vertices.push_back(vertex_id_2);
+        for (VertexId orig_vertex_id: unreduction_info_.unreduction_operations[vertex_id].in) {
+            new_unreduction_info.mandatory_vertices.push_back(orig_vertex_id);
         }
     }
     for (auto it = fixed_vertices.begin(0); it != fixed_vertices.end(0); ++it) {
         VertexId vertex_id = *it;
-        for (VertexId vertex_id_2: unreduction_info_.unreduction_operations[vertex_id].out) {
-            unreduction_info_new.mandatory_vertices.push_back(vertex_id_2);
+        for (VertexId orig_vertex_id: unreduction_info_.unreduction_operations[vertex_id].out) {
+            new_unreduction_info.mandatory_vertices.push_back(orig_vertex_id);
         }
     }
     // Create new instance and compute unreduction_operations.
-    VertexId n = number_of_vertices() - fixed_vertices.number_of_elements();
-    Instance instance_new(n);
-    unreduction_info_new.unreduction_operations = std::vector<UnreductionOperations>(n);
+    VertexId new_number_of_vertices = number_of_vertices() - fixed_vertices.number_of_elements();
+    Instance new_instance(new_number_of_vertices);
+    new_unreduction_info.unreduction_operations = std::vector<UnreductionOperations>(new_number_of_vertices);
     // Add vertices.
     std::vector<VertexId> original2reduced(number_of_vertices(), -1);
-    VertexId vertex_id_new = 0;
+    VertexId new_vertex_id = 0;
     for (auto it = fixed_vertices.out_begin(); it != fixed_vertices.out_end(); ++it) {
         VertexId vertex_id = *it;
-        original2reduced[vertex_id] = vertex_id_new;
-        instance_new.set_weight(vertex_id_new, vertex(vertex_id).weight);
-        unreduction_info_new.unreduction_operations[vertex_id_new]
+        original2reduced[vertex_id] = new_vertex_id;
+        new_instance.set_weight(new_vertex_id, vertex(vertex_id).weight);
+        new_unreduction_info.unreduction_operations[new_vertex_id]
             = unreduction_info_.unreduction_operations[vertex_id];
-        vertex_id_new++;
+        new_vertex_id++;
     }
     // Add edges.
     for (EdgeId edge_id = 0; edge_id < number_of_edges(); ++edge_id) {
         VertexId vertex_id_1 = edge(edge_id).vertex_id_1;
         VertexId vertex_id_2 = edge(edge_id).vertex_id_2;
-        VertexId vertex_id_1_new = original2reduced[vertex_id_1];
-        VertexId vertex_id_2_new = original2reduced[vertex_id_2];
-        if (vertex_id_1_new != -1 && vertex_id_2_new != -1) {
-            instance_new.add_edge(
-                    vertex_id_1_new,
-                    vertex_id_2_new,
+        VertexId new_vertex_id_1 = original2reduced[vertex_id_1];
+        VertexId new_vertex_id_2 = original2reduced[vertex_id_2];
+        if (new_vertex_id_1 != -1 && new_vertex_id_2 != -1) {
+            new_instance.add_edge(
+                    new_vertex_id_1,
+                    new_vertex_id_2,
                     0);
         }
     }
 
-    instance_new.unreduction_info_ = unreduction_info_new;
-    instance_new.compute_components();
-    *this = instance_new;
+    new_instance.unreduction_info_ = new_unreduction_info;
+    new_instance.compute_components();
+    *this = new_instance;
     return true;
 }
 
@@ -514,52 +514,52 @@ bool Instance::reduce_isolated_vertex_removal()
     if (fixed_vertices.number_of_elements() == 0)
         return false;
 
-    UnreductionInfo unreduction_info_new;
-    unreduction_info_new.original_instance = unreduction_info_.original_instance;
+    UnreductionInfo new_unreduction_info;
+    new_unreduction_info.original_instance = unreduction_info_.original_instance;
 
     // Update mandatory_vertices.
-    unreduction_info_new.mandatory_vertices = unreduction_info_.mandatory_vertices;
+    new_unreduction_info.mandatory_vertices = unreduction_info_.mandatory_vertices;
     for (auto it = fixed_vertices.begin(1); it != fixed_vertices.end(1); ++it) {
         VertexId vertex_id = *it;
-        for (VertexId vertex_id_2: unreduction_info_.unreduction_operations[vertex_id].in) {
-            unreduction_info_new.mandatory_vertices.push_back(vertex_id_2);
+        for (VertexId orig_vertex_id: unreduction_info_.unreduction_operations[vertex_id].in) {
+            new_unreduction_info.mandatory_vertices.push_back(orig_vertex_id);
         }
     }
     for (auto it = fixed_vertices.begin(0); it != fixed_vertices.end(0); ++it) {
         VertexId vertex_id = *it;
-        for (VertexId vertex_id_2: unreduction_info_.unreduction_operations[vertex_id].out) {
-            unreduction_info_new.mandatory_vertices.push_back(vertex_id_2);
+        for (VertexId orig_vertex_id: unreduction_info_.unreduction_operations[vertex_id].out) {
+            new_unreduction_info.mandatory_vertices.push_back(orig_vertex_id);
         }
     }
     // Create new instance and compute unreduction_operations.
-    VertexId n = number_of_vertices() - fixed_vertices.number_of_elements();
-    Instance instance_new(n);
-    unreduction_info_new.unreduction_operations = std::vector<UnreductionOperations>(n);
+    VertexId new_number_of_vertices = number_of_vertices() - fixed_vertices.number_of_elements();
+    Instance new_instance(new_number_of_vertices);
+    new_unreduction_info.unreduction_operations = std::vector<UnreductionOperations>(new_number_of_vertices);
     // Add vertices.
     std::vector<VertexId> original2reduced(number_of_vertices(), -1);
-    VertexId vertex_id_new = 0;
+    VertexId new_vertex_id = 0;
     for (auto it = fixed_vertices.out_begin(); it != fixed_vertices.out_end(); ++it) {
         VertexId vertex_id = *it;
-        original2reduced[vertex_id] = vertex_id_new;
-        instance_new.set_weight(vertex_id_new, vertex(vertex_id).weight);
-        unreduction_info_new.unreduction_operations[vertex_id_new]
+        original2reduced[vertex_id] = new_vertex_id;
+        new_instance.set_weight(new_vertex_id, vertex(vertex_id).weight);
+        new_unreduction_info.unreduction_operations[new_vertex_id]
             = unreduction_info_.unreduction_operations[vertex_id];
-        vertex_id_new++;
+        new_vertex_id++;
     }
     // Add edges.
     for (EdgeId edge_id = 0; edge_id < number_of_edges(); ++edge_id) {
         VertexId vertex_id_1 = edge(edge_id).vertex_id_1;
         VertexId vertex_id_2 = edge(edge_id).vertex_id_2;
-        VertexId vertex_id_1_new = original2reduced[vertex_id_1];
-        VertexId vertex_id_2_new = original2reduced[vertex_id_2];
-        if (vertex_id_1_new != -1 && vertex_id_2_new != -1) {
-            instance_new.add_edge(vertex_id_1_new, vertex_id_2_new, 0);
+        VertexId new_vertex_id_1 = original2reduced[vertex_id_1];
+        VertexId new_vertex_id_2 = original2reduced[vertex_id_2];
+        if (new_vertex_id_1 != -1 && new_vertex_id_2 != -1) {
+            new_instance.add_edge(new_vertex_id_1, new_vertex_id_2, 0);
         }
     }
 
-    instance_new.unreduction_info_ = unreduction_info_new;
-    instance_new.compute_components();
-    *this = instance_new;
+    new_instance.unreduction_info_ = new_unreduction_info;
+    new_instance.compute_components();
+    *this = new_instance;
     return true;
 }
 
@@ -603,25 +603,25 @@ bool Instance::reduce_vertex_folding()
     if (folded_vertices_list.empty())
         return false;
 
-    UnreductionInfo unreduction_info_new;
-    unreduction_info_new.original_instance = unreduction_info_.original_instance;
+    UnreductionInfo new_unreduction_info;
+    new_unreduction_info.original_instance = unreduction_info_.original_instance;
 
     // Update mandatory_vertices.
-    unreduction_info_new.mandatory_vertices = unreduction_info_.mandatory_vertices;
+    new_unreduction_info.mandatory_vertices = unreduction_info_.mandatory_vertices;
     // Update instance and unreduction_operations.
-    VertexId n = number_of_vertices() - folded_vertices.size() + folded_vertices_list.size();
-    Instance instance_new(n);
-    unreduction_info_new.unreduction_operations = std::vector<UnreductionOperations>(n);
+    VertexId new_number_of_vertices = number_of_vertices() - folded_vertices.size() + folded_vertices_list.size();
+    Instance new_instance(new_number_of_vertices);
+    new_unreduction_info.unreduction_operations = std::vector<UnreductionOperations>(new_number_of_vertices);
     // Add vertices.
     std::vector<VertexId> original2reduced(number_of_vertices(), -1);
-    VertexId vertex_id_new = 0;
+    VertexId new_vertex_id = 0;
     for (auto it = folded_vertices.out_begin(); it != folded_vertices.out_end(); ++it) {
         VertexId vertex_id = *it;
-        original2reduced[vertex_id] = vertex_id_new;
-        instance_new.set_weight(vertex_id_new, vertex(vertex_id).weight);
-        unreduction_info_new.unreduction_operations[vertex_id_new]
+        original2reduced[vertex_id] = new_vertex_id;
+        new_instance.set_weight(new_vertex_id, vertex(vertex_id).weight);
+        new_unreduction_info.unreduction_operations[new_vertex_id]
             = unreduction_info_.unreduction_operations[vertex_id];
-        vertex_id_new++;
+        new_vertex_id++;
     }
     for (const auto& tuple: folded_vertices_list) {
         VertexId vertex_id = std::get<0>(tuple);
@@ -635,27 +635,27 @@ bool Instance::reduce_vertex_folding()
                     + std::to_string(vertex_id_1)
                     + " as neighbor.");
         }
-        original2reduced[vertex_id] = vertex_id_new;
-        original2reduced[vertex_id_1] = vertex_id_new;
-        original2reduced[vertex_id_2] = vertex_id_new;
-        instance_new.set_weight(vertex_id_new, vertex(vertex_id).weight);
+        original2reduced[vertex_id] = new_vertex_id;
+        original2reduced[vertex_id_1] = new_vertex_id;
+        original2reduced[vertex_id_2] = new_vertex_id;
+        new_instance.set_weight(new_vertex_id, vertex(vertex_id).weight);
 
         for (VertexId vertex_id_3: unreduction_info_.unreduction_operations[vertex_id].out)
-            unreduction_info_new.unreduction_operations[vertex_id_new].in.push_back(vertex_id_3);
+            new_unreduction_info.unreduction_operations[new_vertex_id].in.push_back(vertex_id_3);
         for (VertexId vertex_id_3: unreduction_info_.unreduction_operations[vertex_id].in)
-            unreduction_info_new.unreduction_operations[vertex_id_new].out.push_back(vertex_id_3);
+            new_unreduction_info.unreduction_operations[new_vertex_id].out.push_back(vertex_id_3);
 
         for (VertexId vertex_id_3: unreduction_info_.unreduction_operations[vertex_id_1].in)
-            unreduction_info_new.unreduction_operations[vertex_id_new].in.push_back(vertex_id_3);
+            new_unreduction_info.unreduction_operations[new_vertex_id].in.push_back(vertex_id_3);
         for (VertexId vertex_id_3: unreduction_info_.unreduction_operations[vertex_id_1].out)
-            unreduction_info_new.unreduction_operations[vertex_id_new].out.push_back(vertex_id_3);
+            new_unreduction_info.unreduction_operations[new_vertex_id].out.push_back(vertex_id_3);
 
         for (VertexId vertex_id_3: unreduction_info_.unreduction_operations[vertex_id_2].in)
-            unreduction_info_new.unreduction_operations[vertex_id_new].in.push_back(vertex_id_3);
+            new_unreduction_info.unreduction_operations[new_vertex_id].in.push_back(vertex_id_3);
         for (VertexId vertex_id_3: unreduction_info_.unreduction_operations[vertex_id_2].out)
-            unreduction_info_new.unreduction_operations[vertex_id_new].out.push_back(vertex_id_3);
+            new_unreduction_info.unreduction_operations[new_vertex_id].out.push_back(vertex_id_3);
 
-        vertex_id_new++;
+        new_vertex_id++;
     }
     // Add edges.
     for (EdgeId e = 0; e < number_of_edges(); ++e) {
@@ -663,35 +663,35 @@ bool Instance::reduce_vertex_folding()
         VertexId vertex_id_2 = edge(e).vertex_id_2;
         if (folded_vertices.contains(vertex_id_1) || folded_vertices.contains(vertex_id_2))
             continue;
-        VertexId vertex_id_1_new = original2reduced[vertex_id_1];
-        VertexId vertex_id_2_new = original2reduced[vertex_id_2];
-        instance_new.add_edge(vertex_id_1_new, vertex_id_2_new, 0);
+        VertexId new_vertex_id_1 = original2reduced[vertex_id_1];
+        VertexId new_vertex_id_2 = original2reduced[vertex_id_2];
+        new_instance.add_edge(new_vertex_id_1, new_vertex_id_2, 0);
     }
-    optimizationtools::IndexedSet neighbors_tmp(n);
+    optimizationtools::IndexedSet neighbors_tmp(new_number_of_vertices);
     for (const auto& tuple: folded_vertices_list) {
         VertexId vertex_id = std::get<0>(tuple);
         VertexId vertex_id_1 = std::get<1>(tuple);
         VertexId vertex_id_2 = std::get<2>(tuple);
-        VertexId vertex_id_new = original2reduced[vertex_id];
+        VertexId new_vertex_id = original2reduced[vertex_id];
 
         neighbors_tmp.clear();
         for (const auto& edge: vertex(vertex_id_1).edges)
             if (edge.vertex_id != vertex_id)
                 if (!folded_vertices.contains(edge.vertex_id)
-                        || vertex_id_new < original2reduced[edge.vertex_id])
+                        || new_vertex_id < original2reduced[edge.vertex_id])
                     neighbors_tmp.add(original2reduced[edge.vertex_id]);
         for (const auto& edge: vertex(vertex_id_2).edges)
             if (edge.vertex_id != vertex_id)
                 if (!folded_vertices.contains(edge.vertex_id)
-                        || vertex_id_new < original2reduced[edge.vertex_id])
+                        || new_vertex_id < original2reduced[edge.vertex_id])
                     neighbors_tmp.add(original2reduced[edge.vertex_id]);
         for (VertexId vertex_id_3_new: neighbors_tmp)
-            instance_new.add_edge(vertex_id_new, vertex_id_3_new, 0);
+            new_instance.add_edge(new_vertex_id, vertex_id_3_new, 0);
     }
 
-    instance_new.unreduction_info_ = unreduction_info_new;
-    instance_new.compute_components();
-    *this = instance_new;
+    new_instance.unreduction_info_ = new_unreduction_info;
+    new_instance.compute_components();
+    *this = new_instance;
     return true;
 }
 
@@ -779,41 +779,43 @@ bool Instance::reduce_twin()
     if (modified_vertices.number_of_elements() == 0)
         return false;
 
-    UnreductionInfo unreduction_info_new;
-    unreduction_info_new.original_instance = unreduction_info_.original_instance;
+    UnreductionInfo new_unreduction_info;
+    new_unreduction_info.original_instance = unreduction_info_.original_instance;
 
     // Update mandatory_vertices.
-    unreduction_info_new.mandatory_vertices = unreduction_info_.mandatory_vertices;
+    new_unreduction_info.mandatory_vertices = unreduction_info_.mandatory_vertices;
     for (auto it = modified_vertices.begin(1); it != modified_vertices.end(1); ++it) {
         VertexId vertex_id = *it;
-        for (VertexId vertex_id_2: unreduction_info_.unreduction_operations[vertex_id].in) {
-            unreduction_info_new.mandatory_vertices.push_back(vertex_id_2);
+        for (VertexId orig_vertex_id: unreduction_info_.unreduction_operations[vertex_id].in) {
+            new_unreduction_info.mandatory_vertices.push_back(orig_vertex_id);
         }
     }
     for (auto it = modified_vertices.begin(0); it != modified_vertices.end(0); ++it) {
         VertexId vertex_id = *it;
-        for (VertexId vertex_id_2: unreduction_info_.unreduction_operations[vertex_id].out) {
-            unreduction_info_new.mandatory_vertices.push_back(vertex_id_2);
+        for (VertexId orig_vertex_id: unreduction_info_.unreduction_operations[vertex_id].out) {
+            new_unreduction_info.mandatory_vertices.push_back(orig_vertex_id);
         }
     }
     // Create new instance and compute unreduction_operations.
-    VertexId n = number_of_vertices()
+    VertexId new_number_of_vertices = number_of_vertices()
         - modified_vertices.number_of_elements(0)
         - modified_vertices.number_of_elements(1)
         - modified_vertices.number_of_elements(2)
         + modified_vertices.number_of_elements(2) / 5;
-    Instance instance_new(n);
-    unreduction_info_new.unreduction_operations = std::vector<UnreductionOperations>(n);
+    Instance new_instance(new_number_of_vertices);
+    new_unreduction_info.unreduction_operations = std::vector<UnreductionOperations>(new_number_of_vertices);
     // Add vertices.
     std::vector<VertexId> original2reduced(number_of_vertices(), -1);
-    VertexId vertex_id_new = 0;
-    for (auto it = modified_vertices.out_begin(); it != modified_vertices.out_end(); ++it) {
+    VertexId new_vertex_id = 0;
+    for (auto it = modified_vertices.out_begin();
+            it != modified_vertices.out_end();
+            ++it) {
         VertexId vertex_id = *it;
-        original2reduced[vertex_id] = vertex_id_new;
-        instance_new.set_weight(vertex_id_new, vertex(vertex_id).weight);
-        unreduction_info_new.unreduction_operations[vertex_id_new]
+        original2reduced[vertex_id] = new_vertex_id;
+        new_instance.set_weight(new_vertex_id, vertex(vertex_id).weight);
+        new_unreduction_info.unreduction_operations[new_vertex_id]
             = unreduction_info_.unreduction_operations[vertex_id];
-        vertex_id_new++;
+        new_vertex_id++;
     }
     for (const auto& tuple: folded_vertices_list) {
         VertexId vertex_id = std::get<0>(tuple);
@@ -821,39 +823,39 @@ bool Instance::reduce_twin()
         VertexId vertex_id_1 = std::get<2>(tuple);
         VertexId vertex_id_2 = std::get<3>(tuple);
         VertexId vertex_id_3 = std::get<4>(tuple);
-        original2reduced[vertex_id] = vertex_id_new;
-        original2reduced[vertex_id_twin] = vertex_id_new;
-        original2reduced[vertex_id_1] = vertex_id_new;
-        original2reduced[vertex_id_2] = vertex_id_new;
-        original2reduced[vertex_id_3] = vertex_id_new;
-        instance_new.set_weight(vertex_id_new, vertex(vertex_id).weight);
+        original2reduced[vertex_id] = new_vertex_id;
+        original2reduced[vertex_id_twin] = new_vertex_id;
+        original2reduced[vertex_id_1] = new_vertex_id;
+        original2reduced[vertex_id_2] = new_vertex_id;
+        original2reduced[vertex_id_3] = new_vertex_id;
+        new_instance.set_weight(new_vertex_id, vertex(vertex_id).weight);
 
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id].out)
-            unreduction_info_new.unreduction_operations[vertex_id_new].in.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].in.push_back(vertex_id_tmp);
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id].in)
-            unreduction_info_new.unreduction_operations[vertex_id_new].out.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].out.push_back(vertex_id_tmp);
 
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id_twin].out)
-            unreduction_info_new.unreduction_operations[vertex_id_new].in.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].in.push_back(vertex_id_tmp);
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id_twin].in)
-            unreduction_info_new.unreduction_operations[vertex_id_new].out.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].out.push_back(vertex_id_tmp);
 
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id_1].in)
-            unreduction_info_new.unreduction_operations[vertex_id_new].in.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].in.push_back(vertex_id_tmp);
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id_1].out)
-            unreduction_info_new.unreduction_operations[vertex_id_new].out.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].out.push_back(vertex_id_tmp);
 
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id_2].in)
-            unreduction_info_new.unreduction_operations[vertex_id_new].in.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].in.push_back(vertex_id_tmp);
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id_2].out)
-            unreduction_info_new.unreduction_operations[vertex_id_new].out.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].out.push_back(vertex_id_tmp);
 
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id_3].in)
-            unreduction_info_new.unreduction_operations[vertex_id_new].in.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].in.push_back(vertex_id_tmp);
         for (VertexId vertex_id_tmp: unreduction_info_.unreduction_operations[vertex_id_3].out)
-            unreduction_info_new.unreduction_operations[vertex_id_new].out.push_back(vertex_id_tmp);
+            new_unreduction_info.unreduction_operations[new_vertex_id].out.push_back(vertex_id_tmp);
 
-        vertex_id_new++;
+        new_vertex_id++;
     }
     // Add edges.
     for (EdgeId edge_id = 0; edge_id < number_of_edges(); ++edge_id) {
@@ -861,45 +863,45 @@ bool Instance::reduce_twin()
         VertexId vertex_id_2 = edge(edge_id).vertex_id_2;
         if (modified_vertices.contains(vertex_id_1) || modified_vertices.contains(vertex_id_2))
             continue;
-        VertexId vertex_id_1_new = original2reduced[vertex_id_1];
-        VertexId vertex_id_2_new = original2reduced[vertex_id_2];
-        instance_new.add_edge(vertex_id_1_new, vertex_id_2_new, 0);
+        VertexId new_vertex_id_1 = original2reduced[vertex_id_1];
+        VertexId new_vertex_id_2 = original2reduced[vertex_id_2];
+        new_instance.add_edge(new_vertex_id_1, new_vertex_id_2, 0);
     }
-    optimizationtools::IndexedSet neighbors_tmp(n);
+    optimizationtools::IndexedSet neighbors_tmp(new_number_of_vertices);
     for (const auto& tuple: folded_vertices_list) {
         VertexId vertex_id = std::get<0>(tuple);
         VertexId vertex_id_twin = std::get<1>(tuple);
         VertexId vertex_id_1 = std::get<2>(tuple);
         VertexId vertex_id_2 = std::get<3>(tuple);
         VertexId vertex_id_3 = std::get<4>(tuple);
-        VertexId vertex_id_new = original2reduced[vertex_id];
+        VertexId new_vertex_id = original2reduced[vertex_id];
 
         neighbors_tmp.clear();
         for (const auto& edge: vertex(vertex_id_1).edges)
             if (edge.vertex_id != vertex_id
                     && edge.vertex_id != vertex_id_twin)
                 if (!modified_vertices.contains(edge.vertex_id)
-                        || vertex_id_new < original2reduced[edge.vertex_id])
+                        || new_vertex_id < original2reduced[edge.vertex_id])
                     neighbors_tmp.add(original2reduced[edge.vertex_id]);
         for (const auto& edge: vertex(vertex_id_2).edges)
             if (edge.vertex_id != vertex_id
                     && edge.vertex_id != vertex_id_twin)
                 if (!modified_vertices.contains(edge.vertex_id)
-                        || vertex_id_new < original2reduced[edge.vertex_id])
+                        || new_vertex_id < original2reduced[edge.vertex_id])
                     neighbors_tmp.add(original2reduced[edge.vertex_id]);
         for (const auto& edge: vertex(vertex_id_3).edges)
             if (edge.vertex_id != vertex_id
                     && edge.vertex_id != vertex_id_twin)
                 if (!modified_vertices.contains(edge.vertex_id)
-                        || vertex_id_new < original2reduced[edge.vertex_id])
+                        || new_vertex_id < original2reduced[edge.vertex_id])
                     neighbors_tmp.add(original2reduced[edge.vertex_id]);
         for (VertexId vertex_id_tmp: neighbors_tmp)
-            instance_new.add_edge(vertex_id_new, vertex_id_tmp, 0);
+            new_instance.add_edge(new_vertex_id, vertex_id_tmp, 0);
     }
 
-    instance_new.unreduction_info_ = unreduction_info_new;
-    instance_new.compute_components();
-    *this = instance_new;
+    new_instance.unreduction_info_ = new_unreduction_info;
+    new_instance.compute_components();
+    *this = new_instance;
     return true;
 }
 
@@ -942,30 +944,30 @@ bool Instance::reduce_domination()
     if (removed_vertices.size() == 0)
         return false;
 
-    UnreductionInfo unreduction_info_new;
-    unreduction_info_new.original_instance = unreduction_info_.original_instance;
+    UnreductionInfo new_unreduction_info;
+    new_unreduction_info.original_instance = unreduction_info_.original_instance;
 
     // Update mandatory_vertices.
-    unreduction_info_new.mandatory_vertices = unreduction_info_.mandatory_vertices;
+    new_unreduction_info.mandatory_vertices = unreduction_info_.mandatory_vertices;
     for (VertexId vertex_id: removed_vertices) {
-        for (VertexId vertex_id_2: unreduction_info_.unreduction_operations[vertex_id].out) {
-            unreduction_info_new.mandatory_vertices.push_back(vertex_id_2);
+        for (VertexId orig_vertex_id: unreduction_info_.unreduction_operations[vertex_id].out) {
+            new_unreduction_info.mandatory_vertices.push_back(orig_vertex_id);
         }
     }
     // Update instance and unreduction_operations.
-    VertexId n = number_of_vertices() - removed_vertices.size();
-    Instance instance_new(n);
-    unreduction_info_new.unreduction_operations = std::vector<UnreductionOperations>(n);
+    VertexId new_number_of_vertices = number_of_vertices() - removed_vertices.size();
+    Instance new_instance(new_number_of_vertices);
+    new_unreduction_info.unreduction_operations = std::vector<UnreductionOperations>(new_number_of_vertices);
     // Add vertices.
     std::vector<VertexId> original2reduced(number_of_vertices(), -1);
-    VertexId vertex_id_new = 0;
+    VertexId new_vertex_id = 0;
     for (auto it = removed_vertices.out_begin(); it != removed_vertices.out_end(); ++it) {
         VertexId vertex_id = *it;
-        original2reduced[vertex_id] = vertex_id_new;
-        instance_new.set_weight(vertex_id_new, vertex(vertex_id).weight);
-        unreduction_info_new.unreduction_operations[vertex_id_new]
+        original2reduced[vertex_id] = new_vertex_id;
+        new_instance.set_weight(new_vertex_id, vertex(vertex_id).weight);
+        new_unreduction_info.unreduction_operations[new_vertex_id]
             = unreduction_info_.unreduction_operations[vertex_id];
-        vertex_id_new++;
+        new_vertex_id++;
     }
     // Add edges.
     for (EdgeId edge_id = 0; edge_id < number_of_edges(); ++edge_id) {
@@ -973,14 +975,14 @@ bool Instance::reduce_domination()
         VertexId vertex_id_2 = edge(edge_id).vertex_id_2;
         if (removed_vertices.contains(vertex_id_1) || removed_vertices.contains(vertex_id_2))
             continue;
-        VertexId vertex_id_1_new = original2reduced[vertex_id_1];
-        VertexId vertex_id_2_new = original2reduced[vertex_id_2];
-        instance_new.add_edge(vertex_id_1_new, vertex_id_2_new, 0);
+        VertexId new_vertex_id_1 = original2reduced[vertex_id_1];
+        VertexId new_vertex_id_2 = original2reduced[vertex_id_2];
+        new_instance.add_edge(new_vertex_id_1, new_vertex_id_2, 0);
     }
 
-    instance_new.unreduction_info_ = unreduction_info_new;
-    instance_new.compute_components();
-    *this = instance_new;
+    new_instance.unreduction_info_ = new_unreduction_info;
+    new_instance.compute_components();
+    *this = new_instance;
     return true;
 }
 
@@ -1084,32 +1086,32 @@ bool Instance::reduce_unconfined()
     if (removed_vertices.size() == 0)
         return false;
 
-    UnreductionInfo unreduction_info_new;
-    unreduction_info_new.original_instance = unreduction_info_.original_instance;
+    UnreductionInfo new_unreduction_info;
+    new_unreduction_info.original_instance = unreduction_info_.original_instance;
 
     // Update mandatory_vertices.
-    unreduction_info_new.mandatory_vertices = unreduction_info_.mandatory_vertices;
+    new_unreduction_info.mandatory_vertices = unreduction_info_.mandatory_vertices;
     for (VertexId vertex_id: removed_vertices) {
         for (VertexId vertex_id_2: unreduction_info_.unreduction_operations[vertex_id].out) {
-            unreduction_info_new.mandatory_vertices.push_back(vertex_id_2);
+            new_unreduction_info.mandatory_vertices.push_back(vertex_id_2);
         }
     }
     // Update instance and unreduction_operations.
-    VertexId n = number_of_vertices() - removed_vertices.size();
-    Instance instance_new(n);
-    unreduction_info_new.unreduction_operations = std::vector<UnreductionOperations>(n);
+    VertexId new_number_of_vertices = number_of_vertices() - removed_vertices.size();
+    Instance new_instance(new_number_of_vertices);
+    new_unreduction_info.unreduction_operations = std::vector<UnreductionOperations>(new_number_of_vertices);
     // Add vertices.
     std::vector<VertexId> original2reduced(number_of_vertices(), -1);
-    VertexId vertex_id_new = 0;
+    VertexId new_vertex_id = 0;
     for (auto it = removed_vertices.out_begin(); it != removed_vertices.out_end(); ++it) {
         VertexId vertex_id = *it;
-        original2reduced[vertex_id] = vertex_id_new;
-        instance_new.set_weight(
-                vertex_id_new,
+        original2reduced[vertex_id] = new_vertex_id;
+        new_instance.set_weight(
+                new_vertex_id,
                 vertex(vertex_id).weight);
-        unreduction_info_new.unreduction_operations[vertex_id_new]
+        new_unreduction_info.unreduction_operations[new_vertex_id]
             = unreduction_info_.unreduction_operations[vertex_id];
-        vertex_id_new++;
+        new_vertex_id++;
     }
     // Add edges.
     for (EdgeId edge_id = 0; edge_id < number_of_edges(); ++edge_id) {
@@ -1118,55 +1120,55 @@ bool Instance::reduce_unconfined()
         if (removed_vertices.contains(vertex_id_1)
                 || removed_vertices.contains(vertex_id_2))
             continue;
-        VertexId vertex_id_1_new = original2reduced[vertex_id_1];
-        VertexId vertex_id_2_new = original2reduced[vertex_id_2];
-        instance_new.add_edge(vertex_id_1_new, vertex_id_2_new, 0);
+        VertexId new_vertex_id_1 = original2reduced[vertex_id_1];
+        VertexId new_vertex_id_2 = original2reduced[vertex_id_2];
+        new_instance.add_edge(new_vertex_id_1, new_vertex_id_2, 0);
     }
 
-    instance_new.unreduction_info_ = unreduction_info_new;
-    instance_new.compute_components();
-    *this = instance_new;
+    new_instance.unreduction_info_ = new_unreduction_info;
+    new_instance.compute_components();
+    *this = new_instance;
     return true;
 }
 
 Instance Instance::reduce(ReductionParameters parameters) const
 {
     // Initialize reduced instance.
-    Instance instance_new = *this;
-    instance_new.unreduction_info_ = UnreductionInfo();
-    instance_new.unreduction_info_.original_instance = this;
-    instance_new.unreduction_info_.unreduction_operations = std::vector<UnreductionOperations>(number_of_vertices());
+    Instance new_instance = *this;
+    new_instance.unreduction_info_ = UnreductionInfo();
+    new_instance.unreduction_info_.original_instance = this;
+    new_instance.unreduction_info_.unreduction_operations = std::vector<UnreductionOperations>(number_of_vertices());
     for (VertexId vertex_id = 0;
             vertex_id < number_of_vertices();
             ++vertex_id) {
-        instance_new.unreduction_info_.unreduction_operations[vertex_id].in.push_back(vertex_id);
+        new_instance.unreduction_info_.unreduction_operations[vertex_id].in.push_back(vertex_id);
     }
 
     for (Counter round_number = 0;
             round_number < parameters.maximum_number_of_rounds;
             ++round_number) {
         bool found = false;
-        found |= instance_new.reduce_pendant_vertices();
-        found |= instance_new.reduce_vertex_folding();
-        found |= instance_new.reduce_isolated_vertex_removal();
-        found |= instance_new.reduce_twin();
-        found |= instance_new.reduce_domination();
-        found |= instance_new.reduce_unconfined();
+        found |= new_instance.reduce_pendant_vertices();
+        found |= new_instance.reduce_vertex_folding();
+        found |= new_instance.reduce_isolated_vertex_removal();
+        found |= new_instance.reduce_twin();
+        found |= new_instance.reduce_domination();
+        found |= new_instance.reduce_unconfined();
         if (!found)
             break;
     }
 
-    instance_new.unreduction_info_.extra_weight = 0;
-    for (VertexId vertex_id: instance_new.unreduction_info_.mandatory_vertices)
-        instance_new.unreduction_info_.extra_weight += vertex(vertex_id).weight;
+    new_instance.unreduction_info_.extra_weight = 0;
+    for (VertexId orig_vertex_id: new_instance.unreduction_info_.mandatory_vertices)
+        new_instance.unreduction_info_.extra_weight += vertex(orig_vertex_id).weight;
     for (VertexId vertex_id = 0;
-            vertex_id < instance_new.number_of_vertices();
+            vertex_id < new_instance.number_of_vertices();
             ++vertex_id) {
-        instance_new.unreduction_info_.extra_weight
-            += instance_new.unreduction_info_.unreduction_operations[vertex_id].out.size();
+        new_instance.unreduction_info_.extra_weight
+            += new_instance.unreduction_info_.unreduction_operations[vertex_id].out.size();
     }
 
-    return instance_new;
+    return new_instance;
 }
 
 void stablesolver::init_display(
