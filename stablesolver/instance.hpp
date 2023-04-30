@@ -9,12 +9,12 @@
 namespace stablesolver
 {
 
-using VertexId = int32_t; // v
-using VertexPos = int32_t; // v_pos
-using EdgeId = int64_t; // e
-using EdgePos = int64_t; // e_pos
-using Weight = int64_t; // w
-using ComponentId = int64_t; // c
+using VertexId = int32_t;
+using VertexPos = int32_t;
+using EdgeId = int64_t;
+using EdgePos = int64_t;
+using Weight = int64_t;
+using ComponentId = int64_t;
 using Penalty = int16_t;
 using Counter = int64_t;
 using Seed = int64_t;
@@ -98,21 +98,40 @@ struct UnreductionOperations
 
 class Instance;
 
-/**
- * Structure returned by the reduction operations.
- */
-struct ReductionOutput
+struct UnreductionInfo
 {
-    /** Pointer to the reduced instance. */
-    Instance* instance = nullptr;
+    /** Pointer to the original instance. */
+    const Instance* original_instance = nullptr;
 
     /** For each vertex, unreduction operations. */
     std::vector<UnreductionOperations> unreduction_operations;
 
     /** Mandatory vertices (from the original instance). */
     std::vector<VertexId> mandatory_vertices;
+
+    /**
+     * Weight to add to a solution of the reduced instance to get the weight of
+     * the corresponding solution of the original instance.
+     */
+    Weight extra_weight;
 };
 
+/**
+ * Structure passed as parameters of the reduction algorithm and the other
+ * algorithm to determine whether and how to reduce.
+ */
+struct ReductionParameters
+{
+    /** Boolean indicating if the reduction should be performed. */
+    bool reduce = true;
+
+    /** Maximum number of rounds. */
+    Counter maximum_number_of_rounds = 10;
+};
+
+/**
+ * Instance class for a Maximum-Weight Independent Set problem.
+ */
 class Instance
 {
 
@@ -146,10 +165,8 @@ public:
     /** Create the complementary instance. */
     Instance complementary();
 
-    void reduce();
-
-    /** Destructor. */
-    ~Instance() { if (reduction_output_.instance != this) delete reduction_output_.instance; }
+    /** Reduce. */
+    Instance reduce(ReductionParameters parameters) const;
 
     /*
      * Getters.
@@ -164,64 +181,61 @@ public:
     /** Get the number of connected components. */
     inline ComponentId number_of_components() const { return components_.size(); }
 
-    /** Get vertex 'v'. */
-    inline const Vertex& vertex(VertexId v) const { return vertices_[v]; }
+    /** Get a vertex. */
+    inline const Vertex& vertex(VertexId vertex_id) const { return vertices_[vertex_id]; }
 
-    /** Get edge 'e'. */
-    inline const Edge& edge(EdgeId e) const { return edges_[e]; }
+    /** Get an edge. */
+    inline const Edge& edge(EdgeId edge_id) const { return edges_[edge_id]; }
 
-    /** Get connected component 'c'. */
+    /** Get connected a component. */
     inline const Component& component(ComponentId c) const { return components_[c]; }
 
-    /** Get the degree of vertex 'v'. */
-    inline VertexId degree(VertexId v) const { return vertices_[v].edges.size(); }
+    /** Get the degree of a vertex. */
+    inline VertexId degree(VertexId vertex_id) const { return vertices_[vertex_id].edges.size(); }
 
     /** Get the maximum vertex degree of the instance. */
     inline VertexId maximum_degree() const { return maximum_degree_; }
 
-    /** Get the total weight of the instance. */
+    /** Get the total weight. */
     inline Weight total_weight() const { return total_weight_; }
 
     /*
-     * Reduction information.
+     * Reduction information
      */
 
-    /**
-     * Get a pointer to the reduced instance.
-     *
-     * Return 'nullptr' if no reduction has been applied.
-     */
-    inline Instance* reduced_instance() const { return reduction_output_.instance; }
+    /** Get the original instance. */
+    inline const Instance* original_instance() const { return (is_reduced())? unreduction_info().original_instance: this; }
 
-    /**
-     * Get the weight to add to a solution of the reduced instance to get the
-     * weight of the corresponding solution of the original instance.
-     **/
-    inline Weight extra_weight() const { return extra_weight_; }
+    /** Return 'true' iff the instance is a reduced instance. */
+    inline bool is_reduced() const { return unreduction_info_.original_instance != nullptr; }
 
-    /** Get the unreduction operations of vertex 'v'. */
-    inline const UnreductionOperations unreduction_operations(VertexId v) const { return reduction_output_.unreduction_operations[v]; }
-
-    /** Get the list of mandatory vertices from the orignal instance. */
-    inline const std::vector<VertexId>& mandatory_vertices() const { return reduction_output_.mandatory_vertices; }
+    /** Get the unreduction info of the instance; */
+    inline const UnreductionInfo& unreduction_info() const { return unreduction_info_; }
 
     /*
-     * Export.
+     * Export
      */
+
+    /** Print the instance. */
+    std::ostream& print(
+            std::ostream& os,
+            int verbose = 1) const;
 
     /** Write the instance to a file. */
-    void write(std::string instance_path, std::string format);
+    void write(
+            std::string instance_path,
+            std::string format);
 
     /*
-     * Checkers.
+     * Checkers
      */
 
     /** Check if vertex index 'v' is within the correct range. */
-    inline void check_vertex_index(VertexId v) const
+    inline void check_vertex_index(VertexId vertex_id) const
     {
-        if (v < 0 || v >= number_of_vertices())
+        if (vertex_id < 0 || vertex_id >= number_of_vertices())
             throw std::out_of_range(
-                    "Invalid vertex index: \"" + std::to_string(v) + "\"."
+                    "Invalid vertex index: \"" + std::to_string(vertex_id) + "\"."
                     + " Vertex indices should belong to [0, "
                     + std::to_string(number_of_vertices() - 1) + "].");
     }
@@ -229,7 +243,7 @@ public:
 private:
 
     /*
-     * Attributes.
+     * Attributes
      */
 
     /** Name of the instance. */
@@ -247,28 +261,18 @@ private:
     /** Maximum vertex degree of the instance. */
     VertexId maximum_degree_ = 0;
 
-    /** Total weight of the instance. */
+    /** Total weight. */
     Weight total_weight_ = 0;
 
-    /*
-     * Reduction structures.
-     */
-
-    /** Reduction output. */
-    ReductionOutput reduction_output_;
-
-    /**
-     * Weight to add to a solution of the reduced instance to get the weight of
-     * the corresponding solution of the original instance.
-     **/
-    Weight extra_weight_;
+    /** Reduction structure. */
+    UnreductionInfo unreduction_info_;
 
     /*
-     * Private methods.
+     * Private methods
      */
 
     /*
-     * Read input file.
+     * Read input file
      */
 
     /** Read an instance file in 'dimacs1992' format. */
@@ -287,7 +291,7 @@ private:
     void read_snap(std::ifstream& file);
 
     /*
-     * Reductions.
+     * Reductions
      */
 
     /**
@@ -298,8 +302,7 @@ private:
      *   (Dahlum et al., 2016)
      *   https://doi.org/10.1007/978-3-319-38851-9_9
      */
-    static ReductionOutput reduce_pendant_vertices(
-            const ReductionOutput& reduction_output_old);
+    bool reduce_pendant_vertices();
 
     /**
      * Perform isolated vertex removal reduction.
@@ -309,8 +312,7 @@ private:
      *   Real-World Graphs" (Lamm et al., 2019)
      *   https://doi.org/10.1137/1.9781611975499.12
      */
-    static ReductionOutput reduce_isolated_vertex_removal(
-            const ReductionOutput& reduction_output_old);
+    bool reduce_isolated_vertex_removal();
 
     /**
      * Perform vertex folding reduction.
@@ -323,8 +325,7 @@ private:
      *   Real-World Graphs" (Lamm et al., 2019)
      *   https://doi.org/10.1137/1.9781611975499.12
      */
-    static ReductionOutput reduce_vertex_folding(
-            const ReductionOutput& reduction_output_old);
+    bool reduce_vertex_folding();
 
     /**
      * Perform twin reduction.
@@ -337,8 +338,7 @@ private:
      *   Real-World Graphs" (Lamm et al., 2019)
      *   https://doi.org/10.1137/1.9781611975499.12
      */
-    static ReductionOutput reduce_twin(
-            const ReductionOutput& reduction_output_old);
+    bool reduce_twin();
 
     /**
      * Perform domination reduction.
@@ -351,8 +351,7 @@ private:
      *   Real-World Graphs" (Lamm et al., 2019)
      *   https://doi.org/10.1137/1.9781611975499.12
      */
-    static ReductionOutput reduce_domination(
-            const ReductionOutput& reduction_output_old);
+    bool reduce_domination();
 
     /**
      * Perform unconfined reduction.
@@ -372,8 +371,7 @@ private:
      *   Real-World Graphs" (Lamm et al., 2019)
      *   https://doi.org/10.1137/1.9781611975499.12
      */
-    static ReductionOutput reduce_unconfined(
-            const ReductionOutput& reduction_output_old);
+    bool reduce_unconfined();
 
 };
 

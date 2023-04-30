@@ -12,7 +12,7 @@ namespace stablesolver
 struct LocalSearchRowWeighting1Output: Output
 {
     LocalSearchRowWeighting1Output(
-            Instance& instance,
+            const Instance& instance,
             optimizationtools::Info& info):
         Output(instance, info) { }
 
@@ -29,17 +29,23 @@ struct LocalSearchRowWeighting1OptionalParameters
 {
     /** Maximum number of iterations. */
     Counter maximum_number_of_iterations = -1;
+
     /** Maximum number of iterations without improvement. */
     Counter maximum_number_of_iterations_without_improvement = -1;
+
     /** Callback function called when a new best solution is found. */
     LocalSearchRowWeighting1Callback new_solution_callback
         = [](const LocalSearchRowWeighting1Output&) { };
+
+    /** Reduction parameters. */
+    ReductionParameters reduction_parameters;
+
     /** Info structure. */
     optimizationtools::Info info = optimizationtools::Info();
 };
 
 LocalSearchRowWeighting1Output localsearch_rowweighting_1(
-        Instance& instance,
+        const Instance& instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting1OptionalParameters parameters = {});
 
@@ -67,11 +73,17 @@ struct LocalSearchRowWeighting2OptionalParameters
 {
     /** Maximum number of iterations. */
     Counter maximum_number_of_iterations = -1;
+
     /** Maximum number of iterations without improvement. */
     Counter maximum_number_of_iterations_without_improvement = -1;
+
     /** Callback function called when a new best solution is found. */
     LocalSearchRowWeighting2Callback new_solution_callback
         = [](const LocalSearchRowWeighting2Output&) { };
+
+    /** Reduction parameters. */
+    ReductionParameters reduction_parameters;
+
     /** Info structure. */
     optimizationtools::Info info = optimizationtools::Info();
 };

@@ -26,10 +26,10 @@ struct LargeNeighborhoodSearchVertex
 };
 
 LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
-        Instance& instance,
+        Instance& original_instance,
         LargeNeighborhoodSearchOptionalParameters parameters)
 {
-    init_display(instance, parameters.info);
+    init_display(original_instance, parameters.info);
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
@@ -39,7 +39,32 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
     //instance.fix_identical(parameters.info);
     //instance.fix_dominated(parameters.info);
 
-    LargeNeighborhoodSearchOutput output(instance, parameters.info);
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    LargeNeighborhoodSearchOutput output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
+
     Solution solution = greedy_gwmin(instance).solution;
     std::stringstream ss;
     ss << "initial solution";

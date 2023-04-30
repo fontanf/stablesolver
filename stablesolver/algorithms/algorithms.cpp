@@ -95,13 +95,21 @@ Output stablesolver::run(
         throw std::invalid_argument("Missing algorithm.");
 
     } else if (algorithm_args[0] == "greedy_gwmin") {
-        return greedy_gwmin(instance, info);
+        GreedyOptionalParameters parameters;
+        parameters.info = info;
+        return greedy_gwmin(instance, parameters);
     } else if (algorithm_args[0] == "greedy_gwmax") {
-        return greedy_gwmax(instance, info);
+        GreedyOptionalParameters parameters;
+        parameters.info = info;
+        return greedy_gwmax(instance, parameters);
     } else if (algorithm_args[0] == "greedy_gwmin2") {
-        return greedy_gwmin2(instance, info);
+        GreedyOptionalParameters parameters;
+        parameters.info = info;
+        return greedy_gwmin2(instance, parameters);
     } else if (algorithm_args[0] == "greedy_strong") {
-        return greedy_strong(instance, info);
+        GreedyOptionalParameters parameters;
+        parameters.info = info;
+        return greedy_strong(instance, parameters);
 
 #if COINOR_FOUND
     } else if (algorithm_args[0] == "milp_1_cbc") {

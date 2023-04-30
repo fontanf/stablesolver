@@ -46,16 +46,41 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
 ////////////////////////////////////////////////////////////////////////////////
 
 MilpCplexOutput stablesolver::milp_1_cplex(
-        const Instance& instance, MilpCplexOptionalParameters parameters)
+        const Instance& original_instance,
+        MilpCplexOptionalParameters parameters)
 {
-    init_display(instance, parameters.info);
+    init_display(original_instance, parameters.info);
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
         << "MILP 1 (CPLEX)" << std::endl
         << std::endl;
 
-    MilpCplexOutput output(instance, parameters.info);
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    MilpCplexOutput output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
 
     IloEnv env;
     IloModel model(env);
@@ -156,16 +181,41 @@ MilpCplexOutput stablesolver::milp_1_cplex(
 ////////////////////////////////////////////////////////////////////////////////
 
 MilpCplexOutput stablesolver::milp_2_cplex(
-        const Instance& instance, MilpCplexOptionalParameters parameters)
+        const Instance& original_instance,
+        MilpCplexOptionalParameters parameters)
 {
-    init_display(instance, parameters.info);
+    init_display(original_instance, parameters.info);
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
         << "MILP 2 (CPLEX)" << std::endl
         << std::endl;
 
-    MilpCplexOutput output(instance, parameters.info);
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    MilpCplexOutput output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
 
     IloEnv env;
     IloModel model(env);
@@ -270,16 +320,41 @@ MilpCplexOutput stablesolver::milp_2_cplex(
 ////////////////////////////////////////////////////////////////////////////////
 
 MilpCplexOutput stablesolver::milp_3_cplex(
-        const Instance& instance, MilpCplexOptionalParameters parameters)
+        const Instance& original_instance,
+        MilpCplexOptionalParameters parameters)
 {
-    init_display(instance, parameters.info);
+    init_display(original_instance, parameters.info);
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
         << "MILP 3 (CPLEX)" << std::endl
         << std::endl;
 
-    MilpCplexOutput output(instance, parameters.info);
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    MilpCplexOutput output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
 
     IloEnv env;
     IloModel model(env);

@@ -17,7 +17,7 @@ class Solution
 public:
 
     /*
-     * Constructors and destructor.
+     * Constructors and destructor
      */
 
     /** Create an empty solution. */
@@ -29,7 +29,7 @@ public:
     void update(const Solution& solution);
 
     /*
-     * Getters.
+     * Getters
      */
 
     /** Get the instance. */
@@ -65,10 +65,10 @@ public:
     /** Get the set of edges of the solution. */
     const std::unordered_set<EdgeId>& conflicts() const { return conflicts_; }
 
-    bool is_striclty_better_than(const Solution& solution) const;
+    bool is_strictly_better_than(const Solution& solution) const;
 
     /*
-     * Setters.
+     * Setters
      */
 
     /** Add vertex v to the solution. */
@@ -78,7 +78,7 @@ public:
     inline void remove(VertexId v);
 
     /*
-     * Export.
+     * Export
      */
 
     /** Write the solution to a file. */
@@ -179,8 +179,11 @@ struct Output
             const Instance& instance,
             optimizationtools::Info& info);
 
+    /** Solution in the original instance. */
     Solution solution;
+
     Weight upper_bound = 0;
+
     double time = -1;
 
     bool optimal() const { return solution.feasible() && solution.weight() == upper_bound; }

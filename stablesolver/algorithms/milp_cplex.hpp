@@ -9,9 +9,14 @@ namespace stablesolver
 
 struct MilpCplexOptionalParameters
 {
-    optimizationtools::Info info = optimizationtools::Info();
-
+    /** Initial solution. */
     const Solution* initial_solution = NULL;
+
+    /** Reduction parameters. */
+    ReductionParameters reduction_parameters;
+
+    /** Info structure. */
+    optimizationtools::Info info = optimizationtools::Info();
 };
 
 struct MilpCplexOutput: Output

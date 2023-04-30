@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
         ("certificate,c", po::value<std::string>(&certificate_path), "set certificate file")
         ("time-limit,t", po::value<double>(&time_limit), "Time limit in seconds")
         ("seed,s", po::value<int>(&seed), "set seed")
-        ("reduce,", "reduce instance")
         ("verbosity-level,v", po::value<int>(&verbosity_level), "set verbosity level")
         ("log,l", po::value<std::string>(&log_path), "set log file")
         ("loglevelmax", po::value<int>(&loglevelmax), "set log max level")
@@ -73,9 +72,6 @@ int main(int argc, char *argv[])
         .set_maximum_log_level(loglevelmax)
         .set_sigint_handler()
         ;
-
-    if (vm.count("reduce"))
-        instance.reduce();
 
     std::mt19937_64 generator(seed);
     Solution solution(instance, initial_solution_path);

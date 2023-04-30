@@ -26,13 +26,17 @@ namespace stablesolver
 
 struct LocalSearchOptionalParameters
 {
-    optimizationtools::Info info = optimizationtools::Info();
-
     /** Maximum number of nodes. */
     Counter maximum_number_of_nodes = -1;
 
     /** Number of threads. */
     Counter number_of_threads = 1;
+
+    /** Reduction parameters. */
+    ReductionParameters reduction_parameters;
+
+    /** Info structure. */
+    optimizationtools::Info info = optimizationtools::Info();
 };
 
 struct LocalSearchOutput: Output

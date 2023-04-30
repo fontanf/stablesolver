@@ -34,40 +34,47 @@ Solution::Solution(
 
 void Solution::update(const Solution& solution)
 {
-    if (instance().reduced_instance() == solution.instance_) {
+    if (&instance() != &solution.instance()
+            && &instance() != solution.instance().original_instance()) {
+        throw std::runtime_error(
+                "Cannot update a solution with a solution from a different instance.");
+    }
+
+    if (solution.instance().is_reduced()
+            && solution.instance().original_instance() == &instance()) {
         for (VertexId vertex_id = 0;
                 vertex_id < instance().number_of_vertices();
                 ++vertex_id) {
             if (contains(vertex_id))
                 remove(vertex_id);
         }
-        for (VertexId vertex_id: instance().mandatory_vertices()) {
+        for (VertexId vertex_id: solution.instance().unreduction_info().mandatory_vertices) {
             //std::cout << "mandatory " << vertex_id << std::endl;
             add(vertex_id);
         }
         for (VertexId vertex_id = 0;
-                vertex_id < instance().reduced_instance()->number_of_vertices();
+                vertex_id < solution.instance().number_of_vertices();
                 ++vertex_id) {
             if (solution.contains(vertex_id)) {
-                for (VertexId vertex_id_2: instance().unreduction_operations(vertex_id).in) {
+                for (VertexId vertex_id_2: solution.instance().unreduction_info().unreduction_operations[vertex_id].in) {
                     //std::cout << "+" << v << " => " << vertex_id_2 << std::endl;
                     add(vertex_id_2);
                 }
             } else {
-                for (VertexId vertex_id_2: instance().unreduction_operations(vertex_id).out) {
+                for (VertexId vertex_id_2: solution.instance().unreduction_info().unreduction_operations[vertex_id].out) {
                     //std::cout << "-" << v << " => " << vertex_id_2 << std::endl;
                     add(vertex_id_2);
                 }
             }
         }
-        if (weight() != solution.weight() + instance().extra_weight()) {
+        if (weight() != solution.weight() + solution.instance().unreduction_info().extra_weight) {
             throw std::runtime_error(
                     "Wrong weight after unreduction. Weight: "
                     + std::to_string(weight())
                     + "; reduced solution weight: "
                     + std::to_string(solution.weight())
                     + "; extra weight: "
-                    + std::to_string(instance().extra_weight())
+                    + std::to_string(solution.instance().unreduction_info().extra_weight)
                     + ".");
         }
     } else {
@@ -91,22 +98,19 @@ void Solution::write(std::string certificate_path)
     file.close();
 }
 
-bool Solution::is_striclty_better_than(const Solution& solution) const
+bool Solution::is_strictly_better_than(const Solution& solution) const
 {
     if (!feasible())
         return false;
     if (!solution.feasible())
         return true;
-    if (instance_ == solution.instance_) {
-        return weight() > solution.weight();
-    } else if (instance_ == solution.instance().reduced_instance()) {
-        return weight() + solution.instance().extra_weight() > solution.weight();
-    } else if (instance().reduced_instance() == solution.instance_) {
-        return weight() > solution.weight() + instance().extra_weight();
-    } else {
-        throw std::runtime_error(
-                "Cannot compare solutions from different instances.");
-    }
+    Weight w1 = weight();
+    if (instance().is_reduced())
+        w1 += instance().unreduction_info().extra_weight;
+    Weight w2 = solution.weight();
+    //if (instance().is_reduced())
+    //    w2 += solution.instance().unreduction_info().extra_weight;
+    return w1 > w2;
 }
 
 std::ostream& stablesolver::operator<<(std::ostream& os, const Solution& solution)
@@ -123,12 +127,12 @@ std::ostream& stablesolver::operator<<(std::ostream& os, const Solution& solutio
 //////////////////////////////////// Output ////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-Output::Output(const Instance& instance, optimizationtools::Info& info):
+Output::Output(
+        const Instance& instance,
+        optimizationtools::Info& info):
     solution(instance),
     upper_bound(instance.total_weight())
 {
-    if (instance.reduced_instance() != nullptr)
-        upper_bound = instance.extra_weight() + instance.reduced_instance()->total_weight();
     info.os()
         << std::setw(12) << "T (s)"
         << std::setw(16) << "LB"
@@ -177,7 +181,7 @@ void Output::update_solution(
 {
     info.lock();
 
-    if (solution_new.is_striclty_better_than(solution)) {
+    if (solution_new.is_strictly_better_than(solution)) {
         solution.update(solution_new);
         print(info, s);
 

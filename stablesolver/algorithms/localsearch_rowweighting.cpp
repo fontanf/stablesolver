@@ -49,11 +49,11 @@ struct LocalSearchRowWeighting1Vertex
 };
 
 LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
-        Instance& instance_original,
+        const Instance& original_instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting1OptionalParameters parameters)
 {
-    init_display(instance_original, parameters.info);
+    init_display(original_instance, parameters.info);
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
@@ -65,14 +65,42 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         << "Maximum number of iterations without improvement:  " << parameters.maximum_number_of_iterations_without_improvement << std::endl
         << std::endl;
 
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    LocalSearchRowWeighting1Output output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
+
     // Compute initial greedy solution.
-    LocalSearchRowWeighting1Output output(instance_original, parameters.info);
-    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
-    Solution solution = greedy_gwmin(instance).solution;
+    GreedyOptionalParameters greedy_parameters;
+    //greedy_parameters.info.set_verbosity_level(1);
+    greedy_parameters.reduction_parameters.reduce = false;
+    Solution solution = greedy_gwmin(instance, greedy_parameters).solution;
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
     parameters.new_solution_callback(output);
+
     Solution solution_best(solution);
 
     if (instance.number_of_vertices() == 0)
@@ -83,12 +111,16 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
     for (VertexId vertex_id: solution.vertices())
         vertices[vertex_id].last_addition = 0;
     std::vector<LocalSearchRowWeighting1Component> components(instance.number_of_components());
-    for (ComponentId c = 0; c < instance.number_of_components(); ++c)
-        components[c].iteration_max = ((c == 0)? 0: components[c - 1].iteration_max)
-            + instance.component(c).edges.size();
+    for (ComponentId component_id = 0;
+            component_id < instance.number_of_components();
+            ++component_id) {
+        components[component_id].iteration_max
+            = ((component_id == 0)? 0: components[component_id - 1].iteration_max)
+            + instance.component(component_id).edges.size();
+    }
     std::vector<Penalty> solution_penalties(instance.number_of_edges(), 1);
 
-    ComponentId c = 0;
+    ComponentId component_id = 0;
     for (output.number_of_iterations = 0;
             !parameters.info.needs_to_end();
             ++output.number_of_iterations) {
@@ -100,7 +132,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 
         // Update best solution
         if (output.number_of_iterations % 100000 == 0
-                && solution_best.is_striclty_better_than(output.solution)) {
+                && solution_best.is_strictly_better_than(output.solution)) {
             std::stringstream ss;
             ss << "iteration " << output.number_of_iterations;
             output.update_solution(solution_best, ss, parameters.info);
@@ -110,22 +142,23 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         }
 
         // Compute component
-        if (output.number_of_iterations % (components.back().iteration_max + 1) >= components[c].iteration_max) {
-            c = (c + 1) % instance.number_of_components();
-            while (instance.component(c).vertices.size() == 1)
-                c = (c + 1) % instance.number_of_components();
+        if (output.number_of_iterations % (components.back().iteration_max + 1)
+                >= components[component_id].iteration_max) {
+            component_id = (component_id + 1) % instance.number_of_components();
+            while (instance.component(component_id).vertices.size() == 1)
+                component_id = (component_id + 1) % instance.number_of_components();
             //std::cout << "c " << c << " " << components[c].iteration_max
-                //<< " e " << instance.component(c).edges.size()
-                //<< " s " << instance.component(c).vertices.size()
+                //<< " e " << instance.component(component_id.edges.size()
+                //<< " s " << instance.component(component_id.vertices.size()
                 //<< std::endl;
         }
-        LocalSearchRowWeighting1Component& component = components[c];
+        LocalSearchRowWeighting1Component& component = components[component_id];
 
-        while (solution.feasible(c)) {
+        while (solution.feasible(component_id)) {
             // New best solution
-            if (solution_best.weight(c) < solution.weight(c)) {
+            if (solution_best.weight(component_id) < solution.weight(component_id)) {
                 // Update solution_best.
-                for (VertexId vertex_id: instance.component(c).vertices) {
+                for (VertexId vertex_id: instance.component(component_id).vertices) {
                     if (solution_best.contains(vertex_id)
                             && !solution.contains(vertex_id)) {
                         solution_best.remove(vertex_id);
@@ -148,7 +181,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
                     it_v != solution.vertices().out_end();
                     ++it_v) {
                 VertexId vertex_id = *it_v;
-                if (instance.vertex(vertex_id).component != c)
+                if (instance.vertex(vertex_id).component != component_id)
                     continue;
                 Penalty p = 0;
                 for (const auto& edge: instance.vertex(vertex_id).edges)
@@ -309,21 +342,48 @@ struct LocalSearchRowWeighting2Vertex
 };
 
 LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
-        const Instance& instance_original,
+        const Instance& original_instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting2OptionalParameters parameters)
 {
-    init_display(instance_original, parameters.info);
+    init_display(original_instance, parameters.info);
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
-        << "Row Weighting Local Search 1" << std::endl
+        << "Row Weighting Local Search 2" << std::endl
         << std::endl;
 
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    LocalSearchRowWeighting2Output output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
+
     // Compute initial greedy solution.
-    LocalSearchRowWeighting2Output output(instance_original, parameters.info);
-    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
-    Solution solution = greedy_gwmin(instance).solution;
+    GreedyOptionalParameters greedy_parameters;
+    //greedy_parameters.info.set_verbosity_level(1);
+    greedy_parameters.reduction_parameters.reduce = false;
+    Solution solution = greedy_gwmin(instance, greedy_parameters).solution;
     std::stringstream ss;
     ss << "initial solution";
     output.update_solution(solution, ss, parameters.info);
@@ -366,7 +426,7 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
 
         while (solution.feasible()) {
             // Update best solution
-            if (solution.is_striclty_better_than(output.solution)) {
+            if (solution.is_strictly_better_than(output.solution)) {
                 std::stringstream ss;
                 ss << "iteration " << output.number_of_iterations;
                 output.update_solution(solution, ss, parameters.info);

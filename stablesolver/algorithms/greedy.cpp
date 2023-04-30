@@ -5,18 +5,42 @@
 using namespace stablesolver;
 
 Output stablesolver::greedy_gwmin(
-        const Instance& instance_original,
-        optimizationtools::Info info)
+        const Instance& original_instance,
+        GreedyOptionalParameters parameters)
 {
-    init_display(instance_original, info);
-    info.os()
+    init_display(original_instance, parameters.info);
+    parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
         << "Greedy GWMIN" << std::endl
         << std::endl;
 
-    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
-    Output output(instance_original, info);
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    Output output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
+
     Solution solution(instance);
 
     std::vector<double> vertices_values(instance.number_of_vertices(), 0);
@@ -44,23 +68,46 @@ Output stablesolver::greedy_gwmin(
             available_vertices[edge.vertex_id] = 0;
     }
 
-    output.update_solution(solution, std::stringstream(), info);
-    return output.algorithm_end(info);
+    output.update_solution(solution, std::stringstream(), parameters.info);
+    return output.algorithm_end(parameters.info);
 }
 
 Output stablesolver::greedy_gwmax(
-        const Instance& instance_original,
-        optimizationtools::Info info)
+        const Instance& original_instance,
+        GreedyOptionalParameters parameters)
 {
-    init_display(instance_original, info);
-    info.os()
+    init_display(original_instance, parameters.info);
+    parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
         << "Greedy GWMAX" << std::endl
         << std::endl;
 
-    Output output(instance_original, info);
-    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    Output output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
 
     auto f = [&instance](VertexId vertex_id)
     {
@@ -100,23 +147,47 @@ Output stablesolver::greedy_gwmax(
             solution.add(vertex_id);
     }
 
-    output.update_solution(solution, std::stringstream(), info);
-    return output.algorithm_end(info);
+    output.update_solution(solution, std::stringstream(), parameters.info);
+    return output.algorithm_end(parameters.info);
 }
 
 Output stablesolver::greedy_gwmin2(
-        const Instance& instance_original,
-        optimizationtools::Info info)
+        const Instance& original_instance,
+        GreedyOptionalParameters parameters)
 {
-    init_display(instance_original, info);
-    info.os()
+    init_display(original_instance, parameters.info);
+    parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
         << "Greedy GWMIN2" << std::endl
         << std::endl;
 
-    Output output(instance_original, info);
-    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    Output output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
+
     Solution solution(instance);
 
     std::vector<double> vertices_values(instance.number_of_vertices(), 0);
@@ -148,23 +219,47 @@ Output stablesolver::greedy_gwmin2(
             available_vertices[edge.vertex_id] = 0;
     }
 
-    output.update_solution(solution, std::stringstream(), info);
-    return output.algorithm_end(info);
+    output.update_solution(solution, std::stringstream(), parameters.info);
+    return output.algorithm_end(parameters.info);
 }
 
 Output stablesolver::greedy_strong(
-        const Instance& instance_original,
-        optimizationtools::Info info)
+        const Instance& original_instance,
+        GreedyOptionalParameters parameters)
 {
-    init_display(instance_original, info);
-    info.os()
+    init_display(original_instance, parameters.info);
+    parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
         << "Strong Greedy" << std::endl
         << std::endl;
 
-    Output output(instance_original, info);
-    const Instance& instance = (instance_original.reduced_instance() == nullptr)?  instance_original: *instance_original.reduced_instance();
+    // Reduction.
+    std::unique_ptr<Instance> reduced_instance = nullptr;
+    if (parameters.reduction_parameters.reduce) {
+        reduced_instance = std::unique_ptr<Instance>(
+                new Instance(
+                    original_instance.reduce(
+                        parameters.reduction_parameters)));
+        parameters.info.os()
+            << "Reduced instance" << std::endl
+            << "----------------" << std::endl;
+        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
+        parameters.info.os() << std::endl;
+    }
+    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+
+    Output output(original_instance, parameters.info);
+
+    // Update upper bound from reduction.
+    if (reduced_instance != nullptr) {
+        output.update_upper_bound(
+                reduced_instance->total_weight()
+                + reduced_instance->unreduction_info().extra_weight,
+                std::stringstream("reduction"),
+                parameters.info);
+    }
+
     Solution solution(instance);
 
     optimizationtools::IndexedSet candidates(instance.number_of_vertices());
@@ -188,7 +283,7 @@ Output stablesolver::greedy_strong(
             candidates.remove(edge.vertex_id);
     }
 
-    output.update_solution(solution, std::stringstream(), info);
-    return output.algorithm_end(info);
+    output.update_solution(solution, std::stringstream(), parameters.info);
+    return output.algorithm_end(parameters.info);
 }
 
