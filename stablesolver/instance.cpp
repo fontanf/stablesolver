@@ -2,7 +2,10 @@
 
 #include "optimizationtools/containers/indexed_map.hpp"
 #include "optimizationtools/containers/doubly_indexed_map.hpp"
+#include "optimizationtools/utils/utils.hpp"
 
+#include <random>
+#include <set>
 #include <sstream>
 #include <iomanip>
 #include <thread>

@@ -1,10 +1,6 @@
 #pragma once
 
 #include "optimizationtools/utils/info.hpp"
-#include "optimizationtools/utils/utils.hpp"
-
-#include <random>
-#include <set>
 
 namespace stablesolver
 {
@@ -374,8 +370,6 @@ private:
     bool reduce_unconfined();
 
 };
-
-std::ostream& operator<<(std::ostream &os, const Instance& ins);
 
 void init_display(
         const Instance& instance,

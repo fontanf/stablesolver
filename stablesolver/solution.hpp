@@ -5,7 +5,6 @@
 #include "optimizationtools/containers/indexed_set.hpp"
 #include "optimizationtools/containers/indexed_map.hpp"
 
-#include <functional>
 #include <unordered_set>
 
 namespace stablesolver
@@ -80,6 +79,11 @@ public:
     /*
      * Export
      */
+
+    /** Print the instance. */
+    std::ostream& print(
+            std::ostream& os,
+            int verbose = 1) const;
 
     /** Write the solution to a file. */
     void write(std::string certificate_path);
@@ -173,8 +177,12 @@ std::ostream& operator<<(std::ostream& os, const Solution& solution);
 //////////////////////////////////// Output ////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Output structure for a maximum-weight independent set problem.
+ */
 struct Output
 {
+    /** Constructor. */
     Output(
             const Instance& instance,
             optimizationtools::Info& info);
@@ -182,32 +190,40 @@ struct Output
     /** Solution in the original instance. */
     Solution solution;
 
-    Weight upper_bound = 0;
+    /** Bound. */
+    Weight bound = 0;
 
+    /** Elapsed time. */
     double time = -1;
 
-    bool optimal() const { return solution.feasible() && solution.weight() == upper_bound; }
-    Weight lower_bound() const { return solution.weight(); }
-    double gap() const;
-    void print(optimizationtools::Info& info, const std::stringstream& s) const;
+    /** Return 'true' iff the solution is optimal. */
+    bool optimal() const { return solution.feasible() && solution.weight() == bound; }
 
+    /** Print current state. */
+    void print(
+            optimizationtools::Info& info,
+            const std::stringstream& s) const;
+
+    /** Update the solution. */
     void update_solution(
             const Solution& solution_new,
             const std::stringstream& s,
             optimizationtools::Info& info);
 
-    void update_upper_bound(
-            Weight upper_bound_new,
+    /** Update the bound. */
+    void update_bound(
+            Weight bound_new,
             const std::stringstream& s,
             optimizationtools::Info& info);
 
+    /** Print the algorithm statistics. */
+    virtual void print_statistics(
+            optimizationtools::Info& info) const { (void)info; }
+
+    /** Method to call at the end of the algorithm. */
     Output& algorithm_end(
             optimizationtools::Info& info);
 };
-
-Weight algorithm_end(
-        Weight upper_bound,
-        optimizationtools::Info& info);
 
 }
 

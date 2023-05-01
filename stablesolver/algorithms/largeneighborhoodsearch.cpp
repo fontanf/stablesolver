@@ -7,13 +7,15 @@
 
 using namespace stablesolver;
 
-LargeNeighborhoodSearchOutput& LargeNeighborhoodSearchOutput::algorithm_end(
-        optimizationtools::Info& info)
+void LargeNeighborhoodSearchOutput::print_statistics(
+        optimizationtools::Info& info) const
 {
-    info.add_to_json("Algorithm", "Iterations", iterations);
-    Output::algorithm_end(info);
-    info.os() << "Iterations: " << iterations << std::endl;
-    return *this;
+    if (info.verbosity_level() >= 1) {
+        info.os()
+            << "Number of iterations:         " << iterations << std::endl
+            ;
+    }
+    info.add_to_json("Algorithm", "NumberOfIterations", iterations);
 }
 
 struct LargeNeighborhoodSearchVertex
@@ -58,7 +60,7 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -244,6 +246,7 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
         }
     }
 
-    return output.algorithm_end(parameters.info);
+    output.algorithm_end(parameters.info);
+    return output;
 }
 

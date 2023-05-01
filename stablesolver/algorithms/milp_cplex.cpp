@@ -10,22 +10,14 @@ using namespace stablesolver;
 
 ILOSTLBEGIN
 
-MilpCplexOutput& MilpCplexOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //FFOT_PUT(info, "Algorithm", "Iterations", it);
-    Output::algorithm_end(info);
-    return *this;
-}
-
 ILOMIPINFOCALLBACK4(loggingCallback1,
                     const Instance&, instance,
                     MilpCplexOptionalParameters&, parameters,
-                    MilpCplexOutput&, output,
+                    Output&, output,
                     IloNumVarArray&, x)
 {
     VertexId ub = getBestObjValue();
-    output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+    output.update_bound(ub, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
         return;
@@ -45,7 +37,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
 /////////////////////////// Model 1, |E| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpCplexOutput stablesolver::milp_1_cplex(
+Output stablesolver::milp_1_cplex(
         const Instance& original_instance,
         MilpCplexOptionalParameters parameters)
 {
@@ -71,11 +63,11 @@ MilpCplexOutput stablesolver::milp_1_cplex(
     }
     const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
 
-    MilpCplexOutput output(original_instance, parameters.info);
+    Output output(original_instance, parameters.info);
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -140,7 +132,7 @@ MilpCplexOutput stablesolver::milp_1_cplex(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_upper_bound(
+        output.update_bound(
                 output.solution.weight(),
                 std::stringstream(""),
                 parameters.info);
@@ -159,13 +151,13 @@ MilpCplexOutput stablesolver::milp_1_cplex(
                     parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(
+        output.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(
+        output.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);
@@ -180,7 +172,7 @@ MilpCplexOutput stablesolver::milp_1_cplex(
 /////////////////////////// Model 2, |V| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpCplexOutput stablesolver::milp_2_cplex(
+Output stablesolver::milp_2_cplex(
         const Instance& original_instance,
         MilpCplexOptionalParameters parameters)
 {
@@ -206,11 +198,11 @@ MilpCplexOutput stablesolver::milp_2_cplex(
     }
     const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
 
-    MilpCplexOutput output(original_instance, parameters.info);
+    Output output(original_instance, parameters.info);
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -279,7 +271,7 @@ MilpCplexOutput stablesolver::milp_2_cplex(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_upper_bound(
+        output.update_bound(
                 output.solution.weight(),
                 std::stringstream(""),
                 parameters.info);
@@ -298,13 +290,13 @@ MilpCplexOutput stablesolver::milp_2_cplex(
                     parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(
+        output.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(
+        output.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);
@@ -319,7 +311,7 @@ MilpCplexOutput stablesolver::milp_2_cplex(
 /////////////////////////// Model 1, |E| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpCplexOutput stablesolver::milp_3_cplex(
+Output stablesolver::milp_3_cplex(
         const Instance& original_instance,
         MilpCplexOptionalParameters parameters)
 {
@@ -345,11 +337,11 @@ MilpCplexOutput stablesolver::milp_3_cplex(
     }
     const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
 
-    MilpCplexOutput output(original_instance, parameters.info);
+    Output output(original_instance, parameters.info);
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -465,7 +457,7 @@ MilpCplexOutput stablesolver::milp_3_cplex(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_upper_bound(
+        output.update_bound(
                 output.solution.weight(),
                 std::stringstream(""),
                 parameters.info);
@@ -484,13 +476,13 @@ MilpCplexOutput stablesolver::milp_3_cplex(
                     parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(
+        output.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(
+        output.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);

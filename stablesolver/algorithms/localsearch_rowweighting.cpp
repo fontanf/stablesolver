@@ -10,13 +10,15 @@ using namespace stablesolver;
 ////////////////////////// localsearch_rowweighting_1 //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-LocalSearchRowWeighting1Output& LocalSearchRowWeighting1Output::algorithm_end(
-        optimizationtools::Info& info)
+void LocalSearchRowWeighting1Output::print_statistics(
+        optimizationtools::Info& info) const
 {
+    if (info.verbosity_level() >= 1) {
+        info.os()
+            << "Number of iterations:         " << number_of_iterations << std::endl
+            ;
+    }
     info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
-    Output::algorithm_end(info);
-    info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
-    return *this;
 }
 
 struct LocalSearchRowWeighting1Component
@@ -84,7 +86,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -103,8 +105,10 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 
     Solution solution_best(solution);
 
-    if (instance.number_of_vertices() == 0)
-        return output.algorithm_end(parameters.info);
+    if (instance.number_of_vertices() == 0) {
+        output.algorithm_end(parameters.info);
+        return output;
+    }
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeighting1Vertex> vertices(instance.number_of_vertices());
@@ -312,20 +316,23 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
         component.iterations_without_improvment++;
     }
 
-    return output.algorithm_end(parameters.info);
+    output.algorithm_end(parameters.info);
+    return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////// localsearch_rowweighting_2 //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-LocalSearchRowWeighting2Output& LocalSearchRowWeighting2Output::algorithm_end(
-        optimizationtools::Info& info)
+void LocalSearchRowWeighting2Output::print_statistics(
+        optimizationtools::Info& info) const
 {
+    if (info.verbosity_level() >= 1) {
+        info.os()
+            << "Number of iterations:         " << number_of_iterations << std::endl
+            ;
+    }
     info.add_to_json("Algorithm", "NumberOfIterations", number_of_iterations);
-    Output::algorithm_end(info);
-    info.os() << "Number of iterations:  " << number_of_iterations << std::endl;
-    return *this;
 }
 
 struct LocalSearchRowWeighting2Vertex
@@ -372,7 +379,7 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -391,8 +398,10 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
     parameters.new_solution_callback(output);
     parameters.info.unlock();
 
-    if (instance.number_of_vertices() == 0)
-        return output.algorithm_end(parameters.info);
+    if (instance.number_of_vertices() == 0) {
+        output.algorithm_end(parameters.info);
+        return output;
+    }
 
     // Initialize local search structures.
     std::vector<LocalSearchRowWeighting2Vertex> vertices(instance.number_of_vertices());
@@ -573,6 +582,7 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
         vertex_id_last_removed = vertex_id_2_best;
     }
 
-    return output.algorithm_end(parameters.info);
+    output.algorithm_end(parameters.info);
+    return output;
 }
 

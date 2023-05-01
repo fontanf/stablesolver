@@ -358,7 +358,7 @@ public:
     inline PerturbationHasher perturbation_hasher() const { return PerturbationHasher(); }
 
     /*
-     * Outputs.
+     * Outputs
      */
 
     std::ostream& print(
@@ -470,15 +470,7 @@ private:
 
 }
 
-LocalSearchOutput& LocalSearchOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //info.add_to_json("Algorithm", "Iterations", iterations);
-    Output::algorithm_end(info);
-    return *this;
-}
-
-LocalSearchOutput stablesolver::localsearch(
+Output stablesolver::localsearch(
         const Instance& original_instance,
         std::mt19937_64&,
         LocalSearchOptionalParameters parameters)
@@ -505,11 +497,11 @@ LocalSearchOutput stablesolver::localsearch(
     }
     const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
 
-    LocalSearchOutput output(original_instance, parameters.info);
+    Output output(original_instance, parameters.info);
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),

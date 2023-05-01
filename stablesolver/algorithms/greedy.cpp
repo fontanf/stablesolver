@@ -34,7 +34,7 @@ Output stablesolver::greedy_gwmin(
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -102,7 +102,7 @@ Output stablesolver::greedy_gwmax(
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -181,7 +181,7 @@ Output stablesolver::greedy_gwmin2(
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -253,7 +253,7 @@ Output stablesolver::greedy_strong(
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),

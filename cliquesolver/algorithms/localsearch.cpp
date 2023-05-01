@@ -374,7 +374,7 @@ public:
     inline PerturbationHasher perturbation_hasher() const { return PerturbationHasher(); }
 
     /*
-     * Outputs
+     * Output
      */
 
     std::ostream& print(
@@ -527,15 +527,7 @@ private:
 
 }
 
-LocalSearchOutput& LocalSearchOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //info.add_to_json("Algorithm", "Iterations", iterations);
-    Output::algorithm_end(info);
-    return *this;
-}
-
-LocalSearchOutput cliquesolver::localsearch(
+Output cliquesolver::localsearch(
         const Instance& instance,
         std::mt19937_64&,
         LocalSearchOptionalParameters parameters)
@@ -547,7 +539,7 @@ LocalSearchOutput cliquesolver::localsearch(
         << "Local Search" << std::endl
         << std::endl;
 
-    LocalSearchOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
 
     // Create LocalScheme.
     LocalScheme::Parameters parameters_local_scheme;
@@ -577,8 +569,8 @@ LocalSearchOutput cliquesolver::localsearch(
 
             optimizationtools::IndexedSet relevant_vertices(instance.graph()->number_of_vertices());
             relevant_vertices.fill();
-            Weight upper_bound = instance.update_core(relevant_vertices, output.solution.weight());
-            output.update_upper_bound(upper_bound, ss, parameters.info);
+            Weight bound = instance.update_core(relevant_vertices, output.solution.weight());
+            output.update_bound(bound, ss, parameters.info);
 
             if (output.optimal())
                 *(parameters_best_first.info.end) = true;

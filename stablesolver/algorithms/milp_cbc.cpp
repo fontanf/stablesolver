@@ -7,14 +7,6 @@
 
 using namespace stablesolver;
 
-MilpCbcOutput& MilpCbcOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //info.add_to_json("Algorithm", "Iterations", it);
-    Output::algorithm_end(info);
-    return *this;
-}
-
 class SolHandler: public CbcEventHandler
 {
 
@@ -25,7 +17,7 @@ public:
     SolHandler(
             const Instance& instance,
             MilpCbcOptionalParameters& parameters,
-            MilpCbcOutput& output):
+            Output& output):
         CbcEventHandler(),
         instance_(instance),
         parameters_(parameters),
@@ -35,7 +27,7 @@ public:
             CbcModel *model,
             const Instance& instance,
             MilpCbcOptionalParameters& parameters,
-            MilpCbcOutput& output):
+            Output& output):
         CbcEventHandler(model),
         instance_(instance),
         parameters_(parameters),
@@ -66,7 +58,7 @@ private:
 
     const Instance& instance_;
     MilpCbcOptionalParameters& parameters_;
-    MilpCbcOutput& output_;
+    Output& output_;
 
 };
 
@@ -76,7 +68,7 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
         return noAction;
 
     Weight ub = -model_->getBestPossibleObjValue();
-    output_.update_upper_bound(ub, std::stringstream(""), parameters_.info);
+    output_.update_bound(ub, std::stringstream(""), parameters_.info);
 
     if ((whichEvent != solution && whichEvent != heuristicSolution)) // no solution found
         return noAction;
@@ -108,7 +100,7 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
 /////////////////////////// Model 1, |E| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-MilpCbcOutput stablesolver::milp_1_cbc(
+Output stablesolver::milp_1_cbc(
         const Instance& original_instance,
         MilpCbcOptionalParameters parameters)
 {
@@ -134,11 +126,11 @@ MilpCbcOutput stablesolver::milp_1_cbc(
     }
     const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
 
-    MilpCbcOutput output(original_instance, parameters.info);
+    Output output(original_instance, parameters.info);
 
     // Update upper bound from reduction.
     if (reduced_instance != nullptr) {
-        output.update_upper_bound(
+        output.update_bound(
                 reduced_instance->total_weight()
                 + reduced_instance->unreduction_info().extra_weight,
                 std::stringstream("reduction"),
@@ -253,7 +245,7 @@ MilpCbcOutput stablesolver::milp_1_cbc(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_upper_bound(
+        output.update_bound(
                 output.solution.weight(),
                 std::stringstream(""),
                 parameters.info);
@@ -274,10 +266,10 @@ MilpCbcOutput stablesolver::milp_1_cbc(
                     parameters.info);
         }
         Weight ub = -model.getBestPossibleObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_bound(ub, std::stringstream(""), parameters.info);
     } else {
         Weight ub = -model.getBestPossibleObjValue();
-        output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+        output.update_bound(ub, std::stringstream(""), parameters.info);
     }
 
     return output.algorithm_end(parameters.info);

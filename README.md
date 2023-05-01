@@ -67,37 +67,53 @@ Instance
 --------
 Number of vertices:              200
 Number of edges:                 5066
-Density:                         0.254573
+Density:                         0.2533
 Average degree:                  50.66
 Maximum degree:                  69
-Average weight:                  1
+Total weight:                    200
 Number of connected components:  1
 
 Algorithm
 ---------
-Row Weighting Local Search 1
+Row Weighting Local Search 2
+
+Reduced instance
+----------------
+Number of vertices:              200
+Number of edges:                 5066
+Density:                         0.2533
+Average degree:                  50.66
+Maximum degree:                  69
+Total weight:                    200
+Number of connected components:  1
 
        T (s)              LB              UB             GAP     GAP (%)                 Comment
        -----              --              --             ---     -------                 -------
-       0.000               0             200             200      100.00                        
-       0.000              15             200             185       92.50        initial solution
-       0.000              16             200             184       92.00             iteration 2
-       0.007              17             200             183       91.50             iteration 2
-       0.007              18             200             182       91.00             iteration 2
-       0.007              19             200             181       90.50             iteration 3
-       0.008              20             200             180       90.00          iteration 1162
-       0.010              21             200             179       89.50          iteration 2440
+       0.003               0             200             200      100.00                        
+       0.003              15             200             185       92.50        initial solution
+       0.003              16             200             184       92.00             iteration 2
+       0.010              17             200             183       91.50             iteration 2
+       0.010              18             200             182       91.00             iteration 2
+       0.010              19             200             181       90.50             iteration 3
+       0.011              20             200             180       90.00          iteration 1162
+       0.012              21             200             179       89.50          iteration 2440
 
 Final statistics
 ----------------
-Value:                 21
-Number of vertices:    21
-Vertex cover Value:    179
-Bound:                 200
-Gap:                   179
-Gap (%):               89.5
-Time (s):              0.0103
-Number of iterations:  3000
+Value:                        21
+Bound:                        200
+Absolute optimality gap:      179
+Relative optimality gap (%):  89.5
+Time (s):                     0.0127225
+Number of iterations:         3000
+
+Solution
+--------
+Number of vertices:   21 / 200 (10.5%)
+Number of conflicts:  0
+Feasible:             1
+Vertex cover weight:  179
+Weight:               21
 ```
 
 ```shell
@@ -112,21 +128,11 @@ Instance
 --------
 Number of vertices:              192244
 Number of edges:                 609066
-Density:                         3.29603e-05
+Density:                         3.29601e-05
 Average degree:                  6.33639
 Maximum degree:                  1071
-Average weight:                  1
+Total weight:                    192244
 Number of connected components:  308
-
-Reduced instance
-----------------
-Number of vertices:              2800
-Number of edges:                 8646
-Density:                         0.0022064
-Average degree:                  6.17571
-Maximum degree:                  56
-Extra weight:                    115593
-Number of connected components:  148
 
 Algorithm
 ---------
@@ -137,21 +143,38 @@ Parameters
 Maximum number of iterations:                      300000
 Maximum number of iterations without improvement:  -1
 
+Reduced instance
+----------------
+Number of vertices:              2800
+Number of edges:                 8646
+Density:                         0.00220561
+Average degree:                  6.17571
+Maximum degree:                  56
+Total weight:                    2800
+Number of connected components:  148
+
        T (s)              LB              UB             GAP     GAP (%)                 Comment
        -----              --              --             ---     -------                 -------
-       0.425               0          118393          118393      100.00                        
-       0.441          117029          118393            1364        1.15        initial solution
-       0.815          117146          118393            1247        1.05        iteration 100000
-       1.207          117150          118393            1243        1.05        iteration 200000
+       0.534               0          192244          192244      100.00                        
+       0.534               0          118393          118393      100.00               reduction
+       0.549          117029          118393            1364        1.15        initial solution
+       0.980          117146          118393            1247        1.05        iteration 100000
+       1.429          117150          118393            1243        1.05        iteration 200000
 
 Final statistics
 ----------------
-Value:                 117150
-Number of vertices:    117150
-Vertex cover Value:    75094
-Bound:                 118393
-Gap:                   1243
-Gap (%):               1.04989
-Time (s):              1.5777
-Number of iterations:  300000
+Value:                        117150
+Bound:                        118393
+Absolute optimality gap:      1243
+Relative optimality gap (%):  1.04989
+Time (s):                     1.85819
+Number of iterations:         300000
+
+Solution
+--------
+Number of vertices:   117150 / 192244 (60.9382%)
+Number of conflicts:  0
+Feasible:             1
+Vertex cover weight:  75094
+Weight:               117150
 ```

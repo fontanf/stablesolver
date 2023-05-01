@@ -14,18 +14,7 @@ struct MilpCplexOptionalParameters
     const Solution* initial_solution = NULL;
 };
 
-struct MilpCplexOutput: Output
-{
-    MilpCplexOutput(
-            const Instance& instance,
-            optimizationtools::Info& info):
-        Output(instance, info) { }
-
-    MilpCplexOutput& algorithm_end(
-            optimizationtools::Info& info);
-};
-
-MilpCplexOutput milp_cplex(
+Output milp_cplex(
         const Instance& instance,
         MilpCplexOptionalParameters parameters = {});
 

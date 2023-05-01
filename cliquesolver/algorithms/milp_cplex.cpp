@@ -8,22 +8,14 @@ using namespace cliquesolver;
 
 ILOSTLBEGIN
 
-MilpCplexOutput& MilpCplexOutput::algorithm_end(
-        optimizationtools::Info& info)
-{
-    //info.add_to_json("Algorithm", "Iterations", it);
-    Output::algorithm_end(info);
-    return *this;
-}
-
 ILOMIPINFOCALLBACK4(loggingCallback1,
                     const Instance&, instance,
                     MilpCplexOptionalParameters&, parameters,
-                    MilpCplexOutput&, output,
+                    Output&, output,
                     IloNumVarArray&, x)
 {
     VertexId ub = getBestObjValue();
-    output.update_upper_bound(ub, std::stringstream(""), parameters.info);
+    output.update_bound(ub, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
         return;
@@ -45,7 +37,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
     }
 }
 
-MilpCplexOutput cliquesolver::milp_cplex(
+Output cliquesolver::milp_cplex(
         const Instance& instance, MilpCplexOptionalParameters parameters)
 {
     cliquesolver::init_display(instance, parameters.info);
@@ -56,7 +48,7 @@ MilpCplexOutput cliquesolver::milp_cplex(
         << std::endl;
 
     const optimizationtools::AbstractGraph* graph = instance.graph();
-    MilpCplexOutput output(instance, parameters.info);
+    Output output(instance, parameters.info);
     VertexId n = graph->number_of_vertices();
 
     IloEnv env;
@@ -135,7 +127,7 @@ MilpCplexOutput cliquesolver::milp_cplex(
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_upper_bound(
+        output.update_bound(
                 output.solution.weight(),
                 std::stringstream(""),
                 parameters.info);
@@ -154,13 +146,13 @@ MilpCplexOutput cliquesolver::milp_cplex(
                     parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(
+        output.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_upper_bound(
+        output.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);

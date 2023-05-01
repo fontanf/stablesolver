@@ -1,5 +1,7 @@
 #include "stablesolver/solution.hpp"
 
+#include "optimizationtools/utils/utils.hpp"
+
 #include <iomanip>
 
 using namespace stablesolver;
@@ -82,6 +84,39 @@ void Solution::update(const Solution& solution)
     }
 }
 
+std::ostream& Solution::print(
+        std::ostream& os,
+        int verbose) const
+{
+    if (verbose >= 1) {
+        os
+            << "Number of vertices:   " << optimizationtools::Ratio<VertexId>(number_of_vertices(), instance().number_of_vertices()) << std::endl
+            << "Number of conflicts:  " << number_of_conflicts() << std::endl
+            << "Feasible:             " << feasible() << std::endl
+            << "Vertex cover weight:  " << instance().total_weight() - weight() << std::endl
+            << "Weight:               " << weight() << std::endl
+            ;
+    }
+
+    if (verbose >= 2) {
+        os << std::endl
+            << std::setw(12) << "Vertex"
+            << std::setw(12) << "Weight"
+            << std::endl
+            << std::setw(12) << "------"
+            << std::setw(12) << "------"
+            << std::endl;
+        for (VertexId vertex_id: vertices_) {
+            os
+                << std::setw(12) << vertex_id
+                << std::setw(12) << instance().vertex(vertex_id).weight
+                << std::endl;
+        }
+    }
+
+    return os;
+}
+
 void Solution::write(std::string certificate_path)
 {
     if (certificate_path.empty())
@@ -131,7 +166,7 @@ Output::Output(
         const Instance& instance,
         optimizationtools::Info& info):
     solution(instance),
-    upper_bound(instance.total_weight())
+    bound(instance.total_weight())
 {
     info.os()
         << std::setw(12) << "T (s)"
@@ -155,18 +190,29 @@ void Output::print(
         optimizationtools::Info& info,
         const std::stringstream& s) const
 {
-    double gap = (upper_bound == 0)?
-        std::numeric_limits<double>::infinity():
-        (double)(upper_bound - lower_bound()) / upper_bound * 100;
+    std::string solution_value = optimizationtools::solution_value(
+            optimizationtools::ObjectiveDirection::Maximize,
+            solution.feasible(),
+            solution.weight());
+    double absolute_optimality_gap = optimizationtools::absolute_optimality_gap(
+            optimizationtools::ObjectiveDirection::Maximize,
+            solution.feasible(),
+            solution.weight(),
+            bound);
+    double relative_optimality_gap = optimizationtools::relative_optimality_gap(
+            optimizationtools::ObjectiveDirection::Maximize,
+            solution.feasible(),
+            solution.weight(),
+            bound);
     double t = info.elapsed_time();
     std::streamsize precision = std::cout.precision();
 
     info.os()
         << std::setw(12) << std::fixed << std::setprecision(3) << t << std::defaultfloat << std::setprecision(precision)
-        << std::setw(16) << lower_bound()
-        << std::setw(16) << upper_bound
-        << std::setw(16) << upper_bound - lower_bound()
-        << std::setw(12) << std::fixed << std::setprecision(2) << gap << std::defaultfloat << std::setprecision(precision)
+        << std::setw(16) << solution_value
+        << std::setw(16) << bound
+        << std::setw(16) << absolute_optimality_gap
+        << std::setw(12) << std::fixed << std::setprecision(2) << relative_optimality_gap * 100 << std::defaultfloat << std::setprecision(precision)
         << std::setw(24) << s.str()
         << std::endl;
 
@@ -185,10 +231,15 @@ void Output::update_solution(
         solution.update(solution_new);
         print(info, s);
 
+        std::string solution_value = optimizationtools::solution_value(
+                optimizationtools::ObjectiveDirection::Maximize,
+                solution.feasible(),
+                solution.weight());
+        double t = info.elapsed_time();
+
         info.output->number_of_solutions++;
-        double t = round(info.elapsed_time() * 10000) / 10000;
         std::string sol_str = "Solution" + std::to_string(info.output->number_of_solutions);
-        info.add_to_json(sol_str, "Value", solution.weight());
+        info.add_to_json(sol_str, "Value", solution_value);
         info.add_to_json(sol_str, "Time", t);
         info.add_to_json(sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end) {
@@ -200,24 +251,25 @@ void Output::update_solution(
     info.unlock();
 }
 
-void Output::update_upper_bound(
-        Weight upper_bound_new,
+void Output::update_bound(
+        Weight bound_new,
         const std::stringstream& s,
         optimizationtools::Info& info)
 {
-    if (upper_bound <= upper_bound_new)
+    if (bound <= bound_new)
         return;
 
     info.lock();
 
-    if (upper_bound > upper_bound_new) {
-        upper_bound = upper_bound_new;
+    if (bound > bound_new) {
+        bound = bound_new;
         print(info, s);
 
+        double t = info.elapsed_time();
+
         info.output->number_of_bounds++;
-        double t = round(info.elapsed_time() * 10000) / 10000;
         std::string sol_str = "Bound" + std::to_string(info.output->number_of_bounds);
-        info.add_to_json(sol_str, "Bound", upper_bound);
+        info.add_to_json(sol_str, "Bound", bound);
         info.add_to_json(sol_str, "Time", t);
         info.add_to_json(sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end)
@@ -230,48 +282,43 @@ void Output::update_upper_bound(
 Output& Output::algorithm_end(
         optimizationtools::Info& info)
 {
-    double t = round(info.elapsed_time() * 10000) / 10000;
-    double gap = (upper_bound == 0)?
-        std::numeric_limits<double>::infinity():
-        (double)(upper_bound - lower_bound()) / upper_bound * 100;
-    info.add_to_json("Solution", "Value", lower_bound());
-    info.add_to_json("Bound", "Value", upper_bound);
-    info.add_to_json("Solution", "Time", t);
-    info.add_to_json("Bound", "Time", t);
+    std::string solution_value = optimizationtools::solution_value(
+            optimizationtools::ObjectiveDirection::Maximize,
+            solution.feasible(),
+            solution.weight());
+    double absolute_optimality_gap = optimizationtools::absolute_optimality_gap(
+            optimizationtools::ObjectiveDirection::Maximize,
+            solution.feasible(),
+            solution.weight(),
+            bound);
+    double relative_optimality_gap = optimizationtools::relative_optimality_gap(
+            optimizationtools::ObjectiveDirection::Maximize,
+            solution.feasible(),
+            solution.weight(),
+            bound);
+    time = info.elapsed_time();
+
+    info.add_to_json("Solution", "Value", solution_value);
+    info.add_to_json("Bound", "Value", bound);
+    info.add_to_json("Solution", "Time", time);
+    info.add_to_json("Bound", "Time", time);
     info.os()
         << std::endl
         << "Final statistics" << std::endl
         << "----------------" << std::endl
-        << "Value:                 " << lower_bound() << std::endl
-        << "Number of vertices:    " << solution.number_of_vertices() << std::endl
-        << "Vertex cover Value:    " << solution.instance().total_weight() - lower_bound() << std::endl
-        << "Bound:                 " << upper_bound << std::endl
-        << "Gap:                   " << upper_bound - lower_bound() << std::endl
-        << "Gap (%):               " << gap << std::endl
-        << "Time (s):              " << t << std::endl
+        << "Value:                        " << solution_value << std::endl
+        << "Bound:                        " << bound << std::endl
+        << "Absolute optimality gap:      " << absolute_optimality_gap << std::endl
+        << "Relative optimality gap (%):  " << relative_optimality_gap * 100 << std::endl
+        << "Time (s):                     " << time << std::endl
         ;
+    print_statistics(info);
+    info.os() << std::endl
+        << "Solution" << std::endl
+        << "--------" << std::endl ;
+    solution.print(info.os(), info.verbosity_level());
 
     info.write_json_output();
     solution.write(info.output->certificate_path);
     return *this;
 }
-
-Weight stablesolver::algorithm_end(
-        Weight upper_bound,
-        optimizationtools::Info& info)
-{
-    double t = round(info.elapsed_time() * 10000) / 10000;
-    info.add_to_json("Bound", "Value", upper_bound);
-    info.add_to_json("Bound", "Time", t);
-    info.os()
-        << std::endl
-        << "Final statistics" << std::endl
-        << "----------------" << std::endl
-        << "Bound:                 " << upper_bound << std::endl
-        << "Time (s):              " << t << std::endl
-        ;
-
-    info.write_json_output();
-    return upper_bound;
-}
-
