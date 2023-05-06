@@ -133,31 +133,6 @@ class Instance
 
 public:
 
-    /*
-     * Constructors and destructor.
-     */
-
-    /** Create an instance from a file. */
-    Instance(std::string instance_path, std::string format);
-
-    /** Create an instance manually. */
-    Instance(VertexId number_of_vertices);
-
-    /** Add a vertex. */
-    void add_vertex(Weight weight = 1);
-
-    /** Set the weight of vertex 'v' to 'weight'. */
-    void set_weight(VertexId vertex_id, Weight weight);
-
-    /** Add an edge between vertex 'vertex_id_1' and vertex 'vertex_id_2'. */
-    void add_edge(VertexId vertex_id_1, VertexId vertex_id_2, int check_duplicate = 0);
-
-    /** Set the weight of all vertices to 1. */
-    void set_unweighted();
-
-    /** Compute the connected components of the instance. */
-    void compute_components();
-
     /** Create the complementary instance. */
     Instance complementary();
 
@@ -268,25 +243,6 @@ private:
      */
 
     /*
-     * Read input file
-     */
-
-    /** Read an instance file in 'dimacs1992' format. */
-    void read_dimacs1992(std::ifstream& file);
-
-    /** Read an instance file in 'dimacs2010' format. */
-    void read_dimacs2010(std::ifstream& file);
-
-    /** Read an instance file in 'matrixmarket' format. */
-    void read_matrixmarket(std::ifstream& file);
-
-    /** Read an instance file in 'chaco' format. */
-    void read_chaco(std::ifstream& file);
-
-    /** Read an instance file in 'snap' format. */
-    void read_snap(std::ifstream& file);
-
-    /*
      * Reductions
      */
 
@@ -368,6 +324,8 @@ private:
      *   https://doi.org/10.1137/1.9781611975499.12
      */
     bool reduce_unconfined();
+
+    friend class InstanceBuilder;
 
 };
 

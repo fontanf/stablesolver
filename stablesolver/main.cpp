@@ -1,4 +1,5 @@
 #include "stablesolver/algorithms/algorithms.hpp"
+#include "stablesolver/instance_builder.hpp"
 
 #include <boost/program_options.hpp>
 
@@ -55,9 +56,11 @@ int main(int argc, char *argv[])
 
     // Run algorithm
 
-    Instance instance(instance_path, format);
+    InstanceBuilder instance_builder;
+    instance_builder.read(instance_path, format);
     if (vm.count("unweighted"))
-        instance.set_unweighted();
+        instance_builder.set_unweighted();
+    Instance instance = instance_builder.build();
     if (vm.count("complementary"))
         instance = instance.complementary();
 
