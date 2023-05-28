@@ -204,11 +204,11 @@ void Output::print(
             solution.feasible(),
             solution.weight(),
             bound);
-    double t = info.elapsed_time();
+    double time = info.elapsed_time();
     std::streamsize precision = std::cout.precision();
 
     info.os()
-        << std::setw(12) << std::fixed << std::setprecision(3) << t << std::defaultfloat << std::setprecision(precision)
+        << std::setw(12) << std::fixed << std::setprecision(3) << time << std::defaultfloat << std::setprecision(precision)
         << std::setw(16) << solution_value
         << std::setw(16) << bound
         << std::setw(16) << absolute_optimality_gap
@@ -235,12 +235,12 @@ void Output::update_solution(
                 optimizationtools::ObjectiveDirection::Maximize,
                 solution.feasible(),
                 solution.weight());
-        double t = info.elapsed_time();
+        double time = info.elapsed_time();
 
         info.output->number_of_solutions++;
         std::string sol_str = "Solution" + std::to_string(info.output->number_of_solutions);
         info.add_to_json(sol_str, "Value", solution_value);
-        info.add_to_json(sol_str, "Time", t);
+        info.add_to_json(sol_str, "Time", time);
         info.add_to_json(sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end) {
             info.write_json_output();
@@ -265,12 +265,12 @@ void Output::update_bound(
         bound = bound_new;
         print(info, s);
 
-        double t = info.elapsed_time();
+        double time = info.elapsed_time();
 
         info.output->number_of_bounds++;
         std::string sol_str = "Bound" + std::to_string(info.output->number_of_bounds);
         info.add_to_json(sol_str, "Bound", bound);
-        info.add_to_json(sol_str, "Time", t);
+        info.add_to_json(sol_str, "Time", time);
         info.add_to_json(sol_str, "String", s.str());
         if (!info.output->only_write_at_the_end)
             solution.write(info.output->certificate_path);
