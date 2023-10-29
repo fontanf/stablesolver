@@ -1,6 +1,6 @@
-# Stable Solver and Clique Solver
+# StableSolver
 
-Solvers for the Maximum(-Weight) Independent Set and for the Maximum(-Weight) Clique Problems.
+A solver for the maximum(-weight) independent set and for the maximum(-weight) clique problems.
 
 ![stable](stable.png?raw=true "stable")
 
@@ -15,33 +15,33 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
 ### Stable Solver
 
 - Greedy algorithms, see "A note on greedy algorithms for the maximum weighted independent set problem" (Sakai et al., 2001) [DOI](https://doi.org/10.1016/S0166-218X(02)00205-6)
-  - `-a greedy_gwmin`
-  - `-a greedy_gwmax`
-  - `-a greedy_gwmin2`
-  - `-a greedy_strong`
+  - `-a greedy-gwmin`
+  - `-a greedy-gwmax`
+  - `-a greedy-gwmin2`
+  - `-a greedy-strong`
 
 - Mixed-Integer Linear Programs
-  - Model 1, `|E|` constraints  `-a milp_1_cbc` (Cbc) `-a milp_1_cplex` (CPLEX)
-  - Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) [DOI](https://doi.org/10.1016/0377-2217(94)90252-6) `-a milp_2_cplex` (CPLEX)
-  - Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) [DOI](https://doi.org/10.1287/ijoc.2016.0742) (seems useless since solvers already detect and merge clique constraints) `-a milp_3_cplex` (CPLEX)
+  - Model 1, `|E|` constraints  `-a milp-1-cbc` (Cbc) `-a milp-1-cplex` (CPLEX)
+  - Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) [DOI](https://doi.org/10.1016/0377-2217(94)90252-6) `-a milp-2-cplex` (CPLEX)
+  - Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) [DOI](https://doi.org/10.1287/ijoc.2016.0742) (seems useless since solvers already detect and merge clique constraints) `-a milp-3-cplex` (CPLEX)
 
-- Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch --threads 3"`
+- Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "local-search --threads 3"`
 
 - Row weighting local search (unweighted only)
-  - based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) [DOI](https://doi.org/10.1145/3377929.3398184) `-a "localsearch_rowweighting_1 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
-  - based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) [DOI](https://doi.org/10.1016/j.ejor.2015.05.038) `-a "localsearch_rowweighting_2 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+  - based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) [DOI](https://doi.org/10.1145/3377929.3398184) `-a "local-search-row-weighting-1 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+  - based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) [DOI](https://doi.org/10.1016/j.ejor.2015.05.038) `-a "local-search-row-weighting-2 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
 
-- Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) [DOI](https://doi.org/10.1080/01605682.2019.1621218) `-a "largeneighborhoodsearch"`
+- Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) [DOI](https://doi.org/10.1080/01605682.2019.1621218) `-a "large-neighborhood-search"`
 
 ### Clique Solver
 
 - Greedy algorithms:
-  - `-a greedy_gwmin`, adapted from the stable version, same complexity
-  - `-a greedy_strong`
+  - `-a greedy-gwmin`, adapted from the stable version, same complexity
+  - `-a greedy-strong`
 
-- Mixed-Integer Linear Program (implemented with CPLEX), see "Worst-case analysis of clique MIPs" (Naderi et al., 2021) [DOI](https://doi.org/10.1007/s10107-021-01706-2) `-a milp_cplex`
+- Mixed-Integer Linear Program (implemented with CPLEX), see "Worst-case analysis of clique MIPs" (Naderi et al., 2021) [DOI](https://doi.org/10.1007/s10107-021-01706-2) `-a milp-cplex`
 
-- Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "localsearch"`
+- Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "local-search"`
 
 ## Usage (command line)
 
@@ -56,12 +56,16 @@ bazel build -- //...
 Examples:
 
 ```shell
-./bazel-bin/stablesolver/main -v 1 -i "data/dimacs1992/brock200_1.clq" --format dimacs1992 -a "localsearch_rowweighting_2 --iterations 3000" -c solution.txt
+./bazel-bin/stablesolver/main -v 1 -i "data/dimacs1992/brock200_1.clq" --format dimacs1992 -a "local-search-row-weighting-2 --iterations 3000" -c solution.txt
 ```
 ```
-=====================================
-            Stable Solver            
-=====================================
+====================================
+            StableSolver            
+====================================
+
+Problem
+-------
+Maximum-weight independent set problem
 
 Instance
 --------
@@ -75,7 +79,7 @@ Number of connected components:  1
 
 Algorithm
 ---------
-Row Weighting Local Search 2
+Row weighting local search 2
 
 Reduced instance
 ----------------
@@ -95,8 +99,8 @@ Number of connected components:  1
        0.010              17             200             183       91.50             iteration 2
        0.010              18             200             182       91.00             iteration 2
        0.010              19             200             181       90.50             iteration 3
-       0.011              20             200             180       90.00          iteration 1162
-       0.012              21             200             179       89.50          iteration 2440
+       0.012              20             200             180       90.00          iteration 1162
+       0.013              21             200             179       89.50          iteration 2440
 
 Final statistics
 ----------------
@@ -104,7 +108,7 @@ Value:                        21
 Bound:                        200
 Absolute optimality gap:      179
 Relative optimality gap (%):  89.5
-Time (s):                     0.0127225
+Time (s):                     0.0134117
 Number of iterations:         3000
 
 Solution
@@ -117,12 +121,16 @@ Weight:               21
 ```
 
 ```shell
-./bazel-bin/stablesolver/main -v 1 -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 -a "localsearch_rowweighting_1 --iterations 300000"
+./bazel-bin/stablesolver/main -v 1 -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 -a "local-search-row-weighting-1 --iterations 300000"
 ```
 ```
-=====================================
-            Stable Solver            
-=====================================
+====================================
+            StableSolver            
+====================================
+
+Problem
+-------
+Maximum-weight independent set problem
 
 Instance
 --------
@@ -136,7 +144,7 @@ Number of connected components:  308
 
 Algorithm
 ---------
-Row Weighting Local Search 1
+Row weighting local search 1
 
 Parameters
 ----------
@@ -155,11 +163,11 @@ Number of connected components:  148
 
        T (s)              LB              UB             GAP     GAP (%)                 Comment
        -----              --              --             ---     -------                 -------
-       0.534               0          192244          192244      100.00                        
-       0.534               0          118393          118393      100.00               reduction
-       0.549          117029          118393            1364        1.15        initial solution
-       0.980          117146          118393            1247        1.05        iteration 100000
-       1.429          117150          118393            1243        1.05        iteration 200000
+       0.505               0          192244          192244      100.00                        
+       0.505               0          118393          118393      100.00               reduction
+       0.522          117029          118393            1364        1.15        initial solution
+       0.827          117146          118393            1247        1.05        iteration 100000
+       1.141          117150          118393            1243        1.05        iteration 200000
 
 Final statistics
 ----------------
@@ -167,7 +175,7 @@ Value:                        117150
 Bound:                        118393
 Absolute optimality gap:      1243
 Relative optimality gap (%):  1.04989
-Time (s):                     1.85819
+Time (s):                     1.42409
 Number of iterations:         300000
 
 Solution

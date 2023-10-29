@@ -5,7 +5,7 @@
 using namespace stablesolver;
 namespace po = boost::program_options;
 
-LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& argv)
+LocalSearchOptionalParameters read_local_search_args(const std::vector<char*>& argv)
 {
     LocalSearchOptionalParameters parameters;
     po::options_description desc("Allowed options");
@@ -23,7 +23,7 @@ LocalSearchOptionalParameters read_localsearch_args(const std::vector<char*>& ar
     return parameters;
 }
 
-LocalSearchRowWeighting1OptionalParameters read_localsearch_rowweighting_1_args(const std::vector<char*>& argv)
+LocalSearchRowWeighting1OptionalParameters read_local_search_row_weighting_1_args(const std::vector<char*>& argv)
 {
     LocalSearchRowWeighting1OptionalParameters parameters;
     po::options_description desc("Allowed options");
@@ -42,7 +42,7 @@ LocalSearchRowWeighting1OptionalParameters read_localsearch_rowweighting_1_args(
     return parameters;
 }
 
-LocalSearchRowWeighting2OptionalParameters read_localsearch_rowweighting_2_args(const std::vector<char*>& argv)
+LocalSearchRowWeighting2OptionalParameters read_local_search_row_weighting_2_args(const std::vector<char*>& argv)
 {
     LocalSearchRowWeighting2OptionalParameters parameters;
     po::options_description desc("Allowed options");
@@ -61,7 +61,7 @@ LocalSearchRowWeighting2OptionalParameters read_localsearch_rowweighting_2_args(
     return parameters;
 }
 
-LargeNeighborhoodSearchOptionalParameters read_largeneighborhoodsearch_args(const std::vector<char*>& argv)
+LargeNeighborhoodSearchOptionalParameters read_large_neighborhood_search_args(const std::vector<char*>& argv)
 {
     LargeNeighborhoodSearchOptionalParameters parameters;
     po::options_description desc("Allowed options");
@@ -94,60 +94,60 @@ Output stablesolver::run(
     if (algorithm.empty() || algorithm_args[0].empty()) {
         throw std::invalid_argument("Missing algorithm.");
 
-    } else if (algorithm_args[0] == "greedy_gwmin") {
+    } else if (algorithm_args[0] == "greedy-gwmin") {
         GreedyOptionalParameters parameters;
         parameters.info = info;
         return greedy_gwmin(instance, parameters);
-    } else if (algorithm_args[0] == "greedy_gwmax") {
+    } else if (algorithm_args[0] == "greedy-gwmax") {
         GreedyOptionalParameters parameters;
         parameters.info = info;
         return greedy_gwmax(instance, parameters);
-    } else if (algorithm_args[0] == "greedy_gwmin2") {
+    } else if (algorithm_args[0] == "greedy-gwmin2") {
         GreedyOptionalParameters parameters;
         parameters.info = info;
         return greedy_gwmin2(instance, parameters);
-    } else if (algorithm_args[0] == "greedy_strong") {
+    } else if (algorithm_args[0] == "greedy-strong") {
         GreedyOptionalParameters parameters;
         parameters.info = info;
         return greedy_strong(instance, parameters);
 
 #if COINOR_FOUND
-    } else if (algorithm_args[0] == "milp_1_cbc") {
+    } else if (algorithm_args[0] == "milp-1-cbc") {
         MilpCbcOptionalParameters parameters;
         parameters.info = info;
         return milp_1_cbc(instance, parameters);
 #endif
 #if CPLEX_FOUND
-    } else if (algorithm_args[0] == "milp_1_cplex") {
+    } else if (algorithm_args[0] == "milp-1-cplex") {
         MilpCplexOptionalParameters parameters;
         parameters.info = info;
         return milp_1_cplex(instance, parameters);
-    } else if (algorithm_args[0] == "milp_2_cplex") {
+    } else if (algorithm_args[0] == "milp-2-cplex") {
         MilpCplexOptionalParameters parameters;
         parameters.info = info;
         return milp_2_cplex(instance, parameters);
-    } else if (algorithm_args[0] == "milp_3_cplex") {
+    } else if (algorithm_args[0] == "milp-3-cplex") {
         MilpCplexOptionalParameters parameters;
         parameters.info = info;
         return milp_3_cplex(instance, parameters);
 #endif
 
-    } else if (algorithm_args[0] == "localsearch") {
-        auto parameters = read_localsearch_args(algorithm_argv);
+    } else if (algorithm_args[0] == "local-search") {
+        auto parameters = read_local_search_args(algorithm_argv);
         parameters.info = info;
-        return localsearch(instance, generator, parameters);
-    } else if (algorithm_args[0] == "localsearch_rowweighting_1") {
-        auto parameters = read_localsearch_rowweighting_1_args(algorithm_argv);
+        return local_search(instance, generator, parameters);
+    } else if (algorithm_args[0] == "local-search-row-weighting-1") {
+        auto parameters = read_local_search_row_weighting_1_args(algorithm_argv);
         parameters.info = info;
-        return localsearch_rowweighting_1(instance, generator, parameters);
-    } else if (algorithm_args[0] == "localsearch_rowweighting_2") {
-        auto parameters = read_localsearch_rowweighting_2_args(algorithm_argv);
+        return local_search_row_weighting_1(instance, generator, parameters);
+    } else if (algorithm_args[0] == "local-search-row-weighting-2") {
+        auto parameters = read_local_search_row_weighting_2_args(algorithm_argv);
         parameters.info = info;
-        return localsearch_rowweighting_2(instance, generator, parameters);
-    } else if (algorithm_args[0] == "largeneighborhoodsearch") {
-        auto parameters = read_largeneighborhoodsearch_args(algorithm_argv);
+        return local_search_row_weighting_2(instance, generator, parameters);
+    } else if (algorithm_args[0] == "large-neighborhood-search") {
+        auto parameters = read_large_neighborhood_search_args(algorithm_argv);
         parameters.info = info;
-        return largeneighborhoodsearch(instance, parameters);
+        return large_neighborhood_search(instance, parameters);
 
     } else {
         throw std::invalid_argument(

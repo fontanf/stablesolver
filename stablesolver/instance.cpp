@@ -877,9 +877,13 @@ void stablesolver::init_display(
         optimizationtools::Info& info)
 {
     info.os()
-        << "=====================================" << std::endl
-        << "            Stable Solver            " << std::endl
-        << "=====================================" << std::endl
+        << "====================================" << std::endl
+        << "            StableSolver            " << std::endl
+        << "====================================" << std::endl
+        << std::endl
+        << "Problem" << std::endl
+        << "-------" << std::endl
+        << "Maximum-weight independent set problem" << std::endl
         << std::endl
         << "Instance" << std::endl
         << "--------" << std::endl;

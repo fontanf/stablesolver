@@ -60,7 +60,7 @@ Output cliquesolver::greedy_strong(
     info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
-        << "Strong Greedy" << std::endl
+        << "Strong greedy" << std::endl
         << std::endl;
 
     const optimizationtools::AbstractGraph* graph = instance.graph();

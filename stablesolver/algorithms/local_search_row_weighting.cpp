@@ -1,4 +1,4 @@
-#include "stablesolver/algorithms/localsearch_rowweighting.hpp"
+#include "stablesolver/algorithms/local_search_row_weighting.hpp"
 
 #include "stablesolver/algorithms/greedy.hpp"
 
@@ -7,7 +7,7 @@
 using namespace stablesolver;
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////// localsearch_rowweighting_1 //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 void LocalSearchRowWeighting1Output::print_statistics(
@@ -50,7 +50,7 @@ struct LocalSearchRowWeighting1Vertex
     Counter iterations = 0;
 };
 
-LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
+LocalSearchRowWeighting1Output stablesolver::local_search_row_weighting_1(
         const Instance& original_instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting1OptionalParameters parameters)
@@ -59,7 +59,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
-        << "Row Weighting Local Search 1" << std::endl
+        << "Row weighting local search 1" << std::endl
         << std::endl
         << "Parameters" << std::endl
         << "----------" << std::endl
@@ -321,7 +321,7 @@ LocalSearchRowWeighting1Output stablesolver::localsearch_rowweighting_1(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////// localsearch_rowweighting_2 //////////////////////////
+////////////////////////// local_search_row_weighting_2 //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 void LocalSearchRowWeighting2Output::print_statistics(
@@ -348,7 +348,7 @@ struct LocalSearchRowWeighting2Vertex
     Weight  score = 0;
 };
 
-LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
+LocalSearchRowWeighting2Output stablesolver::local_search_row_weighting_2(
         const Instance& original_instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting2OptionalParameters parameters)
@@ -357,7 +357,7 @@ LocalSearchRowWeighting2Output stablesolver::localsearch_rowweighting_2(
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
-        << "Row Weighting Local Search 2" << std::endl
+        << "Row weighting local search 2" << std::endl
         << std::endl;
 
     // Reduction.

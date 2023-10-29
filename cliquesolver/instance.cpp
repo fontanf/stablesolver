@@ -88,9 +88,13 @@ void cliquesolver::init_display(
     VertexId n = graph->number_of_vertices();
     EdgeId m = graph->number_of_edges();
     info.os()
-        << "=====================================" << std::endl
-        << "            Clique Solver            " << std::endl
-        << "=====================================" << std::endl
+        << "====================================" << std::endl
+        << "            StableSolver            " << std::endl
+        << "====================================" << std::endl
+        << std::endl
+        << "Problem" << std::endl
+        << "-------" << std::endl
+        << "Maximum-weight clique problem" << std::endl
         << std::endl
         << "Instance" << std::endl
         << "--------" << std::endl

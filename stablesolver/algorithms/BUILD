@@ -34,9 +34,9 @@ cc_library(
 )
 
 cc_library(
-        name = "localsearch",
-        hdrs = ["localsearch.hpp"],
-        srcs = ["localsearch.cpp"],
+        name = "local_search",
+        hdrs = ["local_search.hpp"],
+        srcs = ["local_search.cpp"],
         deps = [
                 "//stablesolver:stablesolver",
                 "@localsearchsolver//localsearchsolver:localsearchsolver",
@@ -45,9 +45,9 @@ cc_library(
 )
 
 cc_library(
-        name = "localsearch_rowweighting",
-        hdrs = ["localsearch_rowweighting.hpp"],
-        srcs = ["localsearch_rowweighting.cpp"],
+        name = "local_search_row_weighting",
+        hdrs = ["local_search_row_weighting.hpp"],
+        srcs = ["local_search_row_weighting.cpp"],
         deps = [
                 ":greedy",
                 "//stablesolver:stablesolver",
@@ -56,9 +56,9 @@ cc_library(
 )
 
 cc_library(
-        name = "largeneighborhoodsearch",
-        hdrs = ["largeneighborhoodsearch.hpp"],
-        srcs = ["largeneighborhoodsearch.cpp"],
+        name = "large_neighborhood_search",
+        hdrs = ["large_neighborhood_search.hpp"],
+        srcs = ["large_neighborhood_search.cpp"],
         deps = [
                 ":greedy",
                 "//stablesolver:stablesolver",
@@ -74,9 +74,9 @@ cc_library(
                 ":greedy",
                 ":milp_cbc",
                 ":milp_cplex",
-                ":localsearch",
-                ":localsearch_rowweighting",
-                ":largeneighborhoodsearch",
+                ":local_search",
+                ":local_search_row_weighting",
+                ":large_neighborhood_search",
                 "@boost//:program_options",
         ] + COINOR_DEP + CPLEX_DEP,
         copts = COINOR_COPTS + CPLEX_COPTS,

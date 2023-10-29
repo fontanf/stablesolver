@@ -1,4 +1,4 @@
-#include "stablesolver/algorithms/largeneighborhoodsearch.hpp"
+#include "stablesolver/algorithms/large_neighborhood_search.hpp"
 
 #include "stablesolver/algorithms/greedy.hpp"
 
@@ -27,7 +27,7 @@ struct LargeNeighborhoodSearchVertex
     Weight  score         = 0;
 };
 
-LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
+LargeNeighborhoodSearchOutput stablesolver::large_neighborhood_search(
         Instance& original_instance,
         LargeNeighborhoodSearchOptionalParameters parameters)
 {
@@ -35,7 +35,7 @@ LargeNeighborhoodSearchOutput stablesolver::largeneighborhoodsearch(
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
-        << "Large Neighborhood Search" << std::endl
+        << "Large neighborhood search" << std::endl
         << std::endl;
 
     //instance.fix_identical(parameters.info);

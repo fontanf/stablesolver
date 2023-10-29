@@ -21,9 +21,9 @@ cc_library(
 )
 
 cc_library(
-        name = "localsearch",
-        hdrs = ["localsearch.hpp"],
-        srcs = ["localsearch.cpp"],
+        name = "local_search",
+        hdrs = ["local_search.hpp"],
+        srcs = ["local_search.cpp"],
         deps = [
                 "//cliquesolver:cliquesolver",
                 ":greedy",
@@ -39,7 +39,7 @@ cc_library(
         deps = [
                 ":greedy",
                 ":milp_cplex",
-                ":localsearch",
+                ":local_search",
                 "@boost//:program_options",
         ] + CPLEX_DEP,
         copts = CPLEX_COPTS,

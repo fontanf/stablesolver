@@ -231,7 +231,7 @@ Output stablesolver::greedy_strong(
     parameters.info.os()
         << "Algorithm" << std::endl
         << "---------" << std::endl
-        << "Strong Greedy" << std::endl
+        << "Strong greedy" << std::endl
         << std::endl;
 
     // Reduction.

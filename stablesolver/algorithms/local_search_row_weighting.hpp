@@ -6,7 +6,7 @@ namespace stablesolver
 {
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////// localsearch_rowweighting_1 //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 struct LocalSearchRowWeighting1Output: Output
@@ -44,13 +44,13 @@ struct LocalSearchRowWeighting1OptionalParameters
     optimizationtools::Info info = optimizationtools::Info();
 };
 
-LocalSearchRowWeighting1Output localsearch_rowweighting_1(
+LocalSearchRowWeighting1Output local_search_row_weighting_1(
         const Instance& instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting1OptionalParameters parameters = {});
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////// localsearch_rowweighting_2 //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 struct LocalSearchRowWeighting2Output: Output
@@ -88,7 +88,7 @@ struct LocalSearchRowWeighting2OptionalParameters
     optimizationtools::Info info = optimizationtools::Info();
 };
 
-LocalSearchRowWeighting2Output localsearch_rowweighting_2(
+LocalSearchRowWeighting2Output local_search_row_weighting_2(
         const Instance& instance,
         std::mt19937_64& generator,
         LocalSearchRowWeighting2OptionalParameters parameters = {});
