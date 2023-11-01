@@ -24,9 +24,9 @@ def Settings(**kwargs):
                 # '-I', './../',
                 'localsearchsolver/',
 
-                # COINOR
-                '-DCOINOR_FOUND',
-                '-I', '/home/florian/Programmes/coinbrew/dist/include/',
+                # CBC
+                '-DCBC_FOUND',
+                '-I', './bazel-stablesolver/external/cbc_linux/include/coin/',
 
                 # CPLEX
                 '-DCPLEX_FOUND',

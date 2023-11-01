@@ -28,7 +28,7 @@ cc_binary(
         ],
         linkopts = select({
                     "@bazel_tools//src/conditions:windows": [],
-                    "//conditions:default":                 ["-lpthread"],
+                    "//conditions:default": ["-lpthread"],
         }),
 )
 
