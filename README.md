@@ -12,7 +12,7 @@ To solve a stable (resp. clique) problem, it is possible to use a clique (resp. 
 
 The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Problem by just considering the vertices outside of the solution.
 
-### Stable Solver
+### Stable
 
 - Greedy algorithms, see "A note on greedy algorithms for the maximum weighted independent set problem" (Sakai et al., 2001) [DOI](https://doi.org/10.1016/S0166-218X(02)00205-6)
   - `-a greedy-gwmin`
@@ -33,7 +33,7 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
 
 - Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) [DOI](https://doi.org/10.1080/01605682.2019.1621218) `-a "large-neighborhood-search"`
 
-### Clique Solver
+### Clique
 
 - Greedy algorithms:
   - `-a greedy-gwmin`, adapted from the stable version, same complexity
