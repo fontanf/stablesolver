@@ -5,9 +5,9 @@
 using namespace stablesolver::clique;
 namespace po = boost::program_options;
 
-LocalSearchOptionalParameters read_local_search_args(const std::vector<char*>& argv)
+LocalSearchParameters read_local_search_args(const std::vector<char*>& argv)
 {
-    LocalSearchOptionalParameters parameters;
+    LocalSearchParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
@@ -46,7 +46,7 @@ Output stablesolver::clique::run(
 
 #if CPLEX_FOUND
     } else if (algorithm_args[0] == "milp-cplex") {
-        MilpCplexOptionalParameters parameters;
+        MilpCplexParameters parameters;
         parameters.info = info;
         return milp_cplex(instance, parameters);
 #endif

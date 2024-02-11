@@ -31,18 +31,3 @@ cc_library(
         ],
         visibility = ["//visibility:public"],
 )
-
-cc_library(
-        name = "algorithms",
-        hdrs = ["algorithms.hpp"],
-        srcs = ["algorithms.cpp"],
-        deps = [
-                ":greedy",
-                ":milp_cplex",
-                ":local_search",
-                "@boost//:program_options",
-        ] + CPLEX_DEP,
-        copts = CPLEX_COPTS,
-        visibility = ["//visibility:public"],
-)
-

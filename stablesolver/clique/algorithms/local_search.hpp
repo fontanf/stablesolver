@@ -12,10 +12,8 @@ namespace stablesolver
 namespace clique
 {
 
-struct LocalSearchOptionalParameters
+struct LocalSearchParameters: Parameters
 {
-    optimizationtools::Info info = optimizationtools::Info();
-
     /** Maximum number of nodes. */
     Counter maximum_number_of_nodes = -1;
 
@@ -23,11 +21,10 @@ struct LocalSearchOptionalParameters
     Counter number_of_threads = 1;
 };
 
-Output local_search(
+const Output local_search(
         const Instance& instance,
         std::mt19937_64& generator,
-        LocalSearchOptionalParameters parameters = {});
+        const LocalSearchParameters& parameters = {});
 
 }
 }
-

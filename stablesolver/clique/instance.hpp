@@ -1,6 +1,5 @@
 #pragma once
 
-#include "optimizationtools/utils/info.hpp"
 #include "optimizationtools/containers/indexed_set.hpp"
 #include "optimizationtools/graph/abstract_graph.hpp"
 #include "optimizationtools/graph/adjacency_list_graph.hpp"
@@ -29,7 +28,9 @@ public:
      */
 
     /** Create an instance from a file. */
-    Instance(std::string instance_path, std::string format);
+    Instance(
+            const std::string& instance_path,
+            const std::string& format);
 
     /** Create an instance manually. */
     Instance(VertexId number_of_vertices);
@@ -63,7 +64,7 @@ public:
     Instance complementary();
 
     /*
-     * Getters.
+     * Getters
      */
 
     /** Get graph. */
@@ -76,10 +77,19 @@ public:
             optimizationtools::IndexedSet& relevant_vertices,
             Weight weight) const;
 
+    /*
+     * Export
+     */
+
+    /** Print the instance. */
+    std::ostream& format(
+            std::ostream& os,
+            int verbosity_level = 1) const;
+
 private:
 
     /*
-     * Private attributes.
+     * Private attributes
      */
 
     /** Graph. */
@@ -94,12 +104,5 @@ private:
 
 };
 
-std::ostream& operator<<(std::ostream &os, const Instance& ins);
-
-void init_display(
-        const Instance& instance,
-        optimizationtools::Info& info);
-
 }
 }
-

@@ -12,12 +12,12 @@ ILOSTLBEGIN
 
 ILOMIPINFOCALLBACK4(loggingCallback1,
                     const Instance&, instance,
-                    MilpCplexOptionalParameters&, parameters,
+                    MilpCplexParameters&, parameters,
                     Output&, output,
                     IloNumVarArray&, x)
 {
     VertexId ub = getBestObjValue();
-    output.update_bound(ub, std::stringstream(""), parameters.info);
+    algorithm_formatter.update_bound(ub, "");
 
     if (!hasIncumbent())
         return;
@@ -29,7 +29,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
         for (VertexId v = 0; v < instance.number_of_vertices(); ++v)
             if (val[v] > 0.5)
                 solution.add(v);
-        output.update_solution(solution, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_solution(solution, "");
     }
 }
 
@@ -37,42 +37,19 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
 /////////////////////////// Model 1, |E| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-Output stablesolver::stable::milp_1_cplex(
+const Output stablesolver::stable::milp_1_cplex(
         const Instance& original_instance,
-        MilpCplexOptionalParameters parameters)
+        const MilpCplexParameters& parameters)
 {
-    init_display(original_instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP 1 (CPLEX)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP 1 (CPLEX)");
 
     // Reduction.
-    std::unique_ptr<Instance> reduced_instance = nullptr;
-    if (parameters.reduction_parameters.reduce) {
-        reduced_instance = std::unique_ptr<Instance>(
-                new Instance(
-                    original_instance.reduce(
-                        parameters.reduction_parameters)));
-        parameters.info.os()
-            << "Reduced instance" << std::endl
-            << "----------------" << std::endl;
-        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
-        parameters.info.os() << std::endl;
-    }
-    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+    if (parameters.reduction_parameters.reduce)
+        return solve_reduced_instance(milp_1_cplex, instance, parameters, algorithm_formatter, output);
 
-    Output output(original_instance, parameters.info);
-
-    // Update upper bound from reduction.
-    if (reduced_instance != nullptr) {
-        output.update_bound(
-                reduced_instance->total_weight()
-                + reduced_instance->unreduction_info().extra_weight,
-                std::stringstream("reduction"),
-                parameters.info);
-    }
+    algorithm_formatter.print_header();
 
     IloEnv env;
     IloModel model(env);
@@ -108,8 +85,8 @@ Output stablesolver::stable::milp_1_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
-        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+    if (parameters.timer.time_limit() != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
     cplex.use(loggingCallback1(env, instance, parameters, output, x));
@@ -127,15 +104,9 @@ Output stablesolver::stable::milp_1_cplex(
                     ++vertex_id)
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
-        output.update_bound(
-                output.solution.weight(),
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(output.solution.weight(), "");
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
@@ -145,69 +116,38 @@ Output stablesolver::stable::milp_1_cplex(
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_bound(
-                ub,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_bound(
-                ub,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     }
 
     env.end();
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// Model 2, |V| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-Output stablesolver::milp_2_cplex(
+const Output stablesolver::milp_2_cplex(
         const Instance& original_instance,
-        MilpCplexOptionalParameters parameters)
+        const MilpCplexParameters& parameters)
 {
-    init_display(original_instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP 2 (CPLEX)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP 2 (CPLEX)");
 
     // Reduction.
-    std::unique_ptr<Instance> reduced_instance = nullptr;
-    if (parameters.reduction_parameters.reduce) {
-        reduced_instance = std::unique_ptr<Instance>(
-                new Instance(
-                    original_instance.reduce(
-                        parameters.reduction_parameters)));
-        parameters.info.os()
-            << "Reduced instance" << std::endl
-            << "----------------" << std::endl;
-        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
-        parameters.info.os() << std::endl;
-    }
-    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+    if (parameters.reduction_parameters.reduce)
+        return solve_reduced_instance(milp_2_cplex, instance, parameters, algorithm_formatter, output);
 
-    Output output(original_instance, parameters.info);
-
-    // Update upper bound from reduction.
-    if (reduced_instance != nullptr) {
-        output.update_bound(
-                reduced_instance->total_weight()
-                + reduced_instance->unreduction_info().extra_weight,
-                std::stringstream("reduction"),
-                parameters.info);
-    }
+    algorithm_formatter.print_header();
 
     IloEnv env;
     IloModel model(env);
@@ -247,8 +187,8 @@ Output stablesolver::milp_2_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
-        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+    if (parameters.timer.time_limit() != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
     cplex.use(loggingCallback1(env, instance, parameters, output, x));
@@ -266,15 +206,9 @@ Output stablesolver::milp_2_cplex(
                     ++vertex_id)
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
-        output.update_bound(
-                output.solution.weight(),
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(output.solution.weight(), "");
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
@@ -284,69 +218,38 @@ Output stablesolver::milp_2_cplex(
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_bound(
-                ub,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_bound(
-                ub,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     }
 
     env.end();
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// Model 1, |E| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-Output stablesolver::milp_3_cplex(
+const Output stablesolver::milp_3_cplex(
         const Instance& original_instance,
-        MilpCplexOptionalParameters parameters)
+        const MilpCplexParameters& parameters)
 {
-    init_display(original_instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP 3 (CPLEX)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP 3 (CPLEX)");
 
     // Reduction.
-    std::unique_ptr<Instance> reduced_instance = nullptr;
-    if (parameters.reduction_parameters.reduce) {
-        reduced_instance = std::unique_ptr<Instance>(
-                new Instance(
-                    original_instance.reduce(
-                        parameters.reduction_parameters)));
-        parameters.info.os()
-            << "Reduced instance" << std::endl
-            << "----------------" << std::endl;
-        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
-        parameters.info.os() << std::endl;
-    }
-    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+    if (parameters.reduction_parameters.reduce)
+        return solve_reduced_instance(milp_3_cplex, instance, parameters, algorithm_formatter, output);
 
-    Output output(original_instance, parameters.info);
-
-    // Update upper bound from reduction.
-    if (reduced_instance != nullptr) {
-        output.update_bound(
-                reduced_instance->total_weight()
-                + reduced_instance->unreduction_info().extra_weight,
-                std::stringstream("reduction"),
-                parameters.info);
-    }
+    algorithm_formatter.print_header();
 
     IloEnv env;
     IloModel model(env);
@@ -432,8 +335,8 @@ Output stablesolver::milp_3_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
-        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+    if (parameters.timer.time_limit() != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
     cplex.use(loggingCallback1(env, instance, parameters, output, x));
@@ -452,15 +355,9 @@ Output stablesolver::milp_3_cplex(
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
-        output.update_bound(
-                output.solution.weight(),
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(output.solution.weight(), "");
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
@@ -470,28 +367,19 @@ Output stablesolver::milp_3_cplex(
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
             }
-            output.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_bound(
-                ub,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_bound(
-                ub,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     }
 
     env.end();
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 #endif
-

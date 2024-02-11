@@ -10,12 +10,12 @@ ILOSTLBEGIN
 
 ILOMIPINFOCALLBACK4(loggingCallback1,
                     const Instance&, instance,
-                    MilpCplexOptionalParameters&, parameters,
+                    MilpCplexParameters&, parameters,
                     Output&, output,
                     IloNumVarArray&, x)
 {
     VertexId ub = getBestObjValue();
-    output.update_bound(ub, std::stringstream(""), parameters.info);
+    algorithm_formatter.update_bound(ub, std::stringstream(""), parameters.info);
 
     if (!hasIncumbent())
         return;
@@ -30,22 +30,21 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
             if (val[vertex_id] > 0.5)
                 solution.add(vertex_id);
         }
-        output.update_solution(
+        algorithm_formatter.update_solution(
                 solution,
                 std::stringstream(""),
                 parameters.info);
     }
 }
 
-Output stablesolver::clique::milp_cplex(
-        const Instance& instance, MilpCplexOptionalParameters parameters)
+const Output stablesolver::clique::milp_cplex(
+        const Instance& instance,
+        const MilpCplexParameters& parameters)
 {
-    stablesolver::clique::init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP (CPLEX)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP (CPLEX)");
+    algorithm_formatter.print_header();
 
     const optimizationtools::AbstractGraph* graph = instance.graph();
     Output output(instance, parameters.info);
@@ -102,8 +101,8 @@ Output stablesolver::clique::milp_cplex(
     cplex.setParam(IloCplex::Param::MIP::Strategy::File, 2); // Avoid running out of memory
 
     // Time limit
-    if (parameters.info.time_limit != std::numeric_limits<double>::infinity())
-        cplex.setParam(IloCplex::TiLim, parameters.info.remaining_time());
+    if (parameters.timer.time_limit() != std::numeric_limits<double>::infinity())
+        cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
     cplex.use(loggingCallback1(env, instance, parameters, output, x));
@@ -122,12 +121,12 @@ Output stablesolver::clique::milp_cplex(
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
             }
-            output.update_solution(
+            algorithm_formatter.update_solution(
                     solution,
                     std::stringstream(""),
                     parameters.info);
         }
-        output.update_bound(
+        algorithm_formatter.update_bound(
                 output.solution.weight(),
                 std::stringstream(""),
                 parameters.info);
@@ -140,19 +139,19 @@ Output stablesolver::clique::milp_cplex(
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
             }
-            output.update_solution(
+            algorithm_formatter.update_solution(
                     solution,
                     std::stringstream(""),
                     parameters.info);
         }
         Weight ub = cplex.getBestObjValue();
-        output.update_bound(
+        algorithm_formatter.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);
     } else {
         Weight ub = cplex.getBestObjValue();
-        output.update_bound(
+        algorithm_formatter.update_bound(
                 ub,
                 std::stringstream(""),
                 parameters.info);
@@ -160,8 +159,8 @@ Output stablesolver::clique::milp_cplex(
 
     env.end();
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 #endif
-

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "stablesolver/stable/solution.hpp"
+#include "stablesolver/stable/algorithm.hpp"
 
 namespace stablesolver
 {
 namespace stable
 {
 
-struct LargeNeighborhoodSearchOptionalParameters
+struct LargeNeighborhoodSearchParameters: Parameters
 {
     /** Number of threads. */
     Counter number_of_threads = 3;
@@ -17,32 +17,22 @@ struct LargeNeighborhoodSearchOptionalParameters
 
     /** Maximum number of iterations without improvement. */
     Counter maximum_number_of_iterations_without_improvement = -1;
-
-    /** Reduction parameters. */
-    ReductionParameters reduction_parameters;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
 struct LargeNeighborhoodSearchOutput: Output
 {
     LargeNeighborhoodSearchOutput(
-            const Instance& instance,
-            optimizationtools::Info& info):
-        Output(instance, info) { }
+            const Instance& instance):
+        Output(instance) { }
 
-    void print_statistics(
-            optimizationtools::Info& info) const override;
 
     /** Number of iterations. */
     Counter iterations = 0;
 };
 
-LargeNeighborhoodSearchOutput large_neighborhood_search(
-        Instance& instance,
-        LargeNeighborhoodSearchOptionalParameters parameters = {});
+const LargeNeighborhoodSearchOutput large_neighborhood_search(
+        const Instance& instance,
+        const LargeNeighborhoodSearchParameters& parameters = {});
 
 }
 }
-

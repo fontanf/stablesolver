@@ -1,37 +1,31 @@
 #pragma once
 
-#include "stablesolver/stable/solution.hpp"
+#include "stablesolver/stable/algorithm.hpp"
 
 namespace stablesolver
 {
 namespace stable
 {
 
-struct GreedyOptionalParameters
+struct GreedyParameters: Parameters
 {
-    /** Reduction parameters. */
-    ReductionParameters reduction_parameters;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output greedy_gwmin(
+const Output greedy_gwmin(
         const Instance& instance,
-        GreedyOptionalParameters parameters = {});
+        const GreedyParameters& parameters = {});
 
-Output greedy_gwmax(
+const Output greedy_gwmax(
         const Instance& instance,
-        GreedyOptionalParameters parameters = {});
+        const GreedyParameters& parameters = {});
 
-Output greedy_gwmin2(
+const Output greedy_gwmin2(
         const Instance& instance,
-        GreedyOptionalParameters parameters = {});
+        const GreedyParameters& parameters = {});
 
-Output greedy_strong(
+const Output greedy_strong(
         const Instance& instance,
-        GreedyOptionalParameters parameters = {});
+        const GreedyParameters& parameters = {});
 
 }
 }
-

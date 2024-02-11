@@ -1,10 +1,12 @@
 #include "stablesolver/clique/instance.hpp"
 
+#include <iomanip>
+
 using namespace stablesolver::clique;
 
 Instance::Instance(
-        std::string instance_path,
-        std::string format):
+        const std::string& instance_path,
+        const std::string& format):
     graph_(std::unique_ptr<optimizationtools::AbstractGraph>(
                 new optimizationtools::AdjacencyListGraph(instance_path, format))),
     adjacency_list_graph_(static_cast<optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
@@ -80,28 +82,44 @@ Weight Instance::update_core(
     return bound;
 }
 
-void stablesolver::clique::init_display(
-        const Instance& instance,
-        optimizationtools::Info& info)
+std::ostream& Instance::format(
+        std::ostream& os,
+        int verbosity_level) const
 {
-    const optimizationtools::AbstractGraph* graph = instance.graph();
-    VertexId n = graph->number_of_vertices();
-    EdgeId m = graph->number_of_edges();
-    info.os()
-        << "====================================" << std::endl
-        << "            StableSolver            " << std::endl
-        << "====================================" << std::endl
-        << std::endl
-        << "Problem" << std::endl
-        << "-------" << std::endl
-        << "Maximum-weight clique problem" << std::endl
-        << std::endl
-        << "Instance" << std::endl
-        << "--------" << std::endl
-        << "Number of vertices:              " << n << std::endl
-        << "Number of edges:                 " << m << std::endl
-        << "Density:                         " << (double)m * 2 / n / (n - 1) << std::endl
-        << "Average degree:                  " << (double)graph->number_of_edges() * 2 / n << std::endl
-        << "Maximum degree:                  " << graph->maximum_degree() << std::endl
-        << std::endl;
+    if (verbosity_level >= 1) {
+        double density = (double)graph()->number_of_edges() * 2
+            / graph()->number_of_vertices()
+            / graph()->number_of_vertices();
+        os
+            << "Number of vertices:              " << graph()->number_of_vertices() << std::endl
+            << "Number of edges:                 " << graph()->number_of_edges() << std::endl
+            << "Density:                         " << density << std::endl
+            << "Average degree:                  " << (double)graph()->number_of_edges() * 2 / graph()->number_of_vertices() << std::endl
+            << "Maximum degree:                  " << graph()->maximum_degree() << std::endl
+            << "Total weight:                    " << graph()->total_weight() << std::endl
+            ;
+    }
+
+    if (verbosity_level >= 2) {
+        os << std::endl
+            << std::setw(12) << "VertexId"
+            << std::setw(12) << "Weight"
+            << std::setw(12) << "Degree"
+            << std::endl
+            << std::setw(12) << "--------"
+            << std::setw(12) << "------"
+            << std::setw(12) << "------"
+            << std::endl;
+        for (VertexId vertex_id = 0;
+                vertex_id < graph()->number_of_vertices();
+                ++vertex_id) {
+            os
+                << std::setw(12) << vertex_id
+                << std::setw(12) << graph()->weight(vertex_id)
+                << std::setw(12) << graph()->degree(vertex_id)
+                << std::endl;
+        }
+    }
+
+    return os;
 }

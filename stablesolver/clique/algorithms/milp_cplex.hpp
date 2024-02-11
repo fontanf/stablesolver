@@ -9,19 +9,16 @@ namespace stablesolver
 namespace clique
 {
 
-struct MilpCplexOptionalParameters
+struct MilpCplexParameters: Parameters
 {
-    optimizationtools::Info info = optimizationtools::Info();
-
     const Solution* initial_solution = NULL;
 };
 
-Output milp_cplex(
+const Output milp_cplex(
         const Instance& instance,
-        MilpCplexOptionalParameters parameters = {});
+        const MilpCplexParameters& parameters = {});
 
 }
 }
 
 #endif
-

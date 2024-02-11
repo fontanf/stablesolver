@@ -5,9 +5,9 @@
 using namespace stablesolver::stable;
 namespace po = boost::program_options;
 
-LocalSearchOptionalParameters read_local_search_args(const std::vector<char*>& argv)
+LocalSearchParameters read_local_search_args(const std::vector<char*>& argv)
 {
-    LocalSearchOptionalParameters parameters;
+    LocalSearchParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("threads,t", po::value<Counter>(&parameters.number_of_threads), "")
@@ -23,9 +23,9 @@ LocalSearchOptionalParameters read_local_search_args(const std::vector<char*>& a
     return parameters;
 }
 
-LocalSearchRowWeighting1OptionalParameters read_local_search_row_weighting_1_args(const std::vector<char*>& argv)
+LocalSearchRowWeighting1Parameters read_local_search_row_weighting_1_args(const std::vector<char*>& argv)
 {
-    LocalSearchRowWeighting1OptionalParameters parameters;
+    LocalSearchRowWeighting1Parameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("iterations,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
@@ -42,9 +42,9 @@ LocalSearchRowWeighting1OptionalParameters read_local_search_row_weighting_1_arg
     return parameters;
 }
 
-LocalSearchRowWeighting2OptionalParameters read_local_search_row_weighting_2_args(const std::vector<char*>& argv)
+LocalSearchRowWeighting2Parameters read_local_search_row_weighting_2_args(const std::vector<char*>& argv)
 {
-    LocalSearchRowWeighting2OptionalParameters parameters;
+    LocalSearchRowWeighting2Parameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("iterations,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
@@ -61,9 +61,9 @@ LocalSearchRowWeighting2OptionalParameters read_local_search_row_weighting_2_arg
     return parameters;
 }
 
-LargeNeighborhoodSearchOptionalParameters read_large_neighborhood_search_args(const std::vector<char*>& argv)
+LargeNeighborhoodSearchParameters read_large_neighborhood_search_args(const std::vector<char*>& argv)
 {
-    LargeNeighborhoodSearchOptionalParameters parameters;
+    LargeNeighborhoodSearchParameters parameters;
     po::options_description desc("Allowed options");
     desc.add_options()
         ("iterations,i", po::value<Counter>(&parameters.maximum_number_of_iterations), "")
@@ -95,39 +95,39 @@ Output stablesolver::stable::run(
         throw std::invalid_argument("Missing algorithm.");
 
     } else if (algorithm_args[0] == "greedy-gwmin") {
-        GreedyOptionalParameters parameters;
+        GreedyParameters parameters;
         parameters.info = info;
         return greedy_gwmin(instance, parameters);
     } else if (algorithm_args[0] == "greedy-gwmax") {
-        GreedyOptionalParameters parameters;
+        GreedyParameters parameters;
         parameters.info = info;
         return greedy_gwmax(instance, parameters);
     } else if (algorithm_args[0] == "greedy-gwmin2") {
-        GreedyOptionalParameters parameters;
+        GreedyParameters parameters;
         parameters.info = info;
         return greedy_gwmin2(instance, parameters);
     } else if (algorithm_args[0] == "greedy-strong") {
-        GreedyOptionalParameters parameters;
+        GreedyParameters parameters;
         parameters.info = info;
         return greedy_strong(instance, parameters);
 
 #if COINOR_FOUND
     } else if (algorithm_args[0] == "milp-1-cbc") {
-        MilpCbcOptionalParameters parameters;
+        MilpCbcParameters parameters;
         parameters.info = info;
         return milp_1_cbc(instance, parameters);
 #endif
 #if CPLEX_FOUND
     } else if (algorithm_args[0] == "milp-1-cplex") {
-        MilpCplexOptionalParameters parameters;
+        MilpCplexParameters parameters;
         parameters.info = info;
         return milp_1_cplex(instance, parameters);
     } else if (algorithm_args[0] == "milp-2-cplex") {
-        MilpCplexOptionalParameters parameters;
+        MilpCplexParameters parameters;
         parameters.info = info;
         return milp_2_cplex(instance, parameters);
     } else if (algorithm_args[0] == "milp-3-cplex") {
-        MilpCplexOptionalParameters parameters;
+        MilpCplexParameters parameters;
         parameters.info = info;
         return milp_3_cplex(instance, parameters);
 #endif

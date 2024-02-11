@@ -2,39 +2,32 @@
 
 #if CPLEX_FOUND
 
-#include "stablesolver/stable/solution.hpp"
+#include "stablesolver/stable/algorithm.hpp"
 
 namespace stablesolver
 {
 namespace stable
 {
 
-struct MilpCplexOptionalParameters
+struct MilpCplexParameters: Parameters
 {
     /** Initial solution. */
     const Solution* initial_solution = NULL;
-
-    /** Reduction parameters. */
-    ReductionParameters reduction_parameters;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output milp_1_cplex(
+const Output milp_1_cplex(
         const Instance& instance,
-        MilpCplexOptionalParameters parameters = {});
+        const MilpCplexParameters& parameters = {});
 
-Output milp_2_cplex(
+const Output milp_2_cplex(
         const Instance& instance,
-        MilpCplexOptionalParameters parameters = {});
+        const MilpCplexParameters& parameters = {});
 
-Output milp_3_cplex(
+const Output milp_3_cplex(
         const Instance& instance,
-        MilpCplexOptionalParameters parameters = {});
+        const MilpCplexParameters& parameters = {});
 
 }
 }
 
 #endif
-

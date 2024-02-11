@@ -1,22 +1,12 @@
 #include "stablesolver/stable/algorithms/large_neighborhood_search.hpp"
 
+#include "stablesolver/stable/algorithm_formatter.hpp"
 #include "stablesolver/stable/algorithms/greedy.hpp"
 
 #include "optimizationtools/containers/indexed_set.hpp"
 #include "optimizationtools/containers/indexed_binary_heap.hpp"
 
 using namespace stablesolver::stable;
-
-void LargeNeighborhoodSearchOutput::print_statistics(
-        optimizationtools::Info& info) const
-{
-    if (info.verbosity_level() >= 1) {
-        info.os()
-            << "Number of iterations:         " << iterations << std::endl
-            ;
-    }
-    info.add_to_json("Algorithm", "NumberOfIterations", iterations);
-}
 
 struct LargeNeighborhoodSearchVertex
 {
@@ -27,50 +17,22 @@ struct LargeNeighborhoodSearchVertex
     Weight  score         = 0;
 };
 
-LargeNeighborhoodSearchOutput stablesolver::stable::large_neighborhood_search(
-        Instance& original_instance,
-        LargeNeighborhoodSearchOptionalParameters parameters)
+const LargeNeighborhoodSearchOutput stablesolver::stable::large_neighborhood_search(
+        const Instance& instance,
+        const LargeNeighborhoodSearchParameters& parameters)
 {
-    init_display(original_instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "Large neighborhood search" << std::endl
-        << std::endl;
-
-    //instance.fix_identical(parameters.info);
-    //instance.fix_dominated(parameters.info);
+    LargeNeighborhoodSearchOutput output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("Large neighborhood search");
 
     // Reduction.
-    std::unique_ptr<Instance> reduced_instance = nullptr;
-    if (parameters.reduction_parameters.reduce) {
-        reduced_instance = std::unique_ptr<Instance>(
-                new Instance(
-                    original_instance.reduce(
-                        parameters.reduction_parameters)));
-        parameters.info.os()
-            << "Reduced instance" << std::endl
-            << "----------------" << std::endl;
-        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
-        parameters.info.os() << std::endl;
-    }
-    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+    if (parameters.reduction_parameters.reduce)
+        return solve_reduced_instance(large_neighborhood_search, instance, parameters, algorithm_formatter, output);
 
-    LargeNeighborhoodSearchOutput output(original_instance, parameters.info);
-
-    // Update upper bound from reduction.
-    if (reduced_instance != nullptr) {
-        output.update_bound(
-                reduced_instance->total_weight()
-                + reduced_instance->unreduction_info().extra_weight,
-                std::stringstream("reduction"),
-                parameters.info);
-    }
+    algorithm_formatter.print_header();
 
     Solution solution = greedy_gwmin(instance).solution;
-    std::stringstream ss;
-    ss << "initial solution";
-    output.update_solution(solution, ss, parameters.info);
+    algorithm_formatter.update_solution(solution, "initial solution");
 
     // Initialize local search structures.
     std::vector<LargeNeighborhoodSearchVertex> vertices(instance.number_of_vertices());
@@ -98,7 +60,7 @@ LargeNeighborhoodSearchOutput stablesolver::stable::large_neighborhood_search(
     optimizationtools::IndexedSet sets_out_to_update(instance.number_of_vertices());
     Counter iterations_without_improvment = 0;
     for (output.iterations = 1;
-            !parameters.info.needs_to_end();
+            !parameters.timer.needs_to_end();
             ++output.iterations, ++iterations_without_improvment) {
 
         // Check stop criteria.
@@ -241,12 +203,12 @@ LargeNeighborhoodSearchOutput stablesolver::stable::large_neighborhood_search(
         if (output.solution.weight() < solution.weight()){
             std::stringstream ss;
             ss << "iteration " << output.iterations;
-            output.update_solution(solution, ss, parameters.info);
+            algorithm_formatter.update_solution(solution, ss.str());
             iterations_without_improvment = 0;
         }
     }
 
-    output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
     return output;
 }
 

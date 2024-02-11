@@ -56,7 +56,7 @@ bazel build -- //...
 Examples:
 
 ```shell
-./bazel-bin/stablesolver/main -v 1 -i "data/dimacs1992/brock200_1.clq" --format dimacs1992 -a "local-search-row-weighting-2 --iterations 3000" -c solution.txt
+./bazel-bin/stablesolver/stable/main --verbosity-level 1 --input "data/dimacs1992/brock200_1.clq" --format dimacs1992 --algorithm "local-search-row-weighting-2" --maximum-number-of-iterations 3000 -certificate solution.txt
 ```
 ```
 ====================================
@@ -121,16 +121,16 @@ Weight:               21
 ```
 
 ```shell
-./bazel-bin/stablesolver/main -v 1 -i "data/dimacs2010/clustering/caidaRouterLevel.graph" -f dimacs2010 -a "local-search-row-weighting-1 --iterations 300000"
+./bazel-bin/stablesolver/stable/main --verbosity-level 1 --input "data/dimacs2010/clustering/caidaRouterLevel.graph" --format dimacs2010 --algorithm "local-search-row-weighting-1" --maximum-number-of-iterations 300000
 ```
 ```
-====================================
+=====================================
             StableSolver            
-====================================
+=====================================
 
 Problem
 -------
-Maximum-weight independent set problem
+Maximum(-weight) independent set problem
 
 Instance
 --------
@@ -148,8 +148,19 @@ Row weighting local search 1
 
 Parameters
 ----------
-Maximum number of iterations:                      300000
-Maximum number of iterations without improvement:  -1
+Time limit:            inf
+Messages
+    Verbosity level:   1
+    Standard output:   1
+    File path:         
+    # streams:         0
+Logger
+    Has logger:        0
+    Standard error:    0
+    File path:         
+Reduction
+    Enable:            1
+    Max. # of rounds:  10
 
 Reduced instance
 ----------------
@@ -161,22 +172,21 @@ Maximum degree:                  56
 Total weight:                    2800
 Number of connected components:  148
 
-       T (s)              LB              UB             GAP     GAP (%)                 Comment
-       -----              --              --             ---     -------                 -------
-       0.505               0          192244          192244      100.00                        
-       0.505               0          118393          118393      100.00               reduction
-       0.522          117029          118393            1364        1.15        initial solution
-       0.827          117146          118393            1247        1.05        iteration 100000
-       1.141          117150          118393            1243        1.05        iteration 200000
+    Time (s)       Value       Bound         Gap     Gap (%)                 Comment
+    --------       -----       -----         ---     -------                 -------
+       0.000           0      192244      192244      100.00                        
+       0.503      117029      192244       75215       39.12        initial solution
+       0.503      117029      118026         997        0.84        initial solution
+       0.934      117146      118026         880        0.75        iteration 100000
+       1.382      117150      118026         876        0.74        iteration 200000
 
 Final statistics
 ----------------
 Value:                        117150
-Bound:                        118393
-Absolute optimality gap:      1243
-Relative optimality gap (%):  1.04989
-Time (s):                     1.42409
-Number of iterations:         300000
+Bound:                        118026
+Absolute optimality gap:      876
+Relative optimality gap (%):  0.742209
+Time (s):                     1.81302
 
 Solution
 --------

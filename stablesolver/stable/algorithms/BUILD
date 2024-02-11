@@ -27,7 +27,7 @@ cc_library(
         srcs = ["milp_cplex.cpp"],
         deps = [
                 "//stablesolver/stable:stable",
-                "//stablesolver/clique/algorithms:algorithms",
+                "//stablesolver/clique/algorithms:greedy",
         ] + CPLEX_DEP,
         copts = CPLEX_COPTS,
         visibility = ["//visibility:public"],
@@ -65,21 +65,3 @@ cc_library(
         ],
         visibility = ["//visibility:public"],
 )
-
-cc_library(
-        name = "algorithms",
-        hdrs = ["algorithms.hpp"],
-        srcs = ["algorithms.cpp"],
-        deps = [
-                ":greedy",
-                ":milp_cbc",
-                ":milp_cplex",
-                ":local_search",
-                ":local_search_row_weighting",
-                ":large_neighborhood_search",
-                "@boost//:program_options",
-        ] + CBC_DEP + CPLEX_DEP,
-        copts = CBC_COPTS + CPLEX_COPTS,
-        visibility = ["//visibility:public"],
-)
-

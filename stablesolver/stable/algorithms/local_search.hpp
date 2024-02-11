@@ -19,33 +19,25 @@
 
 #pragma once
 
-#include "stablesolver/stable/solution.hpp"
+#include "stablesolver/stable/algorithm.hpp"
 
 namespace stablesolver
 {
 namespace stable
 {
 
-struct LocalSearchOptionalParameters
+struct LocalSearchParameters: Parameters
 {
     /** Maximum number of nodes. */
     Counter maximum_number_of_nodes = -1;
 
     /** Number of threads. */
     Counter number_of_threads = 1;
-
-    /** Reduction parameters. */
-    ReductionParameters reduction_parameters;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output local_search(
+const Output local_search(
         const Instance& instance,
-        std::mt19937_64& generator,
-        LocalSearchOptionalParameters parameters = {});
+        const LocalSearchParameters& parameters = {});
 
 }
 }
-

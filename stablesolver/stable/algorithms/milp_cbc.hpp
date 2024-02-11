@@ -2,31 +2,24 @@
 
 #if COINOR_FOUND
 
-#include "stablesolver/stable/solution.hpp"
+#include "stablesolver/stable/algorithm.hpp"
 
 namespace stablesolver
 {
 namespace stable
 {
 
-struct MilpCbcOptionalParameters
+struct MilpCbcParameters: Parameters
 {
     /** Initial solution. */
     const Solution* initial_solution = NULL;
-
-    /** Reduction parameters. */
-    ReductionParameters reduction_parameters;
-
-    /** Info structure. */
-    optimizationtools::Info info = optimizationtools::Info();
 };
 
-Output milp_1_cbc(
+const Output milp_1_cbc(
         const Instance& instance,
-        MilpCbcOptionalParameters parameters = {});
+        const MilpCbcParameters& parameters = {});
 
 }
 }
 
 #endif
-

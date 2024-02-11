@@ -1,23 +1,21 @@
 #include "stablesolver/clique/algorithms/greedy.hpp"
 
-#include "optimizationtools/containers/indexed_binary_heap.hpp"
+#include "stablesolver/clique/algorithm_formatter.hpp"
+
 #include "optimizationtools/containers/doubly_indexed_map.hpp"
 
 using namespace stablesolver::clique;
 
-Output stablesolver::clique::greedy_gwmin(
+const Output stablesolver::clique::greedy_gwmin(
         const Instance& instance,
-        optimizationtools::Info info)
+        const Parameters& parameters)
 {
-    stablesolver::clique::init_display(instance, info);
-    info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "Greedy GWMIN" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("Greedy GWMIN");
+    algorithm_formatter.print_header();
 
     const optimizationtools::AbstractGraph* graph = instance.graph();
-    Output output(instance, info);
     Solution solution(instance);
 
     std::vector<double> vertices_values(graph->number_of_vertices(), 0);
@@ -47,24 +45,22 @@ Output stablesolver::clique::greedy_gwmin(
             available_vertices[*it]++;
         }
     }
+    algorithm_formatter.update_solution(solution, "");
 
-    output.update_solution(solution, std::stringstream(), info);
-    return output.algorithm_end(info);
+    algorithm_formatter.end();
+    return output;
 }
 
-Output stablesolver::clique::greedy_strong(
+const Output stablesolver::clique::greedy_strong(
         const Instance& instance,
-        optimizationtools::Info info)
+        const Parameters& parameters)
 {
-    stablesolver::clique::init_display(instance, info);
-    info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "Strong greedy" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("Strong greedy");
+    algorithm_formatter.print_header();
 
     const optimizationtools::AbstractGraph* graph = instance.graph();
-    Output output(instance, info);
     Solution solution(instance);
 
     optimizationtools::DoublyIndexedMap candidates(
@@ -99,8 +95,8 @@ Output stablesolver::clique::greedy_strong(
             candidates.set(*it, candidates[*it] + 1);
         }
     }
+    algorithm_formatter.update_solution(solution, "");
 
-    output.update_solution(solution, std::stringstream(), info);
-    return output.algorithm_end(info);
+    algorithm_formatter.end();
+    return output;
 }
-

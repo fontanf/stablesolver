@@ -7,14 +7,13 @@ namespace stablesolver
 namespace clique
 {
 
-Output greedy_gwmin(
+const Output greedy_gwmin(
         const Instance& instance,
-        optimizationtools::Info info = optimizationtools::Info());
+        const Parameters& parameters = {});
 
-Output greedy_strong(
+const Output greedy_strong(
         const Instance& instance,
-        optimizationtools::Info info = optimizationtools::Info());
+        const Parameters& parameters = {});
 
 }
 }
-

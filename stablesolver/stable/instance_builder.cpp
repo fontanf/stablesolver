@@ -2,6 +2,8 @@
 
 #include "optimizationtools/utils/utils.hpp"
 
+#include <fstream>
+
 using namespace stablesolver::stable;
 
 void InstanceBuilder::add_vertices(VertexId number_of_vertices)
@@ -21,11 +23,6 @@ void InstanceBuilder::add_edge(
         VertexId vertex_id_2,
         int check_duplicate)
 {
-    if (vertex_id_1 == vertex_id_2) {
-        std::cerr << "\033[33m" << "WARNING, loop (" << vertex_id_1 << ", " << vertex_id_2 << ") ignored." << "\033[0m" << std::endl;
-        return;
-    }
-
     if (check_duplicate > 0) {
         for (const auto& edge: instance_.vertex(vertex_id_1).edges) {
             if (edge.vertex_id == vertex_id_2) {

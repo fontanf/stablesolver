@@ -1,13 +1,14 @@
 #include "stablesolver/clique/algorithms/local_search.hpp"
 
+#include "stablesolver/clique/algorithm_formatter.hpp"
 #include "stablesolver/clique/algorithms/greedy.hpp"
 
 #include "optimizationtools/containers/indexed_set.hpp"
+#include "optimizationtools/containers/indexed_map.hpp"
 
 #include "localsearchsolver/best_first_local_search.hpp"
 
 using namespace stablesolver::clique;
-using namespace localsearchsolver;
 
 namespace
 {
@@ -30,11 +31,9 @@ public:
 
     LocalScheme(
             const Instance& instance,
-            Parameters parameters,
-            Output& output):
+            Parameters parameters):
         instance_(instance),
         parameters_(parameters),
-        output_(output),
         relevant_vertices_(instance.graph()->number_of_vertices()),
         tight_vertices_(instance.graph()->number_of_vertices(), -1),
         neighbors_(instance_.graph()->number_of_vertices()),
@@ -152,8 +151,10 @@ public:
                         GlobalCost c = cost_add(solution, vertex_id, c_best);
                         if (c >= c_best)
                             continue;
-                        if (vertex_id_best != -1 && !dominates(c, c_best))
+                        if (vertex_id_best != -1
+                                && !localsearchsolver::dominates(c, c_best)) {
                             continue;
+                        }
                         vertex_id_best = vertex_id;
                         c_best = c;
                     }
@@ -167,8 +168,8 @@ public:
                             throw std::logic_error(
                                     "Add. Costs do not match:\n"
                                     "* vertex_id_best: " + std::to_string(vertex_id_best) + "\n"
-                                    + "* Expected new cost: " + to_string(c_best) + "\n"
-                                    + "* Actual new cost: " + to_string(global_cost(solution)) + "\n");
+                                    + "* Expected new cost: " + localsearchsolver::to_string(c_best) + "\n"
+                                    + "* Actual new cost: " + localsearchsolver::to_string(global_cost(solution)) + "\n");
                         }
                     }
                     break;
@@ -218,8 +219,10 @@ public:
                                         - instance_.graph()->weight(vertex_id_in));
                                 if (c >= c_best)
                                     continue;
-                                if (vertex_id_in_best != -1 && !dominates(c, c_best))
+                                if (vertex_id_in_best != -1
+                                        && !localsearchsolver::dominates(c, c_best)) {
                                     continue;
+                                }
                                 vertex_id_in_best = vertex_id_in;
                                 vertex_id_out_1_best = vertex_id_out_1;
                                 vertex_id_out_2_best = vertex_id_out_2;
@@ -239,8 +242,8 @@ public:
                         if (global_cost(solution) != c_best) {
                             throw std::logic_error(
                                     "(2,1)-swap. Costs do not match:\n"
-                                    "* Expected new cost: " + to_string(c_best) + "\n"
-                                    + "* Actual new cost: " + to_string(global_cost(solution)) + "\n");
+                                    "* Expected new cost: " + localsearchsolver::to_string(c_best) + "\n"
+                                    + "* Actual new cost: " + localsearchsolver::to_string(global_cost(solution)) + "\n");
                         }
                     }
                     break;
@@ -280,8 +283,8 @@ public:
         std::vector<Perturbation> perturbations;
         for (VertexId vertex_id: relevant_vertices_) {
             GlobalCost c = (contains(solution, vertex_id))?
-                cost_remove(solution, vertex_id, worst<GlobalCost>()):
-                cost_add(solution, vertex_id, worst<GlobalCost>());
+                cost_remove(solution, vertex_id, localsearchsolver::worst<GlobalCost>()):
+                cost_add(solution, vertex_id, localsearchsolver::worst<GlobalCost>());
             Perturbation perturbation;
             perturbation.vertex_id = vertex_id;
             perturbation.global_cost = c;
@@ -515,7 +518,6 @@ private:
 
     const Instance& instance_;
     Parameters parameters_;
-    Output& output_;
     Weight best_weight_ = 0;
 
     optimizationtools::IndexedSet relevant_vertices_;
@@ -527,56 +529,53 @@ private:
 
 }
 
-Output stablesolver::clique::local_search(
+const Output stablesolver::clique::local_search(
         const Instance& instance,
         std::mt19937_64&,
-        LocalSearchOptionalParameters parameters)
+        const LocalSearchParameters& parameters)
 {
-    stablesolver::clique::init_display(instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "Local search" << std::endl
-        << std::endl;
-
-    Output output(instance, parameters.info);
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("Local search");
+    algorithm_formatter.print_header();
 
     // Create LocalScheme.
     LocalScheme::Parameters parameters_local_scheme;
-    LocalScheme local_scheme(instance, parameters_local_scheme, output);
+    LocalScheme local_scheme(instance, parameters_local_scheme);
 
     // Run A*.
-    BestFirstLocalSearchOptionalParameters<LocalScheme> parameters_best_first;
-    //parameters_best_first.info.set_verbose(true);
-    parameters_best_first.info.set_time_limit(parameters.info.remaining_time());
-    parameters_best_first.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
-    parameters_best_first.number_of_threads_1 = 1;
-    parameters_best_first.number_of_threads_2 = parameters.number_of_threads;
-    parameters_best_first.initial_solution_ids = std::vector<Counter>(
-            parameters_best_first.number_of_threads_2, 0);
+    localsearchsolver::BestFirstLocalSearchParameters<LocalScheme> llsbfls_parameters;
+    llsbfls_parameters.verbosity_level = 0;
+    llsbfls_parameters.timer = parameters.timer;
+    llsbfls_parameters.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
+    llsbfls_parameters.number_of_threads_1 = 1;
+    llsbfls_parameters.number_of_threads_2 = parameters.number_of_threads;
+    llsbfls_parameters.initial_solution_ids = std::vector<Counter>(
+            llsbfls_parameters.number_of_threads_2, 0);
     bool end = false;
-    parameters_best_first.info.end = &end;
-    parameters_best_first.new_solution_callback
-        = [&instance, &parameters, &output, &parameters_best_first](
-                const LocalScheme::Solution& solution)
+    llsbfls_parameters.timer.set_end_boolean(&end);
+    llsbfls_parameters.new_solution_callback
+        = [&instance, &output, &algorithm_formatter, &end](
+                const localsearchsolver::Output<LocalScheme>& lss_output)
         {
-            Solution sol(instance);
+            Solution solution(instance);
             for (VertexId v = 0; v < instance.graph()->number_of_vertices(); ++v)
-                if (solution.vertices.contains(v))
-                    sol.add(v);
-            std::stringstream ss;
-            output.update_solution(sol, ss, parameters.info);
+                if (lss_output.solution_pool.best().vertices.contains(v))
+                    solution.add(v);
+            algorithm_formatter.update_solution(solution, "");
 
             optimizationtools::IndexedSet relevant_vertices(instance.graph()->number_of_vertices());
             relevant_vertices.fill();
-            Weight bound = instance.update_core(relevant_vertices, output.solution.weight());
-            output.update_bound(bound, ss, parameters.info);
+            Weight bound = instance.update_core(
+                    relevant_vertices,
+                    output.solution.weight());
+            algorithm_formatter.update_bound(bound, "");
 
             if (output.optimal())
-                *(parameters_best_first.info.end) = true;
+                end = true;
         };
-    best_first_local_search(local_scheme, parameters_best_first);
+    localsearchsolver::best_first_local_search(local_scheme, llsbfls_parameters);
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
-

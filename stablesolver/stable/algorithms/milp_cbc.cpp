@@ -16,7 +16,7 @@ public:
 
     SolHandler(
             const Instance& instance,
-            MilpCbcOptionalParameters& parameters,
+            MilpCbcParameters& parameters,
             Output& output):
         CbcEventHandler(),
         instance_(instance),
@@ -26,7 +26,7 @@ public:
     SolHandler(
             CbcModel *model,
             const Instance& instance,
-            MilpCbcOptionalParameters& parameters,
+            MilpCbcParameters& parameters,
             Output& output):
         CbcEventHandler(model),
         instance_(instance),
@@ -57,7 +57,7 @@ public:
 private:
 
     const Instance& instance_;
-    MilpCbcOptionalParameters& parameters_;
+    MilpCbcParameters& parameters_;
     Output& output_;
 
 };
@@ -68,7 +68,7 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
         return noAction;
 
     Weight ub = -model_->getBestPossibleObjValue();
-    output_.update_bound(ub, std::stringstream(""), parameters_.info);
+    output_.update_bound(ub, "");
 
     if ((whichEvent != solution && whichEvent != heuristicSolution)) // no solution found
         return noAction;
@@ -89,8 +89,7 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
         }
         output_.update_solution(
                 solution,
-                std::stringstream(""),
-                parameters_.info);
+                "");
     }
 
     return noAction;
@@ -100,42 +99,19 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
 /////////////////////////// Model 1, |E| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-Output stablesolver::stable::milp_1_cbc(
+const Output stablesolver::stable::milp_1_cbc(
         const Instance& original_instance,
-        MilpCbcOptionalParameters parameters)
+        const MilpCbcParameters& parameters)
 {
-    init_display(original_instance, parameters.info);
-    parameters.info.os()
-        << "Algorithm" << std::endl
-        << "---------" << std::endl
-        << "MILP 1 (Cbc)" << std::endl
-        << std::endl;
+    Output output(instance);
+    AlgorithmFormatter algorithm_formatter(parameters, output);
+    algorithm_formatter.start("MILP 1 (Cbc)");
 
     // Reduction.
-    std::unique_ptr<Instance> reduced_instance = nullptr;
-    if (parameters.reduction_parameters.reduce) {
-        reduced_instance = std::unique_ptr<Instance>(
-                new Instance(
-                    original_instance.reduce(
-                        parameters.reduction_parameters)));
-        parameters.info.os()
-            << "Reduced instance" << std::endl
-            << "----------------" << std::endl;
-        reduced_instance->print(parameters.info.os(), parameters.info.verbosity_level());
-        parameters.info.os() << std::endl;
-    }
-    const Instance& instance = (reduced_instance == nullptr)? original_instance: *reduced_instance;
+    if (parameters.reduction_parameters.reduce)
+        return solve_reduced_instance(milp_1_cbc, instance, parameters, algorithm_formatter, output);
 
-    Output output(original_instance, parameters.info);
-
-    // Update upper bound from reduction.
-    if (reduced_instance != nullptr) {
-        output.update_bound(
-                reduced_instance->total_weight()
-                + reduced_instance->unreduction_info().extra_weight,
-                std::stringstream("reduction"),
-                parameters.info);
-    }
+    algorithm_formatter.print_header();
 
     // Variables
     int number_of_columns = instance.number_of_vertices();
@@ -222,7 +198,7 @@ Output stablesolver::stable::milp_1_cbc(
     model.solver()->setHintParam(OsiDoReducePrint, true, OsiHintTry);
 
     // Set time limit
-    model.setMaximumSeconds(parameters.info.remaining_time());
+    model.setMaximumSeconds(parameters.timer.remaining_time());
 
     // Do complete search
     model.branchAndBound();
@@ -240,15 +216,13 @@ Output stablesolver::stable::milp_1_cbc(
                 if (solution_cbc[vertex_id] > 0.5)
                     solution.add(vertex_id);
             }
-            output.update_solution(
+            algorithm_formatter.update_solution(
                     solution,
-                    std::stringstream(""),
-                    parameters.info);
+                    "");
         }
-        output.update_bound(
+        algorithm_formatter.update_bound(
                 output.solution.weight(),
-                std::stringstream(""),
-                parameters.info);
+                "");
     } else if (model.bestSolution() != NULL) {
         if (!output.solution.feasible()
                 || output.solution.weight() < -model.getObjValue()) {
@@ -260,20 +234,19 @@ Output stablesolver::stable::milp_1_cbc(
                 if (solution_cbc[vertex_id] > 0.5)
                     solution.add(vertex_id);
             }
-            output.update_solution(
+            algorithm_formatter.update_solution(
                     solution,
-                    std::stringstream(""),
-                    parameters.info);
+                    "");
         }
         Weight ub = -model.getBestPossibleObjValue();
-        output.update_bound(ub, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     } else {
         Weight ub = -model.getBestPossibleObjValue();
-        output.update_bound(ub, std::stringstream(""), parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     }
 
-    return output.algorithm_end(parameters.info);
+    algorithm_formatter.end();
+    return output;
 }
 
 #endif
-

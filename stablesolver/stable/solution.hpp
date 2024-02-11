@@ -3,7 +3,8 @@
 #include "stablesolver/stable/instance.hpp"
 
 #include "optimizationtools/containers/indexed_set.hpp"
-#include "optimizationtools/containers/indexed_map.hpp"
+
+#include "nlohmann/json.hpp"
 
 #include <unordered_set>
 
@@ -25,9 +26,9 @@ public:
     Solution(const Instance& instance);
 
     /** Create a solution from a certificate file. */
-    Solution(const Instance& instance, std::string certificate_path);
-
-    void update(const Solution& solution);
+    Solution(
+            const Instance& instance,
+            const std::string& certificate_path);
 
     /*
      * Getters
@@ -41,6 +42,9 @@ public:
 
     /** Get the weight of the solution. */
     inline Weight weight() const { return weight_; }
+
+    /** Get the objective value of the solution. */
+    inline Weight objective_value() const { return weight(); }
 
     /** Get the weight of connected component c. */
     inline Weight weight(ComponentId c) const { return component_weights_[c]; }
@@ -66,8 +70,6 @@ public:
     /** Get the set of edges of the solution. */
     const std::unordered_set<EdgeId>& conflicts() const { return conflicts_; }
 
-    bool is_strictly_better_than(const Solution& solution) const;
-
     /*
      * Setters
      */
@@ -83,12 +85,15 @@ public:
      */
 
     /** Print the instance. */
-    std::ostream& print(
+    std::ostream& format(
             std::ostream& os,
-            int verbose = 1) const;
+            int verbosity_level = 1) const;
 
     /** Write the solution to a file. */
-    void write(std::string certificate_path);
+    void write(const std::string& certificate_path) const;
+
+    /** Export solution characteristics to a JSON structure. */
+    nlohmann::json to_json() const;
 
 private:
 
@@ -173,60 +178,5 @@ void Solution::remove(VertexId vertex_id)
     vertices_.remove(vertex_id);
 }
 
-std::ostream& operator<<(std::ostream& os, const Solution& solution);
-
-////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////// Output ////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * Output structure for a maximum-weight independent set problem.
- */
-struct Output
-{
-    /** Constructor. */
-    Output(
-            const Instance& instance,
-            optimizationtools::Info& info);
-
-    /** Solution in the original instance. */
-    Solution solution;
-
-    /** Bound. */
-    Weight bound = 0;
-
-    /** Elapsed time. */
-    double time = -1;
-
-    /** Return 'true' iff the solution is optimal. */
-    bool optimal() const { return solution.feasible() && solution.weight() == bound; }
-
-    /** Print current state. */
-    void print(
-            optimizationtools::Info& info,
-            const std::stringstream& s) const;
-
-    /** Update the solution. */
-    void update_solution(
-            const Solution& solution_new,
-            const std::stringstream& s,
-            optimizationtools::Info& info);
-
-    /** Update the bound. */
-    void update_bound(
-            Weight bound_new,
-            const std::stringstream& s,
-            optimizationtools::Info& info);
-
-    /** Print the algorithm statistics. */
-    virtual void print_statistics(
-            optimizationtools::Info& info) const { (void)info; }
-
-    /** Method to call at the end of the algorithm. */
-    Output& algorithm_end(
-            optimizationtools::Info& info);
-};
-
 }
 }
-
