@@ -1,7 +1,5 @@
 #include "stablesolver/clique/solution.hpp"
 
-#include "optimizationtools/utils/utils.hpp"
-
 #include <fstream>
 #include <iomanip>
 

@@ -54,7 +54,7 @@ private:
      */
 
     /** Compute the maximum degree. */
-    void compute_maximum_degree();
+    void compute_highest_degree();
 
     /** Compute the total weight. */
     void compute_total_weight();

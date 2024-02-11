@@ -88,7 +88,7 @@ class Instance
 public:
 
     /** Create the complementary instance. */
-    Instance complementary();
+    const Instance complementary();
 
     /*
      * Getters
@@ -116,7 +116,7 @@ public:
     inline VertexId degree(VertexId vertex_id) const { return vertices_[vertex_id].edges.size(); }
 
     /** Get the maximum vertex degree of the instance. */
-    inline VertexId maximum_degree() const { return maximum_degree_; }
+    inline VertexId highest_degree() const { return highest_degree_; }
 
     /** Get the total weight. */
     inline Weight total_weight() const { return total_weight_; }
@@ -168,7 +168,7 @@ private:
     std::vector<Component> components_;
 
     /** Maximum vertex degree of the instance. */
-    VertexId maximum_degree_ = 0;
+    VertexId highest_degree_ = 0;
 
     /** Total weight. */
     Weight total_weight_ = 0;

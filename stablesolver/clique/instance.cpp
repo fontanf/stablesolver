@@ -6,43 +6,18 @@ using namespace stablesolver::clique;
 
 Instance::Instance(
         const std::string& instance_path,
-        const std::string& format):
-    graph_(std::unique_ptr<optimizationtools::AbstractGraph>(
-                new optimizationtools::AdjacencyListGraph(instance_path, format))),
-    adjacency_list_graph_(static_cast<optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
-
-Instance::Instance(
-        VertexId number_of_vertices):
-    graph_(std::unique_ptr<optimizationtools::AbstractGraph>(
-                new optimizationtools::AdjacencyListGraph(number_of_vertices))),
-    adjacency_list_graph_(static_cast<optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
-
-Instance::Instance(const optimizationtools::AbstractGraph& abstract_graph):
-    graph_(std::unique_ptr<optimizationtools::AbstractGraph>(abstract_graph.clone())) { }
-
-Instance Instance::complementary()
+        const std::string& format)
 {
-    Instance instance(graph()->number_of_vertices());
-    optimizationtools::IndexedSet neighbors(graph()->number_of_vertices());
-
-    for (VertexId vertex_id = 0;
-            vertex_id < graph()->number_of_vertices();
-            ++vertex_id){
-        instance.set_weight(vertex_id, graph()->weight(vertex_id));
-        neighbors.clear();
-        neighbors.add(vertex_id);
-        for (auto it = graph()->neighbors_begin(vertex_id);
-                it != graph()->neighbors_end(vertex_id);
-                ++it) {
-            neighbors.add(*it);
-        }
-        for (auto it = neighbors.out_begin(); it != neighbors.out_end(); ++it)
-            if (*it > vertex_id)
-                instance.add_edge(vertex_id, *it);
-    }
-
-    return instance;
+    optimizationtools::AdjacencyListGraphBuilder graph_builder;
+    graph_builder.read(instance_path, format);
+    graph_ = std::shared_ptr<const optimizationtools::AbstractGraph>(
+                new optimizationtools::AdjacencyListGraph(graph_builder.build()));
+    adjacency_list_graph_ = static_cast<const optimizationtools::AdjacencyListGraph*>(graph_.get());
 }
+
+Instance::Instance(const std::shared_ptr<const optimizationtools::AbstractGraph>& abstract_graph):
+    graph_(abstract_graph),
+    adjacency_list_graph_(dynamic_cast<const optimizationtools::AdjacencyListGraph*>(graph_.get())) { }
 
 Weight Instance::update_core(
         optimizationtools::IndexedSet& relevant_vertices,
@@ -95,7 +70,7 @@ std::ostream& Instance::format(
             << "Number of edges:                 " << graph()->number_of_edges() << std::endl
             << "Density:                         " << density << std::endl
             << "Average degree:                  " << (double)graph()->number_of_edges() * 2 / graph()->number_of_vertices() << std::endl
-            << "Maximum degree:                  " << graph()->maximum_degree() << std::endl
+            << "Highest degree:                  " << graph()->highest_degree() << std::endl
             << "Total weight:                    " << graph()->total_weight() << std::endl
             ;
     }

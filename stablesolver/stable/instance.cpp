@@ -7,7 +7,7 @@
 
 using namespace stablesolver::stable;
 
-Instance Instance::complementary()
+const Instance Instance::complementary()
 {
     InstanceBuilder instance_builder;
     instance_builder.add_vertices(number_of_vertices());
@@ -42,7 +42,7 @@ std::ostream& Instance::format(
             << "Number of edges:                 " << number_of_edges() << std::endl
             << "Density:                         " << density << std::endl
             << "Average degree:                  " << (double)number_of_edges() * 2 / number_of_vertices() << std::endl
-            << "Maximum degree:                  " << maximum_degree() << std::endl
+            << "Highest degree:                  " << highest_degree() << std::endl
             << "Total weight:                    " << total_weight() << std::endl
             << "Number of connected components:  " << number_of_components() << std::endl
             ;

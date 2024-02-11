@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
         ("input,i", po::value<std::string>()->required(), "set input file (required)")
         ("format,f", po::value<std::string>()->default_value(""), "set input file format (default: standard)")
         ("unweighted,u", "set unweighted")
+        ("complementary", "set complementary")
         ("output,o", po::value<std::string>()->default_value(""), "set JSON output file")
         ("initial-solution,", po::value<std::string>()->default_value(""), "")
         ("certificate,c", po::value<std::string>()->default_value(""), "set certificate file")
@@ -111,11 +112,20 @@ int main(int argc, char *argv[])
     }
 
     // Build instance.
-    Instance instance(
+    optimizationtools::AdjacencyListGraphBuilder graph_builder;
+    graph_builder.read(
             vm["input"].as<std::string>(),
             vm["format"].as<std::string>());
     if (vm.count("unweighted"))
-        instance.set_unweighted();
+        graph_builder.set_unweighted();
+    std::shared_ptr<const optimizationtools::AdjacencyListGraph> graph
+        = (!vm.count("complementary"))?
+        std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
+                new optimizationtools::AdjacencyListGraph(graph_builder.build())):
+        std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
+                new optimizationtools::AdjacencyListGraph(graph_builder.build().complementary()));
+
+    const Instance instance(graph);
 
     // Run.
     Output output = run(instance, vm);

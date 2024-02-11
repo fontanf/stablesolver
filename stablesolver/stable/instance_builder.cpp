@@ -243,14 +243,14 @@ void InstanceBuilder::read_snap(std::ifstream& file)
 //////////////////////////////////// Build /////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-void InstanceBuilder::compute_maximum_degree()
+void InstanceBuilder::compute_highest_degree()
 {
-    instance_.maximum_degree_ = 0;
+    instance_.highest_degree_ = 0;
     for (VertexId vertex_id = 0;
             vertex_id < instance_.number_of_vertices();
             ++vertex_id) {
-        instance_.maximum_degree_ = std::max(
-                instance_.maximum_degree_,
+        instance_.highest_degree_ = std::max(
+                instance_.highest_degree_,
                 (VertexId)instance_.vertex(vertex_id).edges.size());
     }
 }
@@ -308,7 +308,7 @@ void InstanceBuilder::compute_components()
 
 Instance InstanceBuilder::build()
 {
-    compute_maximum_degree();
+    compute_highest_degree();
     compute_total_weight();
     compute_components();
     return std::move(instance_);

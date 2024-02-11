@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
         ("input,i", po::value<std::string>()->required(), "set input file (required)")
         ("format,f", po::value<std::string>()->default_value(""), "set input file format (default: standard)")
         ("unweighted,u", "set unweighted")
+        ("complementary", "set complementary")
         ("output,o", po::value<std::string>()->default_value(""), "set JSON output file")
         ("initial-solution,", po::value<std::string>()->default_value(""), "")
         ("certificate,c", po::value<std::string>()->default_value(""), "set certificate file")
@@ -158,7 +159,9 @@ int main(int argc, char *argv[])
             vm["format"].as<std::string>());
     if (vm.count("unweighted"))
         instance_builder.set_unweighted();
-    const Instance instance = instance_builder.build();
+    const Instance instance = (!vm.count("complementary"))?
+        instance_builder.build():
+        instance_builder.build().complementary();
 
     // Run.
     Output output = run(instance, vm);

@@ -77,7 +77,9 @@ public:
             Counter,
             std::mt19937_64&)
     {
-        auto output_greedy = greedy_gwmin(instance_);
+        stablesolver::clique::Parameters greedy_parameters;
+        greedy_parameters.verbosity_level = 0;
+        auto output_greedy = greedy_gwmin(instance_, greedy_parameters);
         Solution solution = empty_solution();
         for (VertexId vertex_id: relevant_vertices_)
             if (output_greedy.solution.contains(vertex_id))

@@ -4,6 +4,7 @@
 
 #include "optimizationtools/containers/indexed_set.hpp"
 #include "optimizationtools/utils/output.hpp"
+#include "optimizationtools/utils/utils.hpp"
 
 #include <cassert>
 #include <iomanip>
