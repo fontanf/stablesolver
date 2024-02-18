@@ -45,7 +45,7 @@ local_repository(
 git_repository(
     name = "localsearchsolver",
     remote = "https://github.com/fontanf/localsearchsolver.git",
-    commit = "304993bb84d9f3d7179d7eab280bc5700e9c7930",
+    commit = "b752dd07c95722f699f96193fbce91632ffc06ac",
 )
 
 local_repository(
@@ -216,4 +216,3 @@ cc_library(
 )
 """,
 )
-
