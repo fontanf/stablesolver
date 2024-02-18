@@ -367,7 +367,7 @@ public:
      */
 
     std::ostream& print(
-            std::ostream &os,
+            std::ostream& os,
             const Solution& solution)
     {
         os << "vertices:";
