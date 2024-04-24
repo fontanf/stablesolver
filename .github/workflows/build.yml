@@ -44,7 +44,7 @@ jobs:
         git fetch --depth 1
         git checkout master
     - name: Build
-      run: bazel build -- //...
+      run: bazel build -- //stablesolver/...
     - name: Run tests
       run: python3 -u scripts/run_tests.py test_results_ref
     - name: Process tests
