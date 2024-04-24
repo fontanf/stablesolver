@@ -14,10 +14,10 @@ args = parser.parse_args()
 
 
 stable_main = os.path.join(
-        "bazel-bin",
-        "stablesolver",
-        "stable",
-        "main")
+        "install",
+        "bin",
+        "stablesolver_stable")
+data_dir = os.environ['STABLE_DATA']
 
 
 greedy_data = [
@@ -41,7 +41,7 @@ if args.tests is None or "stable-greedy-gwmin" in args.tests:
 
     for instance, instance_format in greedy_data:
         instance_path = os.path.join(
-                "data",
+                data_dir,
                 instance)
         json_output_path = os.path.join(
                 args.directory,
@@ -73,7 +73,7 @@ if args.tests is None or "stable-greedy-gwmax" in args.tests:
 
     for instance, instance_format in greedy_data:
         instance_path = os.path.join(
-                "data",
+                data_dir,
                 instance)
         json_output_path = os.path.join(
                 args.directory,
@@ -105,7 +105,7 @@ if args.tests is None or "stable-greedy-gwmin2" in args.tests:
 
     for instance, instance_format in greedy_data:
         instance_path = os.path.join(
-                "data",
+                data_dir,
                 instance)
         json_output_path = os.path.join(
                 args.directory,
@@ -131,10 +131,9 @@ if args.tests is None or "stable-greedy-gwmin2" in args.tests:
 
 
 clique_main = os.path.join(
-        "bazel-bin",
-        "stablesolver",
-        "clique",
-        "main")
+        "install",
+        "bin",
+        "stablesolver_clique")
 
 
 if args.tests is None or "clique-greedy-gwmin" in args.tests:
@@ -144,7 +143,7 @@ if args.tests is None or "clique-greedy-gwmin" in args.tests:
 
     for instance, instance_format in greedy_data:
         instance_path = os.path.join(
-                "data",
+                data_dir,
                 instance)
         json_output_path = os.path.join(
                 args.directory,

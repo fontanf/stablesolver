@@ -1,7 +1,6 @@
-#if CPLEX_FOUND
-
 #include "stablesolver/stable/algorithms/milp_cplex.hpp"
 
+#include "stablesolver/stable/algorithm_formatter.hpp"
 #include "stablesolver/clique/algorithms/greedy.hpp"
 
 #include <ilcplex/ilocplex.h>
@@ -10,10 +9,11 @@ using namespace stablesolver::stable;
 
 ILOSTLBEGIN
 
-ILOMIPINFOCALLBACK4(loggingCallback1,
+ILOMIPINFOCALLBACK5(loggingCallback1,
                     const Instance&, instance,
-                    MilpCplexParameters&, parameters,
+                    const MilpCplexParameters&, parameters,
                     Output&, output,
+                    AlgorithmFormatter&, algorithm_formatter,
                     IloNumVarArray&, x)
 {
     VertexId ub = getBestObjValue();
@@ -38,7 +38,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
 ////////////////////////////////////////////////////////////////////////////////
 
 const Output stablesolver::stable::milp_1_cplex(
-        const Instance& original_instance,
+        const Instance& instance,
         const MilpCplexParameters& parameters)
 {
     Output output(instance);
@@ -89,7 +89,7 @@ const Output stablesolver::stable::milp_1_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
-    cplex.use(loggingCallback1(env, instance, parameters, output, x));
+    cplex.use(loggingCallback1(env, instance, parameters, output, algorithm_formatter, x));
 
     // Optimize
     cplex.solve();
@@ -135,8 +135,8 @@ const Output stablesolver::stable::milp_1_cplex(
 /////////////////////////// Model 2, |V| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-const Output stablesolver::milp_2_cplex(
-        const Instance& original_instance,
+const Output stablesolver::stable::milp_2_cplex(
+        const Instance& instance,
         const MilpCplexParameters& parameters)
 {
     Output output(instance);
@@ -191,7 +191,7 @@ const Output stablesolver::milp_2_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
-    cplex.use(loggingCallback1(env, instance, parameters, output, x));
+    cplex.use(loggingCallback1(env, instance, parameters, output, algorithm_formatter, x));
 
     // Optimize
     cplex.solve();
@@ -237,8 +237,8 @@ const Output stablesolver::milp_2_cplex(
 /////////////////////////// Model 1, |E| constraints ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-const Output stablesolver::milp_3_cplex(
-        const Instance& original_instance,
+const Output stablesolver::stable::milp_3_cplex(
+        const Instance& instance,
         const MilpCplexParameters& parameters)
 {
     Output output(instance);
@@ -287,37 +287,43 @@ const Output stablesolver::milp_3_cplex(
         for (const auto& edge: instance.vertex(vertex_id_2).edges)
             if (vertex_set_1.contains(edge.vertex_id))
                 vertex_set_2.add(edge.vertex_id);
-        stablesolver::clique::Instance instance_clique(vertex_set_2.size());
+        optimizationtools::AdjacencyListGraphBuilder graph_builder;
+        for (VertexId vertex_id = 0; vertex_id < vertex_set_2.size(); ++vertex_id)
+            graph_builder.add_vertex();
         // Add edges
         for (auto it = vertex_set_2.begin(); it != vertex_set_2.end(); ++it) {
             for (const auto& edge: instance.vertex(*it).edges) {
                 if (edge.vertex_id > *it
                         && vertex_set_2.contains(edge.vertex_id)) {
-                    edge_indices[instance_clique.adjacency_list_graph()->number_of_edges()] = edge.edge_id;
-                    instance_clique.add_edge(
+                    EdgeId edge_id = graph_builder.add_edge(
                             vertex_set_2.position(*it),
                             vertex_set_2.position(vertex_id_2));
+                    edge_indices[edge_id] = edge.edge_id;
                 }
             }
         }
+        std::shared_ptr<optimizationtools::AbstractGraph> graph
+            = std::shared_ptr<optimizationtools::AdjacencyListGraph>(
+                    new optimizationtools::AdjacencyListGraph(graph_builder.build()));
+        stablesolver::clique::Instance clique_instance(graph);
         // Solve
-        auto output_clique = stablesolver::clique::greedy_gwmin(instance_clique);
+        auto clique_output = stablesolver::clique::greedy_gwmin(clique_instance);
         // Build constraint
         IloExpr expr(env);
         expr += x[vertex_id_1] + x[vertex_id_2];
         for (const auto& edge: instance.vertex(vertex_id_1).edges)
             if (vertex_set_2.contains(edge.vertex_id)
-                    && output_clique.solution.contains(vertex_set_2.position(edge.vertex_id)))
+                    && clique_output.solution.contains(vertex_set_2.position(edge.vertex_id)))
                 edge_set.add(edge.edge_id);
         for (const auto& edge: instance.vertex(vertex_id_2).edges)
             if (vertex_set_2.contains(edge.vertex_id)
-                    && output_clique.solution.contains(vertex_set_2.position(edge.vertex_id)))
+                    && clique_output.solution.contains(vertex_set_2.position(edge.vertex_id)))
                 edge_set.add(edge.edge_id);
-        for (VertexId vertex_id_clique: output_clique.solution.vertices()) {
+        for (VertexId vertex_id_clique: clique_output.solution.vertices()) {
             VertexId vertex_id_orig = *(vertex_set_2.begin() + vertex_id_clique);
             expr += x[vertex_id_orig];
-            for (const auto& edge: instance_clique.adjacency_list_graph()->edges(vertex_id_orig)) {
-                if (output_clique.solution.contains(edge.vertex_id)
+            for (const auto& edge: clique_instance.adjacency_list_graph()->edges(vertex_id_orig)) {
+                if (clique_output.solution.contains(edge.vertex_id)
                         && edge.vertex_id > vertex_id_clique)
                     edge_set.add(edge_indices[edge.edge_id]);
             }
@@ -339,7 +345,7 @@ const Output stablesolver::milp_3_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
-    cplex.use(loggingCallback1(env, instance, parameters, output, x));
+    cplex.use(loggingCallback1(env, instance, parameters, output, algorithm_formatter, x));
 
     // Optimize
     cplex.solve();
@@ -381,5 +387,3 @@ const Output stablesolver::milp_3_cplex(
     algorithm_formatter.end();
     return output;
 }
-
-#endif

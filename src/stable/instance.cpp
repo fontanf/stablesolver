@@ -4,6 +4,7 @@
 #include "optimizationtools/containers/indexed_set.hpp"
 
 #include <iomanip>
+#include <ostream>
 
 using namespace stablesolver::stable;
 

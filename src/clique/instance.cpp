@@ -1,6 +1,7 @@
 #include "stablesolver/clique/instance.hpp"
 
 #include <iomanip>
+#include <ostream>
 
 using namespace stablesolver::clique;
 

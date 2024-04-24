@@ -1,6 +1,6 @@
-#if CPLEX_FOUND
-
 #include "stablesolver/clique/algorithms/milp_cplex.hpp"
+
+#include "stablesolver/clique/algorithm_formatter.hpp"
 
 #include <ilcplex/ilocplex.h>
 
@@ -8,14 +8,15 @@ using namespace stablesolver::clique;
 
 ILOSTLBEGIN
 
-ILOMIPINFOCALLBACK4(loggingCallback1,
+ILOMIPINFOCALLBACK5(loggingCallback1,
                     const Instance&, instance,
-                    MilpCplexParameters&, parameters,
+                    const MilpCplexParameters&, parameters,
                     Output&, output,
+                    AlgorithmFormatter&, algorithm_formatter,
                     IloNumVarArray&, x)
 {
     VertexId ub = getBestObjValue();
-    algorithm_formatter.update_bound(ub, std::stringstream(""), parameters.info);
+    algorithm_formatter.update_bound(ub, "");
 
     if (!hasIncumbent())
         return;
@@ -30,10 +31,7 @@ ILOMIPINFOCALLBACK4(loggingCallback1,
             if (val[vertex_id] > 0.5)
                 solution.add(vertex_id);
         }
-        algorithm_formatter.update_solution(
-                solution,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_solution(solution, "");
     }
 }
 
@@ -47,7 +45,6 @@ const Output stablesolver::clique::milp_cplex(
     algorithm_formatter.print_header();
 
     const optimizationtools::AbstractGraph* graph = instance.graph();
-    Output output(instance, parameters.info);
     VertexId n = graph->number_of_vertices();
 
     IloEnv env;
@@ -105,7 +102,7 @@ const Output stablesolver::clique::milp_cplex(
         cplex.setParam(IloCplex::TiLim, parameters.timer.remaining_time());
 
     // Callback
-    cplex.use(loggingCallback1(env, instance, parameters, output, x));
+    cplex.use(loggingCallback1(env, instance, parameters, output, algorithm_formatter, x));
 
     // Optimize
     cplex.solve();
@@ -121,15 +118,11 @@ const Output stablesolver::clique::milp_cplex(
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
             }
-            algorithm_formatter.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         algorithm_formatter.update_bound(
                 output.solution.weight(),
-                std::stringstream(""),
-                parameters.info);
+                "");
     } else if (cplex.isPrimalFeasible()) {
         if (output.solution.weight() < cplex.getObjValue() + 0.5) {
             Solution solution(instance);
@@ -139,22 +132,13 @@ const Output stablesolver::clique::milp_cplex(
                 if (cplex.getValue(x[vertex_id]) > 0.5)
                     solution.add(vertex_id);
             }
-            algorithm_formatter.update_solution(
-                    solution,
-                    std::stringstream(""),
-                    parameters.info);
+            algorithm_formatter.update_solution(solution, "");
         }
         Weight ub = cplex.getBestObjValue();
-        algorithm_formatter.update_bound(
-                ub,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     } else {
         Weight ub = cplex.getBestObjValue();
-        algorithm_formatter.update_bound(
-                ub,
-                std::stringstream(""),
-                parameters.info);
+        algorithm_formatter.update_bound(ub, "");
     }
 
     env.end();
@@ -162,5 +146,3 @@ const Output stablesolver::clique::milp_cplex(
     algorithm_formatter.end();
     return output;
 }
-
-#endif

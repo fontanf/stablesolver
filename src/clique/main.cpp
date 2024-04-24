@@ -1,16 +1,15 @@
-#include "stablesolver/stable/instance_builder.hpp"
+#include "stablesolver/clique/instance.hpp"
 
-#include "stablesolver/stable/solution.hpp"
-#include "stablesolver/stable/algorithms/greedy.hpp"
-#include "stablesolver/stable/algorithms/milp_cbc.hpp"
-#include "stablesolver/stable/algorithms/milp_cplex.hpp"
-#include "stablesolver/stable/algorithms/local_search.hpp"
-#include "stablesolver/stable/algorithms/local_search_row_weighting.hpp"
-#include "stablesolver/stable/algorithms/large_neighborhood_search.hpp"
+#include "stablesolver/clique/solution.hpp"
+#include "stablesolver/clique/algorithms/greedy.hpp"
+#if CPLEX_FOUND
+#include "stablesolver/clique/algorithms/milp_cplex.hpp"
+#endif
+#include "stablesolver/clique/algorithms/local_search.hpp"
 
 #include <boost/program_options.hpp>
 
-using namespace stablesolver::stable;
+using namespace stablesolver::clique;
 
 namespace po = boost::program_options;
 
@@ -53,61 +52,23 @@ Output run(
     // Run algorithm.
     std::string algorithm = vm["algorithm"].as<std::string>();
     if (algorithm == "greedy-gwmin") {
-        GreedyParameters parameters;
+        Parameters parameters;
         read_args(parameters, vm);
         return greedy_gwmin(instance, parameters);
-    } else if (algorithm == "greedy-gwmax") {
-        GreedyParameters parameters;
-        read_args(parameters, vm);
-        return greedy_gwmax(instance, parameters);
-    } else if (algorithm == "greedy-gwmin2") {
-        GreedyParameters parameters;
-        read_args(parameters, vm);
-        return greedy_gwmin2(instance, parameters);
     } else if (algorithm == "greedy-strong") {
-        GreedyParameters parameters;
+        Parameters parameters;
         read_args(parameters, vm);
         return greedy_strong(instance, parameters);
-#if CBC_FOUND
-    } else if (algorithm == "milp-cbc") {
-        MilpCbcParameters parameters;
-        read_args(parameters, vm);
-        return milp_cbc(instance, parameters);
-#endif
 #if CPLEX_FOUND
     } else if (algorithm == "milp-cplex") {
         MilpCplexParameters parameters;
         read_args(parameters, vm);
         return milp_cplex(instance, parameters);
 #endif
-    } else if (algorithm == "local-search-row-weighting-1") {
-        LocalSearchRowWeighting1Parameters parameters;
-        read_args(parameters, vm);
-        if (vm.count("maximum-number-of-iterations"))
-            parameters.maximum_number_of_iterations = vm["maximum-number-of-iterations"].as<int>();
-        if (vm.count("maximum-number-of-iterations-without-improvement"))
-            parameters.maximum_number_of_iterations_without_improvement = vm["maximum-number-of-iterations-without-improvement"].as<int>();
-        return local_search_row_weighting_1(instance, generator, parameters);
-    } else if (algorithm == "local-search-row-weighting-2") {
-        LocalSearchRowWeighting2Parameters parameters;
-        read_args(parameters, vm);
-        if (vm.count("maximum-number-of-iterations"))
-            parameters.maximum_number_of_iterations = vm["maximum-number-of-iterations"].as<int>();
-        if (vm.count("maximum-number-of-iterations-without-improvement"))
-            parameters.maximum_number_of_iterations_without_improvement = vm["maximum-number-of-iterations-without-improvement"].as<int>();
-        return local_search_row_weighting_2(instance, generator, parameters);
     } else if (algorithm == "local-search") {
         LocalSearchParameters parameters;
         read_args(parameters, vm);
-        return local_search(instance, parameters);
-    } else if (algorithm == "large-neighborhood-search") {
-        LargeNeighborhoodSearchParameters parameters;
-        read_args(parameters, vm);
-        if (vm.count("maximum-number-of-iterations"))
-            parameters.maximum_number_of_iterations = vm["maximum-number-of-iterations"].as<int>();
-        if (vm.count("maximum-number-of-iterations-without-improvement"))
-            parameters.maximum_number_of_iterations_without_improvement = vm["maximum-number-of-iterations-without-improvement"].as<int>();
-        return large_neighborhood_search(instance, parameters);
+        return local_search(instance, generator, parameters);
 
     } else {
         throw std::invalid_argument(
@@ -153,15 +114,20 @@ int main(int argc, char *argv[])
     }
 
     // Build instance.
-    InstanceBuilder instance_builder;
-    instance_builder.read(
+    optimizationtools::AdjacencyListGraphBuilder graph_builder;
+    graph_builder.read(
             vm["input"].as<std::string>(),
             vm["format"].as<std::string>());
     if (vm.count("unweighted"))
-        instance_builder.set_unweighted();
-    const Instance instance = (!vm.count("complementary"))?
-        instance_builder.build():
-        instance_builder.build().complementary();
+        graph_builder.set_unweighted();
+    std::shared_ptr<const optimizationtools::AdjacencyListGraph> graph
+        = (!vm.count("complementary"))?
+        std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
+                new optimizationtools::AdjacencyListGraph(graph_builder.build())):
+        std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
+                new optimizationtools::AdjacencyListGraph(graph_builder.build().complementary()));
+
+    const Instance instance(graph);
 
     // Run.
     Output output = run(instance, vm);
@@ -174,3 +140,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+

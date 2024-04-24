@@ -1,6 +1,6 @@
-#if COINOR_FOUND
-
 #include "stablesolver/stable/algorithms/milp_cbc.hpp"
+
+#include "stablesolver/stable/algorithm_formatter.hpp"
 
 #include <coin/CbcModel.hpp>
 #include <coin/OsiCbcSolverInterface.hpp>
@@ -16,22 +16,26 @@ public:
 
     SolHandler(
             const Instance& instance,
-            MilpCbcParameters& parameters,
-            Output& output):
+            const MilpCbcParameters& parameters,
+            Output& output,
+            AlgorithmFormatter& algorithm_formatter):
         CbcEventHandler(),
         instance_(instance),
         parameters_(parameters),
-        output_(output) { }
+        output_(output),
+        algorithm_formatter_(algorithm_formatter) { }
 
     SolHandler(
             CbcModel *model,
             const Instance& instance,
             MilpCbcParameters& parameters,
-            Output& output):
+            Output& output,
+            AlgorithmFormatter& algorithm_formatter):
         CbcEventHandler(model),
         instance_(instance),
         parameters_(parameters),
-        output_(output) { }
+        output_(output),
+        algorithm_formatter_(algorithm_formatter) { }
 
     virtual ~SolHandler() { }
 
@@ -39,15 +43,17 @@ public:
         CbcEventHandler(rhs),
         instance_(rhs.instance_),
         parameters_(rhs.parameters_),
-        output_(rhs.output_) { }
+        output_(rhs.output_),
+        algorithm_formatter_(rhs.algorithm_formatter_) { }
 
     SolHandler &operator=(const SolHandler &rhs)
     {
         if (this != &rhs) {
             CbcEventHandler::operator=(rhs);
             //this->instance_   = rhs.instance_;
-            this->parameters_ = rhs.parameters_;
-            this->output_     = rhs.output_;
+            //this->parameters_ = rhs.parameters_;
+            //this->output_ = rhs.output_;
+            //this->algorithm_formatter_ = rhs.algorithm_formatter_;
         }
         return *this;
     }
@@ -57,8 +63,9 @@ public:
 private:
 
     const Instance& instance_;
-    MilpCbcParameters& parameters_;
+    const MilpCbcParameters& parameters_;
     Output& output_;
+    AlgorithmFormatter& algorithm_formatter_;
 
 };
 
@@ -68,7 +75,7 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
         return noAction;
 
     Weight ub = -model_->getBestPossibleObjValue();
-    output_.update_bound(ub, "");
+    algorithm_formatter_.update_bound(ub, "");
 
     if ((whichEvent != solution && whichEvent != heuristicSolution)) // no solution found
         return noAction;
@@ -87,7 +94,7 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
             if (solution_cbc[vertex_id] > 0.5)
                 solution.add(vertex_id);
         }
-        output_.update_solution(
+        algorithm_formatter_.update_solution(
                 solution,
                 "");
     }
@@ -100,7 +107,7 @@ CbcEventHandler::CbcAction SolHandler::event(CbcEvent whichEvent)
 ////////////////////////////////////////////////////////////////////////////////
 
 const Output stablesolver::stable::milp_1_cbc(
-        const Instance& original_instance,
+        const Instance& instance,
         const MilpCbcParameters& parameters)
 {
     Output output(instance);
@@ -190,7 +197,7 @@ const Output stablesolver::stable::milp_1_cbc(
     model.setObjSense(-1);
 
     // Callback
-    SolHandler sh(instance, parameters, output);
+    SolHandler sh(instance, parameters, output, algorithm_formatter);
     model.passInEventHandler(&sh);
 
     // Reduce printout
@@ -248,5 +255,3 @@ const Output stablesolver::stable::milp_1_cbc(
     algorithm_formatter.end();
     return output;
 }
-
-#endif
