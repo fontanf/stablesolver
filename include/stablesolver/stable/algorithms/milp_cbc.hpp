@@ -1,7 +1,5 @@
 #pragma once
 
-#if COINOR_FOUND
-
 #include "stablesolver/stable/algorithm.hpp"
 
 namespace stablesolver
@@ -21,5 +19,3 @@ const Output milp_1_cbc(
 
 }
 }
-
-#endif

@@ -1,7 +1,5 @@
 #pragma once
 
-#if CPLEX_FOUND
-
 #include "stablesolver/clique/solution.hpp"
 
 namespace stablesolver
@@ -20,5 +18,3 @@ const Output milp_cplex(
 
 }
 }
-
-#endif

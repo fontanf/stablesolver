@@ -50,7 +50,14 @@ Download and uncompress the instances in the `data/` folder:
 
 Compile:
 ```shell
-bazel build -- //...
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release --parallel
+cmake --install build --config Release --prefix install
+```
+
+To enable algorithms using CPLEX, replace the first step by:
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSTABLESOLVER_USE_CBC=OFF -DSTABLESOLVER_USE_CPLEX=ON
 ```
 
 Download data:
@@ -61,7 +68,7 @@ python3 scripts/download_data.py
 Examples:
 
 ```shell
-./bazel-bin/stablesolver/stable/main --verbosity-level 1 --input "data/dimacs1992/brock200_1.clq" --format dimacs1992 --algorithm "local-search-row-weighting-2" --maximum-number-of-iterations 3000 -certificate solution.txt
+./install/bin/stablesolver_stable  --verbosity-level 1  --input "data/dimacs1992/brock200_1.clq" --format dimacs1992  --algorithm "local-search-row-weighting-2" --maximum-number-of-iterations 3000  --certificate solution.txt
 ```
 ```
 ====================================
@@ -126,7 +133,7 @@ Weight:               21
 ```
 
 ```shell
-./bazel-bin/stablesolver/stable/main --verbosity-level 1 --input "data/dimacs2010/clustering/caidaRouterLevel.graph" --format dimacs2010 --algorithm "local-search-row-weighting-1" --maximum-number-of-iterations 300000
+./install/bin/stablesolver_stable  --verbosity-level 1  --input "data/dimacs2010/clustering/caidaRouterLevel.graph" --format dimacs2010  --algorithm "local-search-row-weighting-1" --maximum-number-of-iterations 300000
 ```
 ```
 =====================================
