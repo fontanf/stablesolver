@@ -5,6 +5,9 @@ project(StableSolver LANGUAGES CXX)
 option(STABLESOLVER_USE_CBC "Use CPLEX" ON)
 option(STABLESOLVER_USE_CPLEX "Use CPLEX" OFF)
 
+# Avoid FetchContent warning.
+cmake_policy(SET CMP0135 NEW)
+
 # Require C++11.
 set(CMAKE_CXX_STANDARD 11)
 
