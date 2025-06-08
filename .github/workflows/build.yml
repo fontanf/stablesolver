@@ -25,7 +25,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: sudo apt-get -y install liblapack-dev libbz2-dev
+      run: sudo apt-get -y install liblapack-dev libbz2-dev libnauty-dev
       if: matrix.os == 'ubuntu-latest'
     - name: Install CLP (MacOS)
       run: |
