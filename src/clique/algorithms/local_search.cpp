@@ -555,7 +555,7 @@ const Output stablesolver::clique::local_search(
     llsbfls_parameters.initial_solution_ids = std::vector<Counter>(
             llsbfls_parameters.number_of_threads_2, 0);
     bool end = false;
-    llsbfls_parameters.timer.set_end_boolean(&end);
+    llsbfls_parameters.timer.add_end_boolean(&end);
     llsbfls_parameters.new_solution_callback
         = [&instance, &output, &algorithm_formatter, &end](
                 const localsearchsolver::Output<LocalScheme>& lss_output)
