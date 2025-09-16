@@ -47,5 +47,20 @@ const Output milp_3(
         const Instance& instance,
         const MilpParameters& parameters = {});
 
+void write_mps_1(
+        const Instance& instance,
+        mathoptsolverscmake::SolverName solver,
+        const std::string& output_path);
+
+void write_mps_2(
+        const Instance& instance,
+        mathoptsolverscmake::SolverName solver,
+        const std::string& output_path);
+
+void write_mps_3(
+        const Instance& instance,
+        mathoptsolverscmake::SolverName solver,
+        const std::string& output_path);
+
 }
 }
