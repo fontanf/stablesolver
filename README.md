@@ -21,9 +21,9 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
   - `-a greedy-strong`
 
 - Mixed-Integer Linear Programs
-  - Model 1, `|E|` constraints  `-a milp-1-cbc` (Cbc) `-a milp-1-cplex` (CPLEX)
-  - Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) [DOI](https://doi.org/10.1016/0377-2217(94)90252-6) `-a milp-2-cplex` (CPLEX)
-  - Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) [DOI](https://doi.org/10.1287/ijoc.2016.0742) (seems useless since solvers already detect and merge clique constraints) `-a milp-3-cplex` (CPLEX)
+  - Model 1, `|E|` constraints  `-a milp-1`
+  - Model 2, `|V|` constraints, see "A multi-KP modeling for the maximum-clique problem" (Della Croce et Tadei, 1994) [DOI](https://doi.org/10.1016/0377-2217(94)90252-6) `-a milp-2`
+  - Model 3, clique constraints, see "A Branch-and-Bound Algorithm for the Knapsack Problem with Conflict Graph" (Bettinelli et al., 2017) [DOI](https://doi.org/10.1287/ijoc.2016.0742) (seems useless since solvers already detect and merge clique constraints) `-a milp-3`
 
 - Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "local-search --threads 3"`
 
@@ -39,7 +39,7 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
   - `-a greedy-gwmin`, adapted from the stable version, same complexity
   - `-a greedy-strong`
 
-- Mixed-Integer Linear Program (implemented with CPLEX), see "Worst-case analysis of clique MIPs" (Naderi et al., 2021) [DOI](https://doi.org/10.1007/s10107-021-01706-2) `-a milp-cplex`
+- Mixed-Integer Linear Program from "Worst-case analysis of clique MIPs" (Naderi et al., 2021) [DOI](https://doi.org/10.1007/s10107-021-01706-2) `-a milp`
 
 - Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "local-search"`
 
@@ -55,9 +55,11 @@ cmake --build build --config Release --parallel
 cmake --install build --config Release --prefix install
 ```
 
-To enable algorithms using CPLEX, replace the first step by:
-```
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSTABLESOLVER_USE_CBC=OFF -DSTABLESOLVER_USE_CPLEX=ON
+Setup Python environment to use the Python scripts:
+```shell
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 Download data:

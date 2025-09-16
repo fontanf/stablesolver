@@ -7,30 +7,16 @@ target_link_libraries(StableSolver_stable_greedy PUBLIC
     StableSolver_stable)
 add_library(StableSolver::stable::greedy ALIAS StableSolver_stable_greedy)
 
-if(STABLESOLVER_USE_CBC)
-    add_library(StableSolver_stable_milp_cbc)
-    target_sources(StableSolver_stable_milp_cbc PRIVATE
-        milp_cbc.cpp)
-    target_include_directories(StableSolver_stable_milp_cbc PUBLIC
-        ${PROJECT_SOURCE_DIR}/include)
-    target_link_libraries(StableSolver_stable_milp_cbc PUBLIC
-        StableSolver_stable
-        MathOptSolversCMake::cbc)
-    add_library(StableSolver::stable::milp_cbc ALIAS StableSolver_stable_milp_cbc)
-endif()
-
-if(STABLESOLVER_USE_CPLEX)
-    add_library(StableSolver_stable_milp_cplex)
-    target_sources(StableSolver_stable_milp_cplex PRIVATE
-        milp_cplex.cpp)
-    target_include_directories(StableSolver_stable_milp_cplex PUBLIC
-        ${PROJECT_SOURCE_DIR}/include)
-    target_link_libraries(StableSolver_stable_milp_cplex PUBLIC
-        StableSolver_stable
-        StableSolver_clique_greedy
-        MathOptSolversCMake::cplex)
-    add_library(StableSolver::stable::milp_cplex ALIAS StableSolver_stable_milp_cplex)
-endif()
+add_library(StableSolver_stable_milp)
+target_sources(StableSolver_stable_milp PRIVATE
+    milp.cpp)
+target_include_directories(StableSolver_stable_milp PUBLIC
+    ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(StableSolver_stable_milp PUBLIC
+    StableSolver_stable
+    StableSolver_clique_greedy
+    MathOptSolversCMake::milp)
+add_library(StableSolver::stable::milp ALIAS StableSolver_stable_milp)
 
 add_library(StableSolver_stable_local_search)
 target_sources(StableSolver_stable_local_search PRIVATE

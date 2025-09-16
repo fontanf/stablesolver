@@ -2,12 +2,7 @@
 
 #include "stablesolver/stable/solution.hpp"
 #include "stablesolver/stable/algorithms/greedy.hpp"
-#if CBC_FOUND
-#include "stablesolver/stable/algorithms/milp_cbc.hpp"
-#endif
-#if CPLEX_FOUND
-#include "stablesolver/stable/algorithms/milp_cplex.hpp"
-#endif
+#include "stablesolver/stable/algorithms/milp.hpp"
 #include "stablesolver/stable/algorithms/local_search.hpp"
 #include "stablesolver/stable/algorithms/local_search_row_weighting.hpp"
 #include "stablesolver/stable/algorithms/large_neighborhood_search.hpp"
@@ -72,26 +67,18 @@ Output run(
         GreedyParameters parameters;
         read_args(parameters, vm);
         return greedy_strong(instance, parameters);
-#if CBC_FOUND
-    } else if (algorithm == "milp-cbc") {
-        MilpCbcParameters parameters;
+    } else if (algorithm == "milp-1") {
+        MilpParameters parameters;
         read_args(parameters, vm);
-        return milp_1_cbc(instance, parameters);
-#endif
-#if CPLEX_FOUND
-    } else if (algorithm == "milp-1-cplex") {
-        MilpCplexParameters parameters;
+        return milp_1(instance, parameters);
+    } else if (algorithm == "milp-2") {
+        MilpParameters parameters;
         read_args(parameters, vm);
-        return milp_1_cplex(instance, parameters);
-    } else if (algorithm == "milp-2-cplex") {
-        MilpCplexParameters parameters;
+        return milp_2(instance, parameters);
+    } else if (algorithm == "milp-3") {
+        MilpParameters parameters;
         read_args(parameters, vm);
-        return milp_1_cplex(instance, parameters);
-    } else if (algorithm == "milp-3-cplex") {
-        MilpCplexParameters parameters;
-        read_args(parameters, vm);
-        return milp_1_cplex(instance, parameters);
-#endif
+        return milp_3(instance, parameters);
     } else if (algorithm == "local-search-row-weighting-1") {
         LocalSearchRowWeighting1Parameters parameters;
         read_args(parameters, vm);
@@ -148,6 +135,7 @@ int main(int argc, char *argv[])
         ("log,l", po::value<std::string>(), "set log file")
         ("log-to-stderr", "write log to stderr")
 
+        ("solver,", po::value<mathoptsolverscmake::SolverName>(), "set solver")
         ("maximum-number-of-iterations,", po::value<int>(), "set the maximum number of iterations")
         ("maximum-number-of-iterations-without-improvement,", po::value<int>(), "set the maximum number of iterations without improvement")
         ;

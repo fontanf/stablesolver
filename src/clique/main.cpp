@@ -2,9 +2,7 @@
 
 #include "stablesolver/clique/solution.hpp"
 #include "stablesolver/clique/algorithms/greedy.hpp"
-#if CPLEX_FOUND
-#include "stablesolver/clique/algorithms/milp_cplex.hpp"
-#endif
+#include "stablesolver/clique/algorithms/milp.hpp"
 #include "stablesolver/clique/algorithms/local_search.hpp"
 
 #include <boost/program_options.hpp>
@@ -59,12 +57,10 @@ Output run(
         Parameters parameters;
         read_args(parameters, vm);
         return greedy_strong(instance, parameters);
-#if CPLEX_FOUND
-    } else if (algorithm == "milp-cplex") {
-        MilpCplexParameters parameters;
+    } else if (algorithm == "milp") {
+        MilpParameters parameters;
         read_args(parameters, vm);
-        return milp_cplex(instance, parameters);
-#endif
+        return milp(instance, parameters);
     } else if (algorithm == "local-search") {
         LocalSearchParameters parameters;
         read_args(parameters, vm);
