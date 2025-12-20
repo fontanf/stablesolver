@@ -6,7 +6,7 @@ option(STABLESOLVER_BUILD_MAIN "Build main" ON)
 option(STABLESOLVER_BUILD_TEST "Build the unit tests" ON)
 
 option(STABLESOLVER_USE_CBC "Use Cbc" OFF)
-option(STABLESOLVER_USE_HIGHS "Use HiGHS" ON)
+option(STABLESOLVER_USE_HIGHS "Use HiGHS" OFF)
 option(STABLESOLVER_USE_XPRESS "Use FICO Xpress" OFF)
 
 # Avoid FetchContent warning.
