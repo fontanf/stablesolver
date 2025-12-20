@@ -5,6 +5,7 @@ import shutil
 import pathlib
 import time
 import sys
+import py7zr
 
 
 parser = argparse.ArgumentParser(description='')
@@ -26,7 +27,7 @@ def download(id):
     sys.exit(1)
 
 if args.data is None:
-    download("1OUJqeX9IMlRczq4Ycta-lppcnGgFJd2E")
-    os.system("7z x data.7z")
+    download("10v7bSBSKRn7Lpl6wpXP83n4QUko3wa1E")
+    with py7zr.SevenZipFile("data.7z", mode="r") as z:
+        z.extractall(path="data")
     pathlib.Path("data.7z").unlink()
-    shutil.copytree("stable", "data", dirs_exist_ok=True)

@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.8"]
 
     env:
@@ -34,11 +34,11 @@ jobs:
       if: ${{ (matrix.os == 'macos-13') || (matrix.os == 'macos-latest') }}
     - name: Download data
       run: |
-        python3 -m pip install gdown
+        python3 -m pip install -r requirements.txt
         python3 scripts/download_data.py
     - name: Build
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSTABLESOLVER_USE_HIGHS=ON
         cmake --build build --config Release --parallel
         cmake --install build --config Release --prefix install
     - name: Run tests
@@ -50,7 +50,7 @@ jobs:
         git checkout master
     - name: Build
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSTABLESOLVER_USE_HIGHS=ON
         cmake --build build --config Release --parallel
         cmake --install build --config Release --prefix install
     - name: Run tests
