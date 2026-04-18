@@ -2,12 +2,22 @@
 
 #include "stablesolver/clique/algorithm_formatter.hpp"
 
+#ifdef CBC_FOUND
+#include "mathoptsolverscmake/mathopt_cbc.hpp"
+#endif
+#ifdef HIGHS_FOUND
+#include "mathoptsolverscmake/mathopt_highs.hpp"
+#endif
+#ifdef XPRESS_FOUND
+#include "mathoptsolverscmake/mathopt_xpress.hpp"
+#endif
+
 using namespace stablesolver::clique;
 
 namespace
 {
 
-mathoptsolverscmake::MilpModel create_milp_model(
+mathoptsolverscmake::MathOptModel create_milp_model(
         const Instance& instance)
 {
     const optimizationtools::AbstractGraph* graph = instance.graph();
@@ -17,7 +27,7 @@ mathoptsolverscmake::MilpModel create_milp_model(
     int number_of_elements = 0;
 
     // Variables
-    mathoptsolverscmake::MilpModel model(
+    mathoptsolverscmake::MathOptModel model(
             number_of_variables,
             number_of_constraints,
             number_of_elements);
@@ -113,7 +123,7 @@ public:
     EventHandler(
             const Instance& instance,
             const MilpParameters& parameters,
-            const mathoptsolverscmake::MilpModel& milp_model,
+            const mathoptsolverscmake::MathOptModel& milp_model,
             Output& output,
             AlgorithmFormatter& algorithm_formatter):
         CbcEventHandler(),
@@ -139,7 +149,7 @@ private:
 
     const Instance& instance_;
     const MilpParameters& parameters_;
-    const mathoptsolverscmake::MilpModel& milp_model_;
+    const mathoptsolverscmake::MathOptModel& milp_model_;
     Output& output_;
     AlgorithmFormatter& algorithm_formatter_;
 
@@ -232,7 +242,7 @@ const Output stablesolver::clique::milp(
 
     algorithm_formatter.print_header();
 
-    mathoptsolverscmake::MilpModel milp_model = create_milp_model(instance);
+    mathoptsolverscmake::MathOptModel milp_model = create_milp_model(instance);
 
     std::vector<double> milp_solution;
     double milp_bound = 0;

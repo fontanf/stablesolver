@@ -32,8 +32,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(optimizationtools)
 
 # Fetch fontanf/mathoptsolverscmake.
-set(MATHOPTSOLVERSCMAKE_USE_CLP ON)
-set(MATHOPTSOLVERSCMAKE_USE_CBC ON)
+if(STABLESOLVER_USE_CBC)
+    set(MATHOPTSOLVERSCMAKE_USE_CBC ON)
+endif()
 if(STABLESOLVER_USE_HIGHS)
     set(MATHOPTSOLVERSCMAKE_USE_HIGHS ON)
 endif()
@@ -43,7 +44,7 @@ endif()
 FetchContent_Declare(
     mathoptsolverscmake
     GIT_REPOSITORY https://github.com/fontanf/mathoptsolverscmake.git
-    GIT_TAG 59fd908038906df649e121f42652a0e8f99cbc67
+    GIT_TAG c312e55d551edd57e98edfd24d4e2330abdcbbd2
     #SOURCE_DIR "${PROJECT_SOURCE_DIR}/../mathoptsolverscmake/"
     EXCLUDE_FROM_ALL)
 FetchContent_MakeAvailable(mathoptsolverscmake)
