@@ -15,7 +15,7 @@ target_include_directories(StableSolver_stable_milp PUBLIC
 target_link_libraries(StableSolver_stable_milp PUBLIC
     StableSolver_stable
     StableSolver_clique_greedy
-    MathOptSolversCMake::milp)
+    MathOptSolversCMake::mathopt)
 add_library(StableSolver::stable::milp ALIAS StableSolver_stable_milp)
 
 add_library(StableSolver_stable_local_search)

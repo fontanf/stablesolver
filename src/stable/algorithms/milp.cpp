@@ -3,19 +3,29 @@
 #include "stablesolver/stable/algorithm_formatter.hpp"
 #include "stablesolver/clique/algorithms/greedy.hpp"
 
+#ifdef CBC_FOUND
+#include "mathoptsolverscmake/mathopt_cbc.hpp"
+#endif
+#ifdef HIGHS_FOUND
+#include "mathoptsolverscmake/mathopt_highs.hpp"
+#endif
+#ifdef XPRESS_FOUND
+#include "mathoptsolverscmake/mathopt_xpress.hpp"
+#endif
+
 using namespace stablesolver::stable;
 
 namespace
 {
 
-mathoptsolverscmake::MilpModel create_milp_model_1(
+mathoptsolverscmake::MathOptModel create_milp_model_1(
         const Instance& instance)
 {
     int number_of_variables = instance.number_of_vertices();
     int number_of_constraints = instance.number_of_edges();
     int number_of_elements = 2 * instance.number_of_edges();
 
-    mathoptsolverscmake::MilpModel model(
+    mathoptsolverscmake::MathOptModel model(
             number_of_variables,
             number_of_constraints,
             number_of_elements);
@@ -62,14 +72,14 @@ mathoptsolverscmake::MilpModel create_milp_model_1(
     return model;
 }
 
-mathoptsolverscmake::MilpModel create_milp_model_2(
+mathoptsolverscmake::MathOptModel create_milp_model_2(
         const Instance& instance)
 {
     int number_of_variables = instance.number_of_vertices();
     int number_of_constraints = instance.number_of_vertices();
     int number_of_elements = instance.number_of_vertices() + 2 * instance.number_of_edges();
 
-    mathoptsolverscmake::MilpModel model(
+    mathoptsolverscmake::MathOptModel model(
             number_of_variables,
             number_of_constraints,
             number_of_elements);
@@ -117,10 +127,10 @@ mathoptsolverscmake::MilpModel create_milp_model_2(
     return model;
 }
 
-mathoptsolverscmake::MilpModel create_milp_model_3(
+mathoptsolverscmake::MathOptModel create_milp_model_3(
         const Instance& instance)
 {
-    mathoptsolverscmake::MilpModel model(instance.number_of_vertices(), 0, 0);
+    mathoptsolverscmake::MathOptModel model(instance.number_of_vertices(), 0, 0);
 
     // Variable and objective.
     model.objective_direction = mathoptsolverscmake::ObjectiveDirection::Maximize;
@@ -247,7 +257,7 @@ public:
     EventHandler(
             const Instance& instance,
             const MilpParameters& parameters,
-            const mathoptsolverscmake::MilpModel& milp_model,
+            const mathoptsolverscmake::MathOptModel& milp_model,
             Output& output,
             AlgorithmFormatter& algorithm_formatter):
         CbcEventHandler(),
@@ -273,7 +283,7 @@ private:
 
     const Instance& instance_;
     const MilpParameters& parameters_;
-    const mathoptsolverscmake::MilpModel& milp_model_;
+    const mathoptsolverscmake::MathOptModel& milp_model_;
     Output& output_;
     AlgorithmFormatter& algorithm_formatter_;
 
@@ -383,7 +393,7 @@ const Output milp(
 
     algorithm_formatter.print_header();
 
-    mathoptsolverscmake::MilpModel milp_model =
+    mathoptsolverscmake::MathOptModel milp_model =
         (model_id == 1)? create_milp_model_1(instance):
         (model_id == 2)? create_milp_model_2(instance):
         create_milp_model_3(instance);
@@ -498,7 +508,7 @@ void write_mps(
         const std::string& output_path,
         int model_id)
 {
-    mathoptsolverscmake::MilpModel milp_model =
+    mathoptsolverscmake::MathOptModel milp_model =
         (model_id == 1)? create_milp_model_1(instance):
         (model_id == 2)? create_milp_model_2(instance):
         create_milp_model_3(instance);

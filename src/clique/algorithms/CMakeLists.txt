@@ -14,7 +14,7 @@ target_include_directories(StableSolver_clique_milp PUBLIC
     ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(StableSolver_clique_milp PUBLIC
     StableSolver_clique
-    MathOptSolversCMake::milp)
+    MathOptSolversCMake::mathopt)
 add_library(StableSolver::clique::milp ALIAS StableSolver_clique_milp)
 
 add_library(StableSolver_clique_local_search)

@@ -2,7 +2,7 @@
 
 #include "stablesolver/clique/solution.hpp"
 
-#include "mathoptsolverscmake/milp.hpp"
+#include "mathoptsolverscmake/mathopt.hpp"
 
 namespace stablesolver
 {
