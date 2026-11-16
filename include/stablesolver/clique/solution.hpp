@@ -100,17 +100,33 @@ private:
 
     optimizationtools::IndexedSet neighbors_tmp_;
 
+    /*
+     * Private methods
+     */
+
+    /** Fill 'neighbors_tmp_' with the neighbors of vertex v. */
+    inline void compute_neighbors_tmp(VertexId v);
+
 };
+
+void Solution::compute_neighbors_tmp(VertexId v)
+{
+    neighbors_tmp_.clear();
+    auto add_neighbors = [this, v](const auto& graph)
+    {
+        for (auto it = graph.neighbors_begin(v);
+                it != graph.neighbors_end(v); ++it) {
+            neighbors_tmp_.add(*it);
+        }
+    };
+    FUNCTION_WITH_GRAPH_0(add_neighbors, *instance().graph());
+}
 
 void Solution::add(VertexId v)
 {
     instance().graph()->check_vertex_index(v);
     assert(!contains(v));
-    neighbors_tmp_.clear();
-    for (auto it = instance().graph()->neighbors_begin(v);
-            it != instance().graph()->neighbors_end(v); ++it) {
-        neighbors_tmp_.add(*it);
-    }
+    compute_neighbors_tmp(v);
     for (VertexId v2: vertices())
         if (!neighbors_tmp_.contains(v2))
             penalty_ += 1;
@@ -124,11 +140,7 @@ void Solution::remove(VertexId v)
     assert(contains(v));
     vertices_.remove(v);
     weight_ -= instance().graph()->weight(v);
-    neighbors_tmp_.clear();
-    for (auto it = instance().graph()->neighbors_begin(v);
-            it != instance().graph()->neighbors_end(v); ++it) {
-        neighbors_tmp_.add(*it);
-    }
+    compute_neighbors_tmp(v);
     for (VertexId v2: vertices())
         if (!neighbors_tmp_.contains(v2))
             penalty_ -= 1;

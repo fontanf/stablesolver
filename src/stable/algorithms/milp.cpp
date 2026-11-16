@@ -182,8 +182,8 @@ mathoptsolverscmake::MathOptModel create_milp_model_3(
                 }
             }
         }
-        std::shared_ptr<optimizationtools::AbstractGraph> graph
-            = std::shared_ptr<optimizationtools::AdjacencyListGraph>(
+        std::shared_ptr<const optimizationtools::AdjacencyListGraph> graph
+            = std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
                     new optimizationtools::AdjacencyListGraph(graph_builder.build()));
         stablesolver::clique::Instance clique_instance(graph);
         // Solve
