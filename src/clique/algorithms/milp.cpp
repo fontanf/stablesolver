@@ -17,10 +17,12 @@ using namespace stablesolver::clique;
 namespace
 {
 
+template <typename Graph>
 mathoptsolverscmake::MathOptModel create_milp_model(
+        const Graph& concrete_graph,
         const Instance& instance)
 {
-    const optimizationtools::AbstractGraph* graph = instance.graph();
+    const Graph* graph = &concrete_graph;
 
     int number_of_variables = graph->number_of_vertices() + 1;
     int number_of_constraints = graph->number_of_vertices() + 1;
@@ -96,11 +98,20 @@ mathoptsolverscmake::MathOptModel create_milp_model(
     return model;
 }
 
+mathoptsolverscmake::MathOptModel create_milp_model(
+        const Instance& instance)
+{
+    return FUNCTION_WITH_GRAPH(
+            create_milp_model,
+            *instance.graph(),
+            instance);
+}
+
 Solution retrieve_solution(
         const Instance& instance,
         const std::vector<double>& milp_solution)
 {
-    const optimizationtools::AbstractGraph* graph = instance.graph();
+    const optimizationtools::Graph* graph = instance.graph();
     Solution solution(instance);
     for (VertexId vertex_id = 0;
             vertex_id < graph->number_of_vertices();

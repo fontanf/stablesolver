@@ -6,7 +6,14 @@
 
 using namespace stablesolver::clique;
 
-const Output stablesolver::clique::greedy_gwmin(
+namespace stablesolver
+{
+namespace clique
+{
+
+template <typename Graph>
+const Output greedy_gwmin(
+        const Graph& concrete_graph,
         const Instance& instance,
         const Parameters& parameters)
 {
@@ -15,7 +22,7 @@ const Output stablesolver::clique::greedy_gwmin(
     algorithm_formatter.start("Greedy GWMIN");
     algorithm_formatter.print_header();
 
-    const optimizationtools::AbstractGraph* graph = instance.graph();
+    const Graph* graph = &concrete_graph;
     Solution solution(instance);
 
     std::vector<double> vertices_values(graph->number_of_vertices(), 0);
@@ -51,7 +58,28 @@ const Output stablesolver::clique::greedy_gwmin(
     return output;
 }
 
-const Output stablesolver::clique::greedy_strong(
+}
+}
+
+const Output stablesolver::clique::greedy_gwmin(
+        const Instance& instance,
+        const Parameters& parameters)
+{
+    return FUNCTION_WITH_GRAPH(
+            greedy_gwmin,
+            *instance.graph(),
+            instance,
+            parameters);
+}
+
+namespace stablesolver
+{
+namespace clique
+{
+
+template <typename Graph>
+const Output greedy_strong(
+        const Graph& concrete_graph,
         const Instance& instance,
         const Parameters& parameters)
 {
@@ -60,7 +88,7 @@ const Output stablesolver::clique::greedy_strong(
     algorithm_formatter.start("Strong greedy");
     algorithm_formatter.print_header();
 
-    const optimizationtools::AbstractGraph* graph = instance.graph();
+    const Graph* graph = &concrete_graph;
     Solution solution(instance);
 
     optimizationtools::DoublyIndexedMap candidates(
@@ -99,4 +127,18 @@ const Output stablesolver::clique::greedy_strong(
 
     algorithm_formatter.end();
     return output;
+}
+
+}
+}
+
+const Output stablesolver::clique::greedy_strong(
+        const Instance& instance,
+        const Parameters& parameters)
+{
+    return FUNCTION_WITH_GRAPH(
+            greedy_strong,
+            *instance.graph(),
+            instance,
+            parameters);
 }

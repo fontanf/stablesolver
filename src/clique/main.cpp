@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
         ("algorithm,a", po::value<std::string>()->default_value("large-neighborhood-search"), "set algorithm")
         ("input,i", po::value<std::string>()->required(), "set input file (required)")
         ("format,f", po::value<std::string>()->default_value(""), "set input file format (default: standard)")
+        ("graph,", po::value<std::string>(), "set graph type: adjacency-list, adjacency-matrix or clique-graph (default: clique-graph for the 'cliquegraph' format, adjacency-list otherwise)")
         ("unweighted,u", "set unweighted")
         ("complementary", "set complementary")
         ("output,o", po::value<std::string>()->default_value(""), "set JSON output file")
@@ -110,19 +111,44 @@ int main(int argc, char *argv[])
     }
 
     // Build instance.
-    optimizationtools::AdjacencyListGraphBuilder graph_builder;
-    graph_builder.read(
-            vm["input"].as<std::string>(),
-            vm["format"].as<std::string>());
-    if (vm.count("unweighted"))
-        graph_builder.set_unweighted();
-    std::shared_ptr<const optimizationtools::AdjacencyListGraph> graph
-        = (!vm.count("complementary"))?
-        std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
-                new optimizationtools::AdjacencyListGraph(graph_builder.build())):
-        std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
-                new optimizationtools::AdjacencyListGraph(graph_builder.build().complementary()));
-
+    std::string instance_path = vm["input"].as<std::string>();
+    std::string instance_format = vm["format"].as<std::string>();
+    std::shared_ptr<const optimizationtools::AdjacencyListGraph> adjacency_list_graph = nullptr;
+    std::shared_ptr<const optimizationtools::CliqueGraph> clique_graph = nullptr;
+    if (instance_format == "cliquegraph") {
+        optimizationtools::CliqueGraphBuilder graph_builder;
+        graph_builder.read(instance_path, instance_format);
+        clique_graph = std::shared_ptr<const optimizationtools::CliqueGraph>(
+                new optimizationtools::CliqueGraph(graph_builder.build()));
+    } else {
+        optimizationtools::AdjacencyListGraphBuilder graph_builder;
+        graph_builder.read(instance_path, instance_format);
+        if (vm.count("unweighted"))
+            graph_builder.set_unweighted();
+        adjacency_list_graph = std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
+                new optimizationtools::AdjacencyListGraph(graph_builder.build()));
+    }
+    optimizationtools::Graph graph = (adjacency_list_graph != nullptr)?
+        optimizationtools::Graph(adjacency_list_graph):
+        optimizationtools::Graph(clique_graph);
+    if (vm.count("complementary")) {
+        graph = std::shared_ptr<const optimizationtools::AdjacencyListGraph>(
+                new optimizationtools::AdjacencyListGraph(
+                    graph.to_adjacency_list_graph()->complementary()));
+    }
+    std::string graph_type = (vm.count("graph"))?
+        vm["graph"].as<std::string>():
+        (graph.clique_graph() != nullptr)? "clique-graph":
+        "adjacency-list";
+    if (graph_type == "adjacency-list") {
+        graph = graph.to_adjacency_list_graph();
+    } else if (graph_type == "adjacency-matrix") {
+        graph = graph.to_adjacency_matrix_graph();
+    } else if (graph_type != "clique-graph" || graph.clique_graph() == nullptr) {
+        throw std::invalid_argument(
+                "Graph type \"" + graph_type + "\" is unknown or can't be "
+                "built from this instance.");
+    }
     const Instance instance(graph);
 
     // Run.

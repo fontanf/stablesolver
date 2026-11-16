@@ -13,6 +13,7 @@ using namespace stablesolver::clique;
 namespace
 {
 
+template <typename Graph>
 class LocalScheme
 {
 
@@ -30,14 +31,16 @@ public:
     };
 
     LocalScheme(
+            const Graph& graph,
             const Instance& instance,
             Parameters parameters):
+        graph_(graph),
         instance_(instance),
         parameters_(parameters),
         relevant_vertices_(instance.graph()->number_of_vertices()),
         tight_vertices_(instance.graph()->number_of_vertices(), -1),
-        neighbors_(instance_.graph()->number_of_vertices()),
-        neighbors_2_(instance_.graph()->number_of_vertices())
+        neighbors_(graph_.number_of_vertices()),
+        neighbors_2_(graph_.number_of_vertices())
     {
         // Initialize relevant_vertices_.
         relevant_vertices_.fill();
@@ -70,7 +73,7 @@ public:
 
     inline Solution empty_solution() const
     {
-        return Solution(instance_.graph()->number_of_vertices());
+        return Solution(graph_.number_of_vertices());
     }
 
     inline Solution initial_solution(
@@ -186,8 +189,8 @@ public:
                         if (contains(solution, vertex_id))
                             continue;
                         VertexId vertex_id_2 = -1;
-                        for (auto it = instance_.graph()->neighbors_begin(vertex_id);
-                                it != instance_.graph()->neighbors_end(vertex_id);
+                        for (auto it = graph_.neighbors_begin(vertex_id);
+                                it != graph_.neighbors_end(vertex_id);
                                 ++it) {
                             if (!contains(solution, *it)) {
                                 if (vertex_id_2 != -1) {
@@ -209,16 +212,16 @@ public:
                     for (const auto& p: tight_vertices_) {
                         VertexId vertex_id_out_1 = p.first;
                         VertexId vertex_id_in = p.second;
-                        for (auto it = instance_.graph()->neighbors_begin(vertex_id_out_1);
-                                it != instance_.graph()->neighbors_end(vertex_id_out_1);
+                        for (auto it = graph_.neighbors_begin(vertex_id_out_1);
+                                it != graph_.neighbors_end(vertex_id_out_1);
                                 ++it) {
                             VertexId vertex_id_out_2 = *it;
                             if (tight_vertices_.contains(vertex_id_out_2)
                                     && tight_vertices_[vertex_id_out_2] == vertex_id_in) {
                                 GlobalCost c = -(solution.weight
-                                        + instance_.graph()->weight(vertex_id_out_1)
-                                        + instance_.graph()->weight(vertex_id_out_2)
-                                        - instance_.graph()->weight(vertex_id_in));
+                                        + graph_.weight(vertex_id_out_1)
+                                        + graph_.weight(vertex_id_out_2)
+                                        - graph_.weight(vertex_id_in));
                                 if (c >= c_best)
                                     continue;
                                 if (vertex_id_in_best != -1
@@ -336,7 +339,7 @@ public:
 
     CompactSolution solution2compact(const Solution& solution)
     {
-        std::vector<bool> vertices(instance_.graph()->number_of_vertices(), false);
+        std::vector<bool> vertices(graph_.number_of_vertices(), false);
         for (VertexId vertex_id: solution.vertices)
             vertices[vertex_id] = true;
         return vertices;
@@ -346,7 +349,7 @@ public:
     {
         auto solution = empty_solution();
         for (VertexId vertex_id = 0;
-                vertex_id < instance_.graph()->number_of_vertices();
+                vertex_id < graph_.number_of_vertices();
                 ++vertex_id) {
             if (relevant_vertices_.contains(vertex_id))
                 if (compact_solution[vertex_id])
@@ -398,7 +401,7 @@ public:
 
         os << "vertices:";
         for (VertexId vertex_id = 0;
-                vertex_id < instance_.graph()->number_of_vertices();
+                vertex_id < graph_.number_of_vertices();
                 ++vertex_id)
             if (contains(solution, vertex_id))
                 os << " " << vertex_id;
@@ -436,13 +439,13 @@ private:
 
         neighbors_.clear();
         neighbors_.add(vertex_id);
-        for (auto it = instance_.graph()->neighbors_begin(vertex_id);
-                it != instance_.graph()->neighbors_end(vertex_id);
+        for (auto it = graph_.neighbors_begin(vertex_id);
+                it != graph_.neighbors_end(vertex_id);
                 ++it) {
             neighbors_.add(*it);
         }
 
-        Weight weight = instance_.graph()->weight(vertex_id);
+        Weight weight = graph_.weight(vertex_id);
 
         // Reperturbation conflicting vertices.
         for (VertexId vertex_id_2: relevant_vertices_) {
@@ -470,13 +473,13 @@ private:
 
         neighbors_2_.clear();
         neighbors_2_.add(vertex_id);
-        for (auto it = instance_.graph()->neighbors_begin(vertex_id);
-                it != instance_.graph()->neighbors_end(vertex_id);
+        for (auto it = graph_.neighbors_begin(vertex_id);
+                it != graph_.neighbors_end(vertex_id);
                 ++it) {
             neighbors_2_.add(*it);
         }
 
-        Weight weight = instance_.graph()->weight(vertex_id);
+        Weight weight = graph_.weight(vertex_id);
 
         solution.vertices.remove(vertex_id);
         solution.weight -= weight;
@@ -498,7 +501,7 @@ private:
             GlobalCost) const
     {
         return {
-            - (solution.weight - instance_.graph()->weight(vertex_id)),
+            - (solution.weight - graph_.weight(vertex_id)),
         };
     }
 
@@ -509,7 +512,7 @@ private:
     {
         return {
             -(solution.weight
-                    + instance_.graph()->weight(vertex_id)
+                    + graph_.weight(vertex_id)
                     - solution.addition_costs[vertex_id]),
         };
     }
@@ -518,6 +521,7 @@ private:
      * Private attributes
      */
 
+    const Graph& graph_;
     const Instance& instance_;
     Parameters parameters_;
     Weight best_weight_ = 0;
@@ -529,24 +533,57 @@ private:
 
 };
 
+/**
+ * Check that the number of threads is supported by the graph type.
+ *
+ * Computing the neighbors of a vertex of a CliqueGraph isn't thread-safe, and
+ * the threads of the local search share the graph.
+ */
+template <typename Graph>
+void check_number_of_threads(
+        const Graph&,
+        Counter)
+{
 }
 
-const Output stablesolver::clique::local_search(
+void check_number_of_threads(
+        const optimizationtools::CliqueGraph&,
+        Counter number_of_threads)
+{
+    if (number_of_threads > 1) {
+        throw std::invalid_argument(
+                "The 'local_search' algorithm doesn't support several threads "
+                "with a CliqueGraph.");
+    }
+}
+
+}
+
+namespace stablesolver
+{
+namespace clique
+{
+
+template <typename Graph>
+const Output local_search(
+        const Graph& concrete_graph,
         const Instance& instance,
         std::mt19937_64&,
         const LocalSearchParameters& parameters)
 {
+    check_number_of_threads(concrete_graph, parameters.number_of_threads);
+
     Output output(instance);
     AlgorithmFormatter algorithm_formatter(parameters, output);
     algorithm_formatter.start("Local search");
     algorithm_formatter.print_header();
 
     // Create LocalScheme.
-    LocalScheme::Parameters parameters_local_scheme;
-    LocalScheme local_scheme(instance, parameters_local_scheme);
+    typename LocalScheme<Graph>::Parameters parameters_local_scheme;
+    LocalScheme<Graph> local_scheme(concrete_graph, instance, parameters_local_scheme);
 
     // Run A*.
-    localsearchsolver::BestFirstLocalSearchParameters<LocalScheme> llsbfls_parameters;
+    localsearchsolver::BestFirstLocalSearchParameters<LocalScheme<Graph>> llsbfls_parameters;
     llsbfls_parameters.verbosity_level = 0;
     llsbfls_parameters.timer = parameters.timer;
     llsbfls_parameters.maximum_number_of_nodes = parameters.maximum_number_of_nodes;
@@ -558,7 +595,7 @@ const Output stablesolver::clique::local_search(
     llsbfls_parameters.timer.add_end_boolean(&end);
     llsbfls_parameters.new_solution_callback
         = [&instance, &output, &algorithm_formatter, &end](
-                const localsearchsolver::Output<LocalScheme>& lss_output)
+                const localsearchsolver::Output<LocalScheme<Graph>>& lss_output)
         {
             Solution solution(instance);
             for (VertexId v = 0; v < instance.graph()->number_of_vertices(); ++v)
@@ -580,4 +617,20 @@ const Output stablesolver::clique::local_search(
 
     algorithm_formatter.end();
     return output;
+}
+
+}
+}
+
+const Output stablesolver::clique::local_search(
+        const Instance& instance,
+        std::mt19937_64& generator,
+        const LocalSearchParameters& parameters)
+{
+    return FUNCTION_WITH_GRAPH(
+            local_search,
+            *instance.graph(),
+            instance,
+            generator,
+            parameters);
 }
