@@ -45,7 +45,9 @@ jobs:
     - name: Build
       run: |
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSTABLESOLVER_USE_HIGHS=ON
-        cmake --build build --config Release --parallel
+        # Bound the number of jobs: without a value, '--parallel' runs an unlimited
+        # 'make -j', which makes the runners run out of memory.
+        cmake --build build --config Release --parallel ${{ runner.os == 'macOS' && 3 || 4 }}
         cmake --install build --config Release --prefix install
     - name: Run tests
       run: python3 -u scripts/run_tests.py test_results
@@ -57,7 +59,9 @@ jobs:
     - name: Build
       run: |
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSTABLESOLVER_USE_HIGHS=ON
-        cmake --build build --config Release --parallel
+        # Bound the number of jobs: without a value, '--parallel' runs an unlimited
+        # 'make -j', which makes the runners run out of memory.
+        cmake --build build --config Release --parallel ${{ runner.os == 'macOS' && 3 || 4 }}
         cmake --install build --config Release --prefix install
     - name: Run tests
       run: python3 -u scripts/run_tests.py test_results_ref
