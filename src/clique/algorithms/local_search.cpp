@@ -113,22 +113,6 @@ public:
         if (parameters_.swap_2_1)
             neighborhoods.push_back(1);
 
-        // Update core.
-        if (best_weight_ < solution.weight) {
-            best_weight_ = solution.weight;
-            instance_.update_core(relevant_vertices_, solution.weight);
-            //std::cout << "weight " << output_.solution.weight()
-            //    << " core " << relevant_vertices_.size()
-            //    << " / " << instance_.graph()->number_of_vertices()
-            //    << std::endl;
-            for (VertexId vertex_id: solution.vertices) {
-                if (!relevant_vertices_.contains(vertex_id)) {
-                    //std::cout << "remove " << v << std::endl;
-                    remove(solution, vertex_id);
-                }
-            }
-        }
-
         Counter it = 0;
         (void)it;
         for (;; ++it) {
@@ -263,6 +247,12 @@ public:
         //print(std::cout, solution);
 
         // Update core.
+        // Only update it at the end of the local search: the solution may
+        // then contain vertices which are not in the core anymore, but it is
+        // only used to be stored in the solution pool and to compute its
+        // perturbations. The solutions on which the local search is applied
+        // are created by 'initial_solution' or 'compact2solution', which only
+        // keep the vertices of the core.
         if (best_weight_ < solution.weight) {
             best_weight_ = solution.weight;
             instance_.update_core(relevant_vertices_, solution.weight);
