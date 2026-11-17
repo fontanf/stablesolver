@@ -39,7 +39,6 @@ if __name__ == "__main__":
                 f"  --input \"{instance_path}\""
                 f" --format {instance_format}"
                 " --model 1"
-                f"  --solver highs"
                 f"  --output \"{output_path_1}\"")
         run_command(command)
         # command = (
@@ -47,6 +46,5 @@ if __name__ == "__main__":
         #         f"  --input \"{instance_path}\""
         #         f" --format {instance_format}"
         #         " --model 3"
-        #         f"  --solver highs"
         #         f"  --output \"{output_path_2}\"")
         # run_command(command)

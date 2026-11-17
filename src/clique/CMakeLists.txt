@@ -23,3 +23,14 @@ target_link_libraries(StableSolver_clique_main PUBLIC
     Boost::program_options)
 set_target_properties(StableSolver_clique_main PROPERTIES OUTPUT_NAME "stablesolver_clique")
 install(TARGETS StableSolver_clique_main)
+
+if(STABLESOLVER_BUILD_MAIN)
+    add_executable(StableSolver_clique_mps_writer_main)
+    target_sources(StableSolver_clique_mps_writer_main PRIVATE
+        mps_writer_main.cpp)
+    target_link_libraries(StableSolver_clique_mps_writer_main PUBLIC
+        StableSolver_clique_milp
+        Boost::program_options)
+    set_target_properties(StableSolver_clique_mps_writer_main PROPERTIES OUTPUT_NAME "stablesolver_clique_mps_writer")
+    install(TARGETS StableSolver_clique_mps_writer_main)
+endif()

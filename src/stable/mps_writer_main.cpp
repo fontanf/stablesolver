@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
         (",h", "Produce help message")
         ("input,i", po::value<std::string>()->required(), "set input path")
         ("format,f", po::value<std::string>()->required(), "set input format")
-        ("solver,", po::value<mathoptsolverscmake::SolverName>()->required(), "set solver")
         ("model,", po::value<int>()->required(), "set model")
         ("output,o", po::value<std::string>()->required(), "set output path")
         ;
@@ -48,17 +47,14 @@ int main(int argc, char *argv[])
     if (model == 1) {
         write_mps_1(
                 instance,
-                vm["solver"].as<mathoptsolverscmake::SolverName>(),
                 vm["output"].as<std::string>());
     } else if (model == 2) {
         write_mps_2(
                 instance,
-                vm["solver"].as<mathoptsolverscmake::SolverName>(),
                 vm["output"].as<std::string>());
     } else if (model == 3) {
         write_mps_3(
                 instance,
-                vm["solver"].as<mathoptsolverscmake::SolverName>(),
                 vm["output"].as<std::string>());
     }
 
