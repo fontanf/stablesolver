@@ -12,6 +12,7 @@
 #ifdef XPRESS_FOUND
 #include "mathoptsolverscmake/mathopt_xpress.hpp"
 #endif
+#include "mathoptsolverscmake/mathopt_mps.hpp"
 
 using namespace stablesolver::stable;
 
@@ -503,7 +504,6 @@ const Output milp(
 
 void write_mps(
         const Instance& instance,
-        mathoptsolverscmake::SolverName solver,
         const std::string& output_path,
         int model_id)
 {
@@ -511,41 +511,7 @@ void write_mps(
         (model_id == 1)? create_milp_model_1(instance):
         (model_id == 2)? create_milp_model_2(instance):
         create_milp_model_3(instance);
-
-    if (solver == mathoptsolverscmake::SolverName::Cbc) {
-#ifdef CBC_FOUND
-        OsiCbcSolverInterface osi_solver;
-        CbcModel cbc_model(osi_solver);
-        mathoptsolverscmake::load(cbc_model, milp_model);
-        cbc_model.solver()->writeMps(output_path.c_str());
-#else
-        throw std::invalid_argument("");
-#endif
-
-    } else if (solver == mathoptsolverscmake::SolverName::Highs) {
-#ifdef HIGHS_FOUND
-        Highs highs;
-        mathoptsolverscmake::load(highs, milp_model);
-        highs.writeModel(output_path);
-#else
-        throw std::invalid_argument("");
-#endif
-
-    } else if (solver == mathoptsolverscmake::SolverName::Xpress) {
-#ifdef XPRESS_FOUND
-        XPRSprob xpress_model;
-        XPRScreateprob(&xpress_model);
-        mathoptsolverscmake::load(xpress_model, milp_model);
-        mathoptsolverscmake::write_mps(xpress_model, "kpc.mps");
-        XPRSdestroyprob(xpress_model);
-#else
-        throw std::invalid_argument("");
-#endif
-
-    } else {
-        throw std::invalid_argument("");
-    }
-
+    mathoptsolverscmake::write_mps(milp_model, output_path);
 }
 
 }
@@ -573,24 +539,21 @@ const Output stablesolver::stable::milp_3(
 
 void stablesolver::stable::write_mps_1(
         const Instance& instance,
-        mathoptsolverscmake::SolverName solver,
         const std::string& output_path)
 {
-    return write_mps(instance, solver, output_path, 1);
+    return write_mps(instance, output_path, 1);
 }
 
 void stablesolver::stable::write_mps_2(
         const Instance& instance,
-        mathoptsolverscmake::SolverName solver,
         const std::string& output_path)
 {
-    return write_mps(instance, solver, output_path, 2);
+    return write_mps(instance, output_path, 2);
 }
 
 void stablesolver::stable::write_mps_3(
         const Instance& instance,
-        mathoptsolverscmake::SolverName solver,
         const std::string& output_path)
 {
-    return write_mps(instance, solver, output_path, 3);
+    return write_mps(instance, output_path, 3);
 }
