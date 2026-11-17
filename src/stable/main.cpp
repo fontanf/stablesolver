@@ -70,14 +70,20 @@ Output run(
     } else if (algorithm == "milp-1") {
         MilpParameters parameters;
         read_args(parameters, vm);
+        if (vm.count("solver"))
+            parameters.solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
         return milp_1(instance, parameters);
     } else if (algorithm == "milp-2") {
         MilpParameters parameters;
         read_args(parameters, vm);
+        if (vm.count("solver"))
+            parameters.solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
         return milp_2(instance, parameters);
     } else if (algorithm == "milp-3") {
         MilpParameters parameters;
         read_args(parameters, vm);
+        if (vm.count("solver"))
+            parameters.solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
         return milp_3(instance, parameters);
     } else if (algorithm == "local-search-row-weighting-1") {
         LocalSearchRowWeighting1Parameters parameters;

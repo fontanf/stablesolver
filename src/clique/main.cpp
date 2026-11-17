@@ -60,6 +60,8 @@ Output run(
     } else if (algorithm == "milp") {
         MilpParameters parameters;
         read_args(parameters, vm);
+        if (vm.count("solver"))
+            parameters.solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
         return milp(instance, parameters);
     } else if (algorithm == "local-search") {
         LocalSearchParameters parameters;
@@ -82,6 +84,7 @@ int main(int argc, char *argv[])
         ("input,i", po::value<std::string>()->required(), "set input file (required)")
         ("format,f", po::value<std::string>()->default_value(""), "set input file format (default: standard)")
         ("graph,", po::value<std::string>(), "set graph type: adjacency-list, adjacency-matrix or clique-graph (default: clique-graph for the 'cliquegraph' format, adjacency-list otherwise)")
+        ("solver,", po::value<mathoptsolverscmake::SolverName>(), "set MILP solver")
         ("unweighted,u", "set unweighted")
         ("complementary", "set complementary")
         ("output,o", po::value<std::string>()->default_value(""), "set JSON output file")
