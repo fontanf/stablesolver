@@ -27,9 +27,7 @@ The stable solver can also be used to solve the Minimum (Weight) Vertex Cover Pr
 
 - Local search algorithm implemented with [fontanf/localsearchsolver](https://github.com/fontanf/localsearchsolver) `-a "local-search --threads 3"`
 
-- Row weighting local search (unweighted only)
-  - based on "Weighting-Based Parallel Local Search for Optimal Camera Placement and Unicost Set Covering" (Lin et al., 2020) [DOI](https://doi.org/10.1145/3377929.3398184) `-a "local-search-row-weighting-1 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
-  - based on "An efficient local search heuristic with row weighting for the unicost set covering problem" (Gao et al., 2015) [DOI](https://doi.org/10.1016/j.ejor.2015.05.038) `-a "local-search-row-weighting-2 --iteration-limit 100000 --iteration-without-improvment-limit 10000"`
+- Row weighting local search (unweighted only), the row weighting local search of [fontanf/setcoveringsolver](https://github.com/fontanf/setcoveringsolver) applied to the minimum vertex cover problem `-a local-search-row-weighting`
 
 - Large neighborhoodsearch based on "NuMWVC: A novel local search for minimum weighted vertex cover problem" (Li et al., 2020) [DOI](https://doi.org/10.1080/01605682.2019.1621218) `-a "large-neighborhood-search"`
 
@@ -70,72 +68,7 @@ python3 scripts/download_data.py
 Examples:
 
 ```shell
-./install/bin/stablesolver_stable  --verbosity-level 1  --input "data/dimacs1992/brock200_1.clq" --format dimacs1992  --algorithm "local-search-row-weighting-2" --maximum-number-of-iterations 3000  --certificate solution.txt
-```
-```
-====================================
-            StableSolver            
-====================================
-
-Problem
--------
-Maximum-weight independent set problem
-
-Instance
---------
-Number of vertices:              200
-Number of edges:                 5066
-Density:                         0.2533
-Average degree:                  50.66
-Maximum degree:                  69
-Total weight:                    200
-Number of connected components:  1
-
-Algorithm
----------
-Row weighting local search 2
-
-Reduced instance
-----------------
-Number of vertices:              200
-Number of edges:                 5066
-Density:                         0.2533
-Average degree:                  50.66
-Maximum degree:                  69
-Total weight:                    200
-Number of connected components:  1
-
-       T (s)              LB              UB             GAP     GAP (%)                 Comment
-       -----              --              --             ---     -------                 -------
-       0.003               0             200             200      100.00                        
-       0.003              15             200             185       92.50        initial solution
-       0.003              16             200             184       92.00             iteration 2
-       0.010              17             200             183       91.50             iteration 2
-       0.010              18             200             182       91.00             iteration 2
-       0.010              19             200             181       90.50             iteration 3
-       0.012              20             200             180       90.00          iteration 1162
-       0.013              21             200             179       89.50          iteration 2440
-
-Final statistics
-----------------
-Value:                        21
-Bound:                        200
-Absolute optimality gap:      179
-Relative optimality gap (%):  89.5
-Time (s):                     0.0134117
-Number of iterations:         3000
-
-Solution
---------
-Number of vertices:   21 / 200 (10.5%)
-Number of conflicts:  0
-Feasible:             1
-Vertex cover weight:  179
-Weight:               21
-```
-
-```shell
-./install/bin/stablesolver_stable  --verbosity-level 1  --input "data/dimacs2010/clustering/caidaRouterLevel.graph" --format dimacs2010  --algorithm "local-search-row-weighting-1" --maximum-number-of-iterations 300000
+./install/bin/stablesolver_stable  --verbosity-level 1  --input "data/dimacs1992/brock200_1.clq" --format dimacs1992  --algorithm "local-search-row-weighting" --maximum-number-of-iterations 3000  --certificate solution.txt
 ```
 ```
 =====================================
@@ -148,65 +81,157 @@ Maximum(-weight) independent set problem
 
 Instance
 --------
-Number of vertices:              192244
-Number of edges:                 609066
-Density:                         3.29601e-05
-Average degree:                  6.33639
-Maximum degree:                  1071
-Total weight:                    192244
-Number of connected components:  308
+Number of vertices:              200
+Number of edges:                 5066
+Density:                         0.2533
+Average degree:                  50.66
+Highest degree:                  69
+Total weight:                    200
+Number of connected components:  1
 
 Algorithm
 ---------
-Row weighting local search 1
+Row weighting local search
 
 Parameters
 ----------
-Time limit:            inf
+Time limit:                          inf
 Messages
-    Verbosity level:   1
-    Standard output:   1
-    File path:         
-    # streams:         0
+    Verbosity level:                 1
+    Standard output:                 1
+    File path:                       
+    # streams:                       0
 Logger
-    Has logger:        0
-    Standard error:    0
-    File path:         
+    Has logger:                      0
+    Standard error:                  0
+    File path:                       
 Reduction
-    Enable:            1
-    Max. # of rounds:  10
+    Enable:                          1
+    Max. # of rounds:                10
+Max. # of iterations:                3000
+Max. # of iterations without impr.:  -1
+Best solution update frequency:      100000
 
 Reduced instance
 ----------------
-Number of vertices:              2800
-Number of edges:                 8646
-Density:                         0.00220561
-Average degree:                  6.17571
-Maximum degree:                  56
-Total weight:                    2800
-Number of connected components:  148
+Number of vertices:              200
+Number of edges:                 5066
+Density:                         0.2533
+Average degree:                  50.66
+Highest degree:                  69
+Total weight:                    200
+Number of connected components:  1
 
     Time (s)       Value       Bound         Gap     Gap (%)                 Comment
     --------       -----       -----         ---     -------                 -------
-       0.000           0      192244      192244      100.00                        
-       0.503      117029      192244       75215       39.12        initial solution
-       0.503      117029      118026         997        0.84        initial solution
-       0.934      117146      118026         880        0.75        iteration 100000
-       1.382      117150      118026         876        0.74        iteration 200000
+       0.000           0         200         200      100.00                        
+       0.002          15         200         185       92.50        initial solution
+       0.008          20         200         180       90.00                 it 3000
 
 Final statistics
 ----------------
-Value:                        117150
-Bound:                        118026
-Absolute optimality gap:      876
-Relative optimality gap (%):  0.742209
-Time (s):                     1.81302
+Value:                         20
+Bound:                         200
+Absolute optimality gap:       180
+Relative optimality gap (%):   90
+Time (s):                      0.00832587
+Number of iterations:          3000
 
 Solution
 --------
-Number of vertices:   117150 / 192244 (60.9382%)
+Number of vertices:   20 / 200 (10%)
 Number of conflicts:  0
 Feasible:             1
-Vertex cover weight:  75094
-Weight:               117150
+Vertex cover weight:  180
+Weight:               20
+```
+
+```shell
+./install/bin/stablesolver_stable  --verbosity-level 1  --input "data/networkrepository/inf-roadNet-PA.mtx" --format matrixmarket  --algorithm "local-search-row-weighting" --maximum-number-of-iterations 1000000
+```
+```
+=====================================
+            StableSolver            
+=====================================
+
+Problem
+-------
+Maximum(-weight) independent set problem
+
+Instance
+--------
+Number of vertices:              1087562
+Number of edges:                 1541514
+Density:                         2.60657e-06
+Average degree:                  2.83481
+Highest degree:                  9
+Total weight:                    1087562
+Number of connected components:  1
+
+Algorithm
+---------
+Row weighting local search
+
+Parameters
+----------
+Time limit:                          inf
+Messages
+    Verbosity level:                 1
+    Standard output:                 1
+    File path:                       
+    # streams:                       0
+Logger
+    Has logger:                      0
+    Standard error:                  0
+    File path:                       
+Reduction
+    Enable:                          1
+    Max. # of rounds:                10
+Max. # of iterations:                1000000
+Max. # of iterations without impr.:  -1
+Best solution update frequency:      100000
+
+Reduced instance
+----------------
+Number of vertices:              49023
+Number of edges:                 86253
+Density:                         7.17802e-05
+Average degree:                  3.51888
+Highest degree:                  12
+Total weight:                    49023
+Number of connected components:  366
+
+    Time (s)       Value       Bound         Gap     Gap (%)                 Comment
+    --------       -----       -----         ---     -------                 -------
+       0.000           0     1087562 1.08756e+06      100.00                        
+       4.465      510762     1087562      576800       53.04                        
+       4.466      510762      545907       35145        6.44                        
+       4.524      530013      545907       15894        2.91        initial solution
+       4.640      533178      545907       12729        2.33               it 100000
+       4.747      533262      545907       12645        2.32               it 200000
+       4.851      533272      545907       12635        2.31               it 300000
+       4.955      533279      545907       12628        2.31               it 400000
+       5.083      533291      545907       12616        2.31               it 500000
+       5.236      533298      545907       12609        2.31               it 600000
+       5.400      533305      545907       12602        2.31               it 700000
+       5.563      533306      545907       12601        2.31               it 800000
+       5.727      533312      545907       12595        2.31               it 900000
+       5.886      533320      545907       12587        2.31              it 1000000
+
+Final statistics
+----------------
+Value:                         533320
+Bound:                         545907
+Absolute optimality gap:       12587
+Relative optimality gap (%):   2.3057
+Time (s):                      5.88743
+Number of iterations:          1000000
+
+Solution
+--------
+Number of vertices:   533320 / 1087562 (49.0381%)
+Number of conflicts:  0
+Feasible:             1
+Vertex cover weight:  554242
+Weight:               533320
 ```
