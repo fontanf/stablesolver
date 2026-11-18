@@ -85,22 +85,16 @@ Output run(
         if (vm.count("solver"))
             parameters.solver = vm["solver"].as<mathoptsolverscmake::SolverName>();
         return milp_3(instance, parameters);
-    } else if (algorithm == "local-search-row-weighting-1") {
-        LocalSearchRowWeighting1Parameters parameters;
+    } else if (algorithm == "local-search-row-weighting") {
+        LocalSearchRowWeightingParameters parameters;
         read_args(parameters, vm);
         if (vm.count("maximum-number-of-iterations"))
             parameters.maximum_number_of_iterations = vm["maximum-number-of-iterations"].as<int>();
         if (vm.count("maximum-number-of-iterations-without-improvement"))
             parameters.maximum_number_of_iterations_without_improvement = vm["maximum-number-of-iterations-without-improvement"].as<int>();
-        return local_search_row_weighting_1(instance, generator, parameters);
-    } else if (algorithm == "local-search-row-weighting-2") {
-        LocalSearchRowWeighting2Parameters parameters;
-        read_args(parameters, vm);
-        if (vm.count("maximum-number-of-iterations"))
-            parameters.maximum_number_of_iterations = vm["maximum-number-of-iterations"].as<int>();
-        if (vm.count("maximum-number-of-iterations-without-improvement"))
-            parameters.maximum_number_of_iterations_without_improvement = vm["maximum-number-of-iterations-without-improvement"].as<int>();
-        return local_search_row_weighting_2(instance, generator, parameters);
+        if (vm.count("best-solution-update-frequency"))
+            parameters.best_solution_update_frequency = vm["best-solution-update-frequency"].as<int>();
+        return local_search_row_weighting(instance, generator, parameters);
     } else if (algorithm == "local-search") {
         LocalSearchParameters parameters;
         read_args(parameters, vm);
@@ -144,6 +138,7 @@ int main(int argc, char *argv[])
         ("solver,", po::value<mathoptsolverscmake::SolverName>(), "set solver")
         ("maximum-number-of-iterations,", po::value<int>(), "set the maximum number of iterations")
         ("maximum-number-of-iterations-without-improvement,", po::value<int>(), "set the maximum number of iterations without improvement")
+        ("best-solution-update-frequency,", po::value<int>(), "set the best solution update frequency")
         ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
