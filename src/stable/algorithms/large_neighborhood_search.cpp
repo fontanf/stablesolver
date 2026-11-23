@@ -31,7 +31,11 @@ const LargeNeighborhoodSearchOutput stablesolver::stable::large_neighborhood_sea
 
     algorithm_formatter.print_header();
 
-    Solution solution = greedy_gwmin(instance).solution;
+    GreedyParameters greedy_parameters;
+    greedy_parameters.verbosity_level = 0;
+    greedy_parameters.timer = parameters.timer;
+    greedy_parameters.reduction_parameters.reduce = false;
+    Solution solution = greedy_gwmin(instance, greedy_parameters).solution;
     algorithm_formatter.update_solution(solution, "initial solution");
 
     // Initialize local search structures.
